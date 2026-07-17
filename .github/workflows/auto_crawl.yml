@@ -2,9 +2,10 @@ name: Vietlott Auto Crawl
 
 on:
   schedule:
-    - cron: '30 6,14 * * *'
-  workflow_dispatch:
+    - cron: '30 6,14 * * *' # Tự động chạy lúc 13h30 và 21h30 hàng ngày (Giờ Việt Nam)
+  workflow_dispatch: # Cho phép Đại ca bấm nút chạy thủ công bất kỳ lúc nào
 
+# CẤP QUYỀN ĐỂ ROBOT CÓ THỂ GHI ĐÈ VÀ ĐẨY FILE TEXT LÊN HOST ONLINE
 permissions:
   contents: write
 
@@ -31,4 +32,7 @@ jobs:
           git config --global user.name "GitHub Action Bot"
           git config --global user.email "action@github.com"
           git add 535.txt 645.txt 655.txt
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Robot tự động cập nhật kết quả mới" && git push origin HEAD:main)
+          
+          # Ép hệ thống luôn commit và push kể cả dữ liệu trùng nhau để làm mới thời gian trên Host
+          git commit -m "Robot tự động làm mới kết quả" --allow-empty || true
+          git push origin HEAD:main
