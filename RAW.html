@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Thống kê và dự đoán Vietlott by CVN - FINAL PREMIUM</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background-color: #0d0d11; 
+            margin: 0; 
+            padding: 10px; 
+            color: #fff; 
+            overflow-x: hidden; 
+            position: relative;
+        }
+
+        /* Hình nền chìm nghệ thuật độc quyền CVN bảo vệ bản quyền */
+        body::before {
+            content: "CVN PREMIUM SYSTEMS";
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-25deg);
+            font-size: 8vw;
+            font-weight: 900;
+            color: rgba(0, 242, 254, 0.012);
+            z-index: -1;
+            pointer-events: none;
+            white-space: nowrap;
+            letter-spacing: 15px;
+            font-family: 'Arial Black', sans-serif;
+        }
+        
+        /* HEADER PREMIUM V4 - THIẾT KẾ NỀN SÁNG CAO CẤP & NEON ĐA SẮC ĐỘC QUYỀN */
+        .header-premium { 
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%); 
+            padding: 25px 20px; 
+            border-radius: 12px; 
+            text-align: center; 
+            box-shadow: 0 8px 30px rgba(0, 242, 254, 0.25); 
+            margin-bottom: 15px;
+            border: 2px solid rgba(0, 198, 255, 0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Khối hiển thị logo sắc nét CNC */
+        .logo-box-v4 {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 6px;
+        }
+
+        /* Biểu tượng khối kim cương công nghệ phát sáng Neon đổi màu tuần hoàn */
+        .logo-icon-v4 {
+            width: 42px;
+            height: 42px;
+            background: #0f172a;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Arial Black', sans-serif;
+            font-size: 16px;
+            font-weight: 900;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-shadow: 0px 0px 8px #00f2fe;
+            animation: rainbowShieldGlow 4s linear infinite;
+        }
+
+        /* Dòng chữ tiêu đề với hiệu ứng dải đèn Neon nhiều màu quét động liên tục */
+        .logo-text-v4 {
+            margin: 0; 
+            font-size: 30px; 
+            font-weight: 800; 
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, #00c6ff, #0072ff, #b5179e, #ff007f, #00c6ff);
+            background-size: 200% center;
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            animation: neonTextShift 3s linear infinite;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+
+        @keyframes neonTextShift {
+            0% { background-position: 0% center; filter: drop-shadow(0 0 8px rgba(0, 198, 255, 0.6)); }
+            50% { filter: drop-shadow(0 0 15px rgba(255, 0, 127, 0.7)); }
+            100% { background-position: 200% center; filter: drop-shadow(0 0 8px rgba(0, 198, 255, 0.6)); }
+        }
+
+        @keyframes rainbowShieldGlow {
+            0%, 100% { box-shadow: 0 0 12px #00c6ff, inset 0 0 6px #00c6ff; }
+            33% { box-shadow: 0 0 12px #b5179e, inset 0 0 6px #b5179e; }
+            66% { box-shadow: 0 0 15px #ff007f, inset 0 0 6px #ff007f; }
+        }
+
+        /* Căn chỉnh lại màu phụ đề trên nền sáng */
+        .header-premium .author { 
+            font-style: italic; 
+            color: #334155; 
+            font-size: 12px; 
+            margin-top: 6px; 
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .section-title { background: #162447; color: #fff; padding: 6px 12px; border-radius: 4px; margin: 15px 0 10px 0; border-left: 4px solid #0084ff; text-transform: uppercase; font-size: 13px; font-weight: bold; }
+        .grid-3 { display: flex; gap: 10px; justify-content: space-between; flex-wrap: nowrap; }
+        
+        .panel-card { flex: 1; background: #1a1a24; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: flex; flex-direction: column; color: #fff; border: 1px solid #333; height: 450px; padding: 8px; box-sizing: border-box; }
+        .live-iframe-embed { width: 100%; height: 100%; border: none; background: #fff; border-radius: 4px; }
+
+        .live-web-container { display: flex; gap: 10px; margin-bottom: 15px; }
+        .web-frame-card { flex: 1; background: #1a1a24; border: 1px solid #333; border-radius: 6px; padding: 8px; height: 520px; }
+        .web-frame-card iframe { width: 100%; height: 480px; border: none; border-radius: 4px; background: #fff; }
+        .frame-title { font-size: 11px; font-weight: bold; color: #00f2fe; margin-bottom: 6px; text-transform: uppercase; display: flex; align-items: center; gap: 4px; }
+
+        /* MATRIX STYLE */
+        .matrix-container { background: #1e1e24; border-radius: 6px; padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .matrix-block { margin-bottom: 10px; background: #fff; border-radius: 4px; padding: 8px; color: #333; }
+        .matrix-header-zone { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .matrix-title-sub { font-size: 12px; font-weight: bold; text-transform: uppercase; margin: 0; }
+        
+        .action-header-group { display: flex; gap: 6px; align-items: center; }
+        .file-select-label { background: #0084ff; color: white; padding: 4px 10px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .file-select-label:hover { background: #0066cc; }
+        .file-input-hidden { display: none; }
+        
+        .btn-quick-predict { background: linear-gradient(45deg, #af4cff, #9400d3); color: white; padding: 4px 10px; font-size: 11px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); text-transform: uppercase; }
+        .btn-quick-predict:hover { background: linear-gradient(45deg, #9400d3, #6a0dad); }
+
+        .matrix-table { border-collapse: collapse; font-family: monospace; font-size: 9px; width: 100%; }
+        .matrix-table th, .matrix-table td { padding: 1px; text-align: center; border: 1px solid #ddd; height: 16px; }
+        .matrix-table th { background-color: #f5f5f5; color: #333; }
+        
+        .test-row-style { background-color: #ffe6e6 !important; font-weight: bold; }
+        .test-row-style td.date-cell { background-color: #ffcc00 !important; color: #000 !important; font-weight: 900; }
+
+        .matrix-table td.date-cell { background-color: #f0f0f0; font-weight: bold; color: #444; width: 85px; text-align: center; font-size: 9px; white-space: nowrap; }
+        .matrix-table td.divider-cell { background-color: #d1d1d6; width: 4px; padding: 0; border-left: 1px solid #999; border-right: 1px solid #999; }
+        
+        .matrix-ball-3d { width: 14px; height: 14px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; color: white; box-shadow: inset -1px -1px 3px rgba(0,0,0,0.4); }
+        .hit-lotto { background: radial-gradient(circle at 30% 30%, #4caf50, #006633); }
+        .hit-mega { background: radial-gradient(circle at 30% 30%, #ff4d4d, #cc0000); }
+        .hit-power { background: radial-gradient(circle at 30% 30%, #ffdb4d, #cc5200); color: #000; }
+        .hit-spec-orange { background: radial-gradient(circle at 30% 30%, #ff944d, #ff7300); }
+        .hit-test { background: radial-gradient(circle at 30% 30%, #00f2fe, #0044ff); color: #fff; box-shadow: 0 0 5px #0084ff; }
+
+        /* PREDICT PANEL & CARDS */
+        .predict-panel { background: #fff; border-radius: 6px; padding: 10px; color: #333; }
+        .predict-grid { display: flex; gap: 10px; flex-wrap: nowrap; }
+        .predict-card { flex: 1; border: 1px solid #e0e0e0; border-radius: 4px; padding: 8px; background: #fbfbfb; display: flex; flex-direction: column; }
+        
+        .lock-numbers-title { font-size: 10px; font-weight: bold; color: #555; margin-bottom: 3px; text-transform: uppercase; }
+        .lock-inputs-container { display: flex; gap: 4px; align-items: center; margin-bottom: 10px; background: #e9ecef; padding: 4px; border-radius: 4px; justify-content: center; }
+        .lock-input { width: 24px; height: 22px; text-align: center; font-size: 11px; font-weight: bold; border: 1px solid #bbb; border-radius: 3px; background: #fff; color: #333; }
+        .lock-input.spec-input { border: 1px solid #ff7300; background: #fff5ee; color: #ff7300; }
+        .predicted-rows-container { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; min-height: 150px; justify-content: center; }
+        
+        .predict-row { display: flex; justify-content: flex-start; align-items: center; gap: 4px; padding: 4px; background: #f0f0f2; border-radius: 4px; }
+        .predict-row-label { font-size: 10px; font-weight: bold; color: #666; width: 12px; }
+        .ball-predict { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: #fff; box-shadow: inset -1px -1px 3px rgba(0,0,0,0.3); }
+        
+        .action-inline-btn { padding: 2px 5px; font-size: 9px; font-weight: bold; border: none; border-radius: 3px; cursor: pointer; margin-left: auto; text-transform: uppercase; color: white; }
+        .btn-try { background: #0084ff; } .btn-try:hover { background: #0055cc; }
+        .btn-del { background: #888; margin-left: 2px; } .btn-del:hover { background: #ff3333; }
+
+        .btn-predict-action { width: 100%; padding: 7px; font-size: 11px; text-transform: uppercase; color: white; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; margin-top: auto; }
+        .lotto-btn { background-color: #006633; color: white; } 
+        .mega-btn { background-color: #cc0000; color: white; } 
+        .power-btn { background-color: #cc5200; color: white; }
+
+        /* KHU VỰC BẢNG NỔI: ÁM XÁM VÀ HẠ THẤP TRỌNG TÂM */
+        .modal-overlay { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0, 0, 0, 0.25); /* Ám màu xám nhẹ khác biệt hẳn với ma trận sau */
+            z-index: 9999; 
+            justify-content: center; 
+            align-items: flex-end; /* Hạ thấp trọng tâm bảng nổi xuống dưới */
+            padding-bottom: 80px; /* Khoảng cách an toàn vừa vặn */
+            pointer-events: auto;
+        }
+        .modal-content { 
+            background: #fff; 
+            width: 420px; 
+            border-radius: 8px; 
+            padding: 15px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8); 
+            position: relative; 
+            animation: slideUp 0.2s ease-out; 
+            border: 1px solid #ccc;
+        }
+        .modal-close-btn { position: absolute; top: 8px; right: 12px; font-size: 20px; font-weight: bold; color: #555; cursor: pointer; }
+        .modal-close-btn:hover { color: #ff3333; }
+        
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-premium">
+    <div class="logo-box-v4">
+        <div class="logo-icon-v4">CVN</div>
+        <h1 class="logo-text-v4">Hệ thống Phân tích & Dự đoán Vietlott</h1>
+    </div>
+    <div class="author">Biểu đồ xu hướng Ma trận chuẩn hóa Ngày mở thưởng thực tế by CVN</div>
+</div>
+
+<div class="section-title">Phần 1.1: Cổng theo dõi trực tiếp Trang Chủ Kết Quả Điện Toán</div>
+<div class="live-web-container">
+    <div class="web-frame-card" style="flex: 1;">
+        <div class="frame-title">🔴 Trực tiếp Hệ Thống KETQUADIENTOAN.COM</div>
+        <iframe src="https://www.ketquadientoan.com/"></iframe>
+    </div>
+</div>
+
+<div class="section-title">Phần 1.2: Kết Quả Chi Tiết Các Kỳ</div>
+<div class="grid-3">
+    <div class="panel-card">
+        <div class="frame-title" style="color: #a8ff78;">🟢 Tất cả kết quả 535</div>
+        <iframe class="live-iframe-embed" src="https://www.ketquadientoan.com/tat-ca-ky-xo-so-lotto-535.html"></iframe>
+    </div>
+    <div class="panel-card">
+        <div class="frame-title" style="color: #ff4d4d;">🔴 Tất cả kết quả 645</div>
+        <iframe class="live-iframe-embed" src="https://www.ketquadientoan.com/tat-ca-ky-xo-so-mega-6-45.html"></iframe>
+    </div>
+    <div class="panel-card">
+        <div class="frame-title" style="color: #ffdb4d;">🟠 Tất cả kết quả 655</div>
+        <iframe class="live-iframe-embed" src="https://www.ketquadientoan.com/tat-ca-ky-xo-so-power-655.html"></iframe>
+    </div>
+</div>
+
+<div class="section-title">Phần 2: Lưới ma trận xu hướng phân bố số (Có Hàng Thử Nghiệm Số Dự Đoán)</div>
+<div class="matrix-container">
+    <div class="matrix-block">
+        <div class="matrix-header-zone">
+            <div class="matrix-title-sub" style="color: #006633;">📈 Lưới xu hướng Lotto 5/35</div>
+            <div class="action-header-group">
+                <button class="btn-quick-predict" onclick="openPredictModal('lotto')">🔮 Dự đoán nhanh</button>
+                <label class="file-select-label">
+                    📂 Chọn file data_535.txt
+                    <input type="file" class="file-input-hidden" onchange="handleFileSelect(event, 'lotto')">
+                </label>
+            </div>
+        </div>
+        <table class="matrix-table" id="matrix-lotto-combined"></table>
+    </div>
+    
+    <div class="matrix-block">
+        <div class="matrix-header-zone">
+            <div class="matrix-title-sub" style="color: #cc0000;">📈 Lưới xu hướng Mega 6/45</div>
+            <div class="action-header-group">
+                <button class="btn-quick-predict" onclick="openPredictModal('mega')">🔮 Dự đoán nhanh</button>
+                <label class="file-select-label">
+                    📂 Chọn file data_645.txt
+                    <input type="file" class="file-input-hidden" onchange="handleFileSelect(event, 'mega')">
+                </label>
+            </div>
+        </div>
+        <table class="matrix-table" id="matrix-mega"></table>
+    </div>
+    
+    <div class="matrix-block">
+        <div class="matrix-header-zone">
+            <div class="matrix-title-sub" style="color: #cc5200;">📈 Lưới xu hướng Power 6/55</div>
+            <div class="action-header-group">
+                <button class="btn-quick-predict" onclick="openPredictModal('power')">🔮 Dự đoán nhanh</button>
+                <label class="file-select-label">
+                    📂 Chọn file data_655.txt
+                    <input type="file" class="file-input-hidden" onchange="handleFileSelect(event, 'power')">
+                </label>
+            </div>
+        </div>
+        <table class="matrix-table" id="matrix-power"></table>
+    </div>
+</div>
+
+<div class="section-title">Phần 3: Trung tâm phân tích & Dự đoán thuật toán</div>
+<div class="predict-panel" id="bottom-predict-panel"></div>
+
+<div class="modal-overlay" id="predictModal" onclick="closePredictModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <span class="modal-close-btn" onclick="closePredictModal(true)">&times;</span>
+        <div id="modal-card-placeholder"></div>
+    </div>
+</div>
+
+<script>
+    let currentLottoHistory = JSON.parse(localStorage.getItem('cvn_lotto_date_full')) || [];
+    let currentMegaHistory = JSON.parse(localStorage.getItem('cvn_mega_date_full')) || [];
+    let currentPowerHistory = JSON.parse(localStorage.getItem('cvn_power_date_full')) || [];
+
+    let testLottoLine = { main: [], spec: null };
+    let testMegaLine = { main: [] };
+    let testPowerLine = { main: [], spec: null };
+
+    const predictCardsHTML = {
+        lotto: `
+        <div class="predict-card" id="card-predict-lotto">
+            <h3 style="color: #006633; margin:0; font-size:12px;">🔮 Dự đoán Lotto 5/35</h3>
+            <div class="lock-numbers-title">📌 Khóa số nuôi</div>
+            <div class="lock-inputs-container">
+                <input type="text" class="lock-input" id="lock-lotto-1" placeholder="--">
+                <input type="text" class="lock-input" id="lock-lotto-2" placeholder="--">
+                <input type="text" class="lock-input" id="lock-lotto-3" placeholder="--">
+                <input type="text" class="lock-input" id="lock-lotto-4" placeholder="--">
+                <input type="text" class="lock-input" id="lock-lotto-5" placeholder="--">
+                <span style="font-weight:bold;color:#999;font-size:10px;">|</span>
+                <input type="text" class="lock-input spec-input" id="lock-lotto-spec" placeholder="ĐB">
+            </div>
+            <div class="predicted-rows-container" id="pred-lotto-container"><span style="color:#aaa; font-style:italic; font-size:11px; text-align:center;">Bấm nút tính toán 5 dãy...</span></div>
+            <button class="lotto-btn btn-predict-action" onclick="runPredictLotto()">Tính toán bộ số</button>
+        </div>`,
+        mega: `
+        <div class="predict-card" id="card-predict-mega">
+            <h3 style="color: #cc0000; margin:0; font-size:12px;">🔮 Dự đoán Mega 6/45</h3>
+            <div class="lock-numbers-title">📌 Khóa số nuôi</div>
+            <div class="lock-inputs-container">
+                <input type="text" class="lock-input" id="lock-mega-1" placeholder="--">
+                <input type="text" class="lock-input" id="lock-mega-2" placeholder="--">
+                <input type="text" class="lock-input" id="lock-mega-3" placeholder="--">
+                <input type="text" class="lock-input" id="lock-mega-4" placeholder="--">
+                <input type="text" class="lock-input" id="lock-mega-5" placeholder="--">
+                <input type="text" class="lock-input" id="lock-mega-6" placeholder="--">
+            </div>
+            <div class="predicted-rows-container" id="pred-mega-container"><span style="color:#aaa; font-style:italic; font-size:11px; text-align:center;">Bấm nút tính toán 5 dãy...</span></div>
+            <button class="mega-btn btn-predict-action" onclick="runPredict('mega', 6, 45, '#cc0000', false)">Tính toán bộ số</button>
+        </div>`,
+        power: `
+        <div class="predict-card" id="card-predict-power">
+            <h3 style="color: #cc5200; margin:0; font-size:12px;">🔮 Dự đoán Power 6/55</h3>
+            <div class="lock-numbers-title">📌 Khóa số nuôi</div>
+            <div class="lock-inputs-container">
+                <input type="text" class="lock-input" id="lock-power-1" placeholder="--">
+                <input type="text" class="lock-input" id="lock-power-2" placeholder="--">
+                <input type="text" class="lock-input" id="lock-power-3" placeholder="--">
+                <input type="text" class="lock-input" id="lock-power-4" placeholder="--">
+                <input type="text" class="lock-input" id="lock-power-5" placeholder="--">
+                <input type="text" class="lock-input" id="lock-power-6" placeholder="--">
+                <span style="font-weight:bold;color:#999;font-size:10px;">|</span>
+                <input type="text" class="lock-input spec-input" id="lock-power-spec" placeholder="ĐB">
+            </div>
+            <div class="predicted-rows-container" id="pred-power-container"><span style="color:#aaa; font-style:italic; font-size:11px; text-align:center;">Bấm nút tính toán 5 dãy...</span></div>
+            <button class="power-btn btn-predict-action" onclick="runPredict('power', 6, 55, '#cc5200', true)">Tính toán bộ số</button>
+        </div>`
+    };
+
+    function setupPredictPanel() {
+        document.getElementById('bottom-predict-panel').innerHTML = `
+            <div class="predict-grid">
+                ${predictCardsHTML.lotto}
+                ${predictCardsHTML.mega}
+                ${predictCardsHTML.power}
+            </div>`;
+    }
+
+    function openPredictModal(type) {
+        const overlay = document.getElementById('predictModal');
+        const placeholder = document.getElementById('modal-card-placeholder');
+        let targetCardId = `card-predict-${type}`;
+        let targetCard = document.getElementById(targetCardId);
+        
+        placeholder.innerHTML = '';
+        if(targetCard) { 
+            placeholder.appendChild(targetCard); 
+            targetCard.style.display = 'flex';
+        }
+        overlay.style.display = 'flex';
+    }
+
+    function closePredictModal(event) {
+        const overlay = document.getElementById('predictModal');
+        if (event.target === overlay || event === true) {
+            let placeholder = document.getElementById('modal-card-placeholder');
+            if(placeholder.firstElementChild) {
+                let card = placeholder.firstElementChild;
+                let grid = document.querySelector('.predict-grid');
+                
+                card.style.display = 'flex';
+                if(card.id.includes('lotto')) { grid.insertBefore(card, grid.children[0]); }
+                else if(card.id.includes('mega')) { grid.insertBefore(card, grid.children[1]); }
+                else { grid.appendChild(card); }
+            }
+            overlay.style.display = 'none';
+        }
+    }
+
+    function handleFileSelect(event, type) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const rawText = e.target.result;
+            const lines = rawText.split('\n');
+            let parsedRows = [];
+            lines.forEach(line => {
+                if(!line.trim()) return;
+                let parts = line.split('|');
+                if(parts.length >= 2) {
+                    let dateStr = parts[0].trim();
+                    let mainRaw = parts[1].trim().split(/\s+/);
+                    let main = mainRaw.map(n => parseInt(n)).filter(n => !isNaN(n));
+                    let rowObj = { date: dateStr, main: main };
+                    if(parts[2]) {
+                        let specNum = parseInt(parts[2].trim());
+                        if(!isNaN(specNum)) rowObj.spec = specNum;
+                    }
+                    if (dateStr && main.length >= 5) parsedRows.push(rowObj);
+                }
+            });
+            if(parsedRows.length > 30) parsedRows = parsedRows.slice(0, 30);
+            if (type === 'lotto') { currentLottoHistory = parsedRows; localStorage.setItem('cvn_lotto_date_full', JSON.stringify(parsedRows)); renderLottoCombinedMatrix(); } 
+            else if (type === 'mega') { currentMegaHistory = parsedRows; localStorage.setItem('cvn_mega_date_full', JSON.stringify(parsedRows)); renderNormalMatrix('matrix-mega', currentMegaHistory, 45, 'hit-mega', testMegaLine); } 
+            else if (type === 'power') { currentPowerHistory = parsedRows; localStorage.setItem('cvn_power_date_full', JSON.stringify(parsedRows)); renderPowerMatrix(); }
+        };
+        reader.readAsText(file);
+    }
+
+    function renderNormalMatrix(tableId, dataRows, maxNum, hitClass, testLineObj) {
+        const table = document.getElementById(tableId);
+        let headerHtml = '<tr><th>Ngày mở thưởng</th>';
+        for(let i=1; i<=maxNum; i++) { headerHtml += `<th>${i<10?'0'+i:i}</th>`; }
+        headerHtml += '</tr>';
+        
+        let testRowHtml = `<tr class="test-row-style"><td class="date-cell">🧪 THỬ NGHIỆM</td>`;
+        for(let col=1; col<=maxNum; col++) {
+            if(testLineObj && testLineObj.main.includes(col)) { testRowHtml += `<td><div class="matrix-ball-3d hit-test">${col<10?'0'+col:col}</div></td>`; }
+            else { testRowHtml += `<td></td>`; }
+        }
+        testRowHtml += '</tr>';
+
+        if(dataRows.length === 0) { table.innerHTML = headerHtml + testRowHtml + "<tr><td colspan='"+(maxNum+1)+"' style='color:#ffa500;padding:8px;font-size:11px;'>⚠️ Đại ca vui lòng chọn file data kết quả phía trên để tải dữ liệu ma trận xu hướng.</td></tr>"; return; }
+        
+        let bodyHtml = '';
+        dataRows.forEach(row => {
+            bodyHtml += `<tr><td class="date-cell">${row.date}</td>`;
+            for(let col=1; col<=maxNum; col++) {
+                if(row.main.includes(col)) { bodyHtml += `<td><div class="matrix-ball-3d ${hitClass}">${col<10?'0'+col:col}</div></td>`; }
+                else { bodyHtml += `<td></td>`; }
+            }
+            bodyHtml += '</tr>';
+        });
+        table.innerHTML = headerHtml + testRowHtml + bodyHtml;
+    }
+
+    function renderLottoCombinedMatrix() {
+        const table = document.getElementById('matrix-lotto-combined');
+        let headerHtml = '<tr><th>Ngày mở thưởng</th>';
+        for(let i=1; i<=35; i++) { headerHtml += `<th>${i<10?'0'+i:i}</th>`; }
+        headerHtml += '<th class="divider-cell"></th>';
+        for(let j=1; j<=12; j++) { headerHtml += `<th>${j<10?'0'+j:j}</th>`; }
+        headerHtml += '</tr>';
+        
+        let testRowHtml = `<tr class="test-row-style"><td class="date-cell">🧪 THỬ NGHIỆM</td>`;
+        for(let col=1; col<=35; col++) {
+            if(testLottoLine.main.includes(col)) { testRowHtml += `<td><div class="matrix-ball-3d hit-test">${col<10?'0'+col:col}</div></td>`; }
+            else { testRowHtml += `<td></td>`; }
+        }
+        testRowHtml += '<td class="divider-cell"></td>';
+        for(let colSpec=1; colSpec<=12; colSpec++) {
+            if(testLottoLine.spec === colSpec) { testRowHtml += `<td><div class="matrix-ball-3d hit-spec-orange">${colSpec<10?'0'+colSpec:colSpec}</div></td>`; }
+            else { testRowHtml += `<td></td>`; }
+        }
+        testRowHtml += '</tr>';
+
+        if(currentLottoHistory.length === 0) { table.innerHTML = headerHtml + testRowHtml + "<tr><td colspan='49' style='color:#ffa500;padding:8px;font-size:11px;'>⚠️ Đại ca vui lòng tải file data kết quả.</td></tr>"; return; }
+        
+        let bodyHtml = '';
+        currentLottoHistory.forEach(row => {
+            bodyHtml += `<tr><td class="date-cell">${row.date}</td>`;
+            for(let col=1; col<=35; col++) {
+                if(row.main.includes(col)) { bodyHtml += `<td><div class="matrix-ball-3d hit-lotto">${col<10?'0'+col:col}</div></td>`; }
+                else { bodyHtml += `<td></td>`; }
+            }
+            bodyHtml += '<td class="divider-cell"></td>';
+            for(let colSpec=1; colSpec<=12; colSpec++) {
+                if(row.spec === colSpec) { bodyHtml += `<td><div class="matrix-ball-3d hit-spec-orange">${colSpec<10?'0'+colSpec:colSpec}</div></td>`; }
+                else { bodyHtml += `<td></td>`; }
+            }
+            bodyHtml += '</tr>';
+        });
+        table.innerHTML = headerHtml + testRowHtml + bodyHtml;
+    }
+
+    function renderPowerMatrix() {
+        const table = document.getElementById('matrix-power');
+        let headerHtml = '<tr><th>Ngày mở thưởng</th>';
+        for(let i=1; i<=55; i++) { headerHtml += `<th>${i<10?'0'+i:i}</th>`; }
+        headerHtml += '</tr>';
+        
+        let testRowHtml = `<tr class="test-row-style"><td class="date-cell">🧪 THỬ NGHIỆM</td>`;
+        for(let col=1; col<=55; col++) {
+            if(testPowerLine.main.includes(col)) { testRowHtml += `<td><div class="matrix-ball-3d hit-test">${col<10?'0'+col:col}</div></td>`; }
+            else if(testPowerLine.spec === col) { testRowHtml += `<td><div class="matrix-ball-3d hit-spec-orange">${col<10?'0'+col:col}</div></td>`; }
+            else { testRowHtml += `<td></td>`; }
+        }
+        testRowHtml += '</tr>';
+
+        if(currentPowerHistory.length === 0) { table.innerHTML = headerHtml + testRowHtml + "<tr><td colspan='56' style='color:#ffa500;padding:8px;font-size:11px;'>⚠️ Đại ca vui lòng tải file data kết quả.</td></tr>"; return; }
+        
+        let bodyHtml = '';
+        currentPowerHistory.forEach(row => {
+            bodyHtml += `<tr><td class="date-cell">${row.date}</td>`;
+            for(let col=1; col<=55; col++) {
+                if(row.main.includes(col)) { bodyHtml += `<td><div class="matrix-ball-3d hit-power">${col<10?'0'+col:col}</div></td>`; }
+                else if(row.spec === col) { bodyHtml += `<td><div class="matrix-ball-3d hit-spec-orange">${col<10?'0'+col:col}</div></td>`; }
+                else { bodyHtml += `<td></td>`; }
+            }
+            bodyHtml += '</tr>';
+        });
+        table.innerHTML = headerHtml + testRowHtml + bodyHtml;
+    }
+
+    function getSmartPredictedSet(totalCount, maxRange, idPrefix) {
+        let fixedSet = [];
+        for (let i = 1; i <= totalCount; i++) {
+            let el = document.getElementById(`${idPrefix}-${i}`);
+            if(el) {
+                let val = el.value.trim();
+                if (val !== "") { let num = parseInt(val); if (!isNaN(num) && num >= 1 && num <= maxRange) { fixedSet.push(String(num).padStart(2, '0')); } }
+            }
+        }
+        let resultSet = [...fixedSet];
+        while (resultSet.length < totalCount) {
+            let r = Math.floor(Math.random() * maxRange) + 1;
+            let rStr = String(r).padStart(2, '0');
+            if (!resultSet.includes(rStr)) { resultSet.push(rStr); }
+        }
+        return resultSet.sort((x, y) => parseInt(x) - parseInt(y));
+    }
+
+    function tryOnMatrix(type, mainNumbers, specNumber) {
+        let nums = mainNumbers.split(',').map(n => parseInt(n));
+        let s = specNumber ? parseInt(specNumber) : null;
+        if(type === 'lotto') { testLottoLine = { main: nums, spec: s }; renderLottoCombinedMatrix(); }
+        else if(type === 'mega') { testMegaLine = { main: nums }; renderNormalMatrix('matrix-mega', currentMegaHistory, 45, 'hit-mega', testMegaLine); }
+        else if(type === 'power') { testPowerLine = { main: nums, spec: s }; renderPowerMatrix(); }
+    }
+
+    function clearTestMatrix(type) {
+        if(type === 'lotto') { testLottoLine = { main: [], spec: null }; renderLottoCombinedMatrix(); }
+        else if(type === 'mega') { testMegaLine = { main: [] }; renderNormalMatrix('matrix-mega', currentMegaHistory, 45, 'hit-mega', testMegaLine); }
+        else if(type === 'power') { testPowerLine = { main: [], spec: null }; renderPowerMatrix(); }
+    }
+
+    function runPredict(p, c, m, col, hasSpec) {
+        const container = document.getElementById(`pred-${p}-container`);
+        container.innerHTML = '<b style="text-align:center;">Đang phân tích...</b>';
+        setTimeout(() => { 
+            container.innerHTML = ''; const labels = ['A', 'B', 'C', 'D', 'E'];
+            let fixedSpec = "";
+            if(hasSpec) {
+                let specVal = document.getElementById(`lock-${p}-spec`).value.trim();
+                if(specVal !== "") { let sNum = parseInt(specVal); if(!isNaN(sNum) && sNum >= 1 && sNum <= m) fixedSpec = String(sNum).padStart(2, '0'); }
+            }
+            for(let i = 0; i < 5; i++) {
+                let rowDiv = document.createElement('div'); rowDiv.className = 'predict-row';
+                let currentSet = getSmartPredictedSet(c, m, `lock-${p}`);
+                let s = hasSpec ? (fixedSpec !== "" ? fixedSpec : String(Math.floor(Math.random() * m) + 1).padStart(2, '0')) : null;
+                
+                let rowInner = `<div class="predict-row-label">${labels[i]}</div>`;
+                currentSet.forEach(num => { rowInner += `<div class="ball-predict" style="background-color: ${col}">${num}</div>`; });
+                if(hasSpec) { rowInner += `<div style="color:#aaa; font-weight:bold;">|</div><div class="ball-predict" style="background-color: #cc0000">${s}</div>`; }
+                
+                rowInner += `<button class="action-inline-btn btn-try" onclick="tryOnMatrix('${p}', '${currentSet.join(',')}', '${s||""}')">Thử</button>`;
+                rowInner += `<button class="action-inline-btn btn-del" onclick="clearTestMatrix('${p}')">Xoá</button>`;
+                
+                rowDiv.innerHTML = rowInner;
+                container.appendChild(rowDiv);
+            }
+        }, 200);
+    }
+
+    function runPredictLotto() {
+        const container = document.getElementById('pred-lotto-container');
+        container.innerHTML = '<b style="text-align:center;">Đang phân tích...</b>';
+        setTimeout(() => {
+            container.innerHTML = ''; const labels = ['A', 'B', 'C', 'D', 'E'];
+            let fixedLottoSpec = "";
+            let lSpecVal = document.getElementById('lock-lotto-spec').value.trim();
+            if(lSpecVal !== "") { let sNum = parseInt(lSpecVal); if(!isNaN(sNum) && sNum >= 1 && sNum <= 12) fixedLottoSpec = String(sNum).padStart(2, '0'); }
+            for(let i = 0; i < 5; i++) {
+                let rowDiv = document.createElement('div'); rowDiv.className = 'predict-row';
+                let currentSet = getSmartPredictedSet(5, 35, 'lock-lotto');
+                let sNum = fixedLottoSpec !== "" ? fixedLottoSpec : String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
+                
+                let rowInner = `<div class="predict-row-label">${labels[i]}</div>`;
+                currentSet.forEach(num => { rowInner += `<div class="ball-predict" style="background-color: #006633">${num}</div>`; });
+                rowInner += `<div style="color:#aaa; font-weight:bold;">|</div><div class="ball-predict" style="background-color: #ff7300">${sNum}</div>`;
+                
+                rowInner += `<button class="action-inline-btn btn-try" onclick="tryOnMatrix('lotto', '${currentSet.join(',')}', '${sNum}')">Thử</button>`;
+                rowInner += `<button class="action-inline-btn btn-del" onclick="clearTestMatrix('lotto')">Xoá</button>`;
+                
+                rowDiv.innerHTML = rowInner;
+                container.appendChild(rowDiv);
+            }
+        }, 200);
+    }
+
+    window.onload = function() { 
+        setupPredictPanel();
+        renderLottoCombinedMatrix();
+        renderNormalMatrix('matrix-mega', currentMegaHistory, 45, 'hit-mega', testMegaLine);
+        renderPowerMatrix();
+    };
+</script>
+</body>
+</html>
