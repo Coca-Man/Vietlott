@@ -22,21 +22,28 @@ const configs = [
 
 async function crawlType(config) {
     try {
+        // Giả lập Headers giống hệt trình duyệt thật để không bị chặn mạng
         const response = await axios.get(config.url, {
-            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+            headers: { 
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+                'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+            },
+            timeout: 15000 // Chờ tối đa 15 giây
         });
+        
         const $ = cheerio.load(response.data);
         let outputLines = [];
 
         $('table.table-hover tbody tr').each((index, element) => {
-            // Giữ nguyên văn ngày tháng có cả Thứ (Ví dụ: "T7, 04/07/2026")
             let dateText = $(element).find('td').eq(0).text().trim();
             if (!dateText || dateText.includes("Ngày")) return;
 
             let mainNumbers = [];
             let specNumber = "";
 
-            // Phân tách chính xác bóng đỏ (chính) và bóng cam (đặc biệt)
             $(element).find('span.ball').each((i, ball) => {
                 let num = $(ball).text().trim();
                 if (num) mainNumbers.push(String(parseInt(num)).padStart(2, '0'));
@@ -51,15 +58,12 @@ async function crawlType(config) {
                 let finalLine = "";
                 
                 if (config.type === 'lotto') {
-                    // Lotto 5/35: Thứ, Ngày/Tháng/Năm | 5 số chính | 1 số đặc biệt
                     let mainStr = mainNumbers.slice(0, 5).join(' ');
                     finalLine = `${dateText} | ${mainStr} | ${specNumber}`;
                 } else if (config.type === 'power') {
-                    // Power 6/55: Thứ, Ngày/Tháng/Năm | 6 số chính | 1 số đặc biệt
                     let mainStr = mainNumbers.slice(0, 6).join(' ');
                     finalLine = `${dateText} | ${mainStr} | ${specNumber}`;
                 } else if (config.type === 'mega') {
-                    // Mega 6/45: Thứ, Ngày/Tháng/Năm | 6 số chính
                     let mainStr = mainNumbers.slice(0, 6).join(' ');
                     finalLine = `${dateText} | ${mainStr}`;
                 }
@@ -72,9 +76,12 @@ async function crawlType(config) {
             let limitedLines = outputLines.slice(0, 60);
             fs.writeFileSync(config.file, limitedLines.join('\n'), 'utf8');
             console.log(`[OK] Đã cấu trúc chuẩn xác file: ${config.file}`);
+        } else {
+            console.log(`[CẢNH BÁO] Không tìm thấy dữ liệu phù hợp cấu trúc cho: ${config.file}`);
         }
     } catch (error) {
-        console.error(`[LỖI] Không thể cào dữ liệu từ ${config.url}:`, error.message);
+        console.error(`[BỎ QUA LỖI] Không thể kết nối đến ${config.url}:`, error.message);
+        // Tránh làm sập tiến trình GitHub bằng cách không ném lỗi ra ngoài
     }
 }
 
@@ -82,6 +89,7 @@ async function start() {
     for (let config of configs) {
         await crawlType(config);
     }
+    console.log("Hoàn thành tiến trình xử lý dữ liệu.");
 }
 
 start();
