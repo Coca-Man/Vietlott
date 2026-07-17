@@ -1024,11 +1024,17 @@
         }
 
         window.onload = function() { 
-            localStorage.removeItem('raw_data_lotto');
-            localStorage.removeItem('raw_data_mega');
-            localStorage.removeItem('raw_data_power');
-            
+            // KHÔNG XÓA NỮA: Tự động kiểm tra và nạp lại dữ liệu cũ đã lưu khi Đại ca F5 trang web
+            let savedLotto = localStorage.getItem('raw_data_lotto');
+            let savedMega = localStorage.getItem('raw_data_mega');
+            let savedPower = localStorage.getItem('raw_data_power');
+
+            if (savedLotto) loadedFileNames.lotto = "Dữ liệu đang lưu (Host)";
+            if (savedMega) loadedFileNames.mega = "Dữ liệu đang lưu (Host)";
+            if (savedPower) loadedFileNames.power = "Dữ liệu đang lưu (Host)";
+
             setupPredictPanel();
+            reloadCurrentMatrix(); // Tự động vẽ lại biểu đồ ngay lập tức
         };
     </script>
 </body>
