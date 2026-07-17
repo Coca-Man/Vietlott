@@ -2,10 +2,9 @@ name: Vietlott Auto Crawl
 
 on:
   schedule:
-    - cron: '30 6,14 * * *' # Chạy tự động vào lúc 13h30 và 21h30 (Giờ Việt Nam) hàng ngày
-  workflow_dispatch: # Cho phép Đại ca bấm nút chạy thủ công bất kỳ lúc nào
+    - cron: '30 6,14 * * *'
+  workflow_dispatch:
 
-# CẤP QUYỀN ĐỂ ROBOT CÓ THỂ GHI ĐÈ VÀ ĐẨY FILE TEXT LÊN HOST ONLINE
 permissions:
   contents: write
 
@@ -15,13 +14,11 @@ jobs:
     steps:
       - name: Checkout mã nguồn
         uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }} # Cấp mã định danh chính thống để có quyền Push
 
       - name: Cài đặt Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
 
       - name: Cài đặt thư viện cào dữ liệu
         run: npm install axios cheerio
@@ -34,6 +31,4 @@ jobs:
           git config --global user.name "GitHub Action Bot"
           git config --global user.email "action@github.com"
           git add 535.txt 645.txt 655.txt
-          
-          # Kiểm tra xem có thay đổi mới không, nếu có thì mới Commit và Push lên host với Token xác thực
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Robot tự động cập nhật kết quả mới" && git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Robot tự động cập nhật kết quả mới" && git push origin HEAD:main)
