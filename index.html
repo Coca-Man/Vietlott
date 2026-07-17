@@ -121,7 +121,6 @@
             height: calc(100vh - 45px);
         }
         
-        /* TĂNG CHIỀU RỘNG SIDEBAR LÊN 360PX ĐỂ ĐỦ ĐỘ RỘNG HIỂN THỊ THẲNG HÀNG */
         .sidebar { 
             width: 360px; 
             background: #13131a; 
@@ -418,11 +417,11 @@
                 <div class="upload-container-layout">
                     <div class="file-upload-box" onclick="document.getElementById('fileInput').click()">
                         <span style="font-size: 1rem;">📄</span>
-                        <p id="uploadStatus">Chọn File Lotto 5/35 (.txt)</p>
+                        <p id="uploadStatus">Đang kiểm tra host...</p>
                         <input type="file" id="fileInput" accept=".txt" style="display:none" onchange="handleFileSelect(event)">
                     </div>
-                    <button class="btn-quick-update" onclick="document.getElementById('multiFileInput').click()">CẬP NHẬT NHANH</button>
-                    <input type="file" id="multiFileInput" accept=".txt" multiple style="display:none" onchange="handleMultiFileSelect(event)">
+                    <!-- NÚT NÀY BÂY GIỜ SẼ TỰ ĐỘNG ĐỒNG BỘ TỪ HOST ONLINE -->
+                    <button class="btn-quick-update" onclick="autoFetchFromHost()">ĐỒNG BỘ HOST</button>
                 </div>
             </div>
             <div class="panel" style="display: flex; flex-direction: column; flex: 1; min-height: 0; padding: 4px; height: 100%;">
@@ -473,7 +472,6 @@
         </div>
     </div>
 
-    <!-- Cấu trúc Modal Soạn tin nhắn -->
     <div class="modal-overlay" id="composeModal">
         <div class="modal-box">
             <div class="modal-title">
@@ -491,16 +489,8 @@
     <script>
         let currentType = 'lotto';
         let currentView = 'matrix';
-        let loadedFileNames = {
-            lotto: "Chọn File Lotto 5/35 (.txt)",
-            mega: "Chọn File Mega 6/45 (.txt)",
-            power: "Chọn File Power 6/55 (.txt)"
-        };
-        let testSets = {
-            lotto: { main: [], spec: null },
-            mega: { main: [] },
-            power: { main: [], spec: null }
-        };
+        let loadedFileNames = { lotto: "535.txt (Host)", mega: "645.txt (Host)", power: "655.txt (Host)" };
+        let testSets = { lotto: { main: [], spec: null }, mega: { main: [] }, power: { main: [], spec: null } };
         let activePredictions = [];
 
         function getHeatmapColor(count, maxCount) {
@@ -522,56 +512,53 @@
             return `rgb(${r}, ${g}, ${b})`;
         }
 
-        function handleMultiFileSelect(e) {
-            let files = e.target.files;
-            if (files.length === 0) return;
+        // TỰ ĐỘNG TẢI FILE TỪ HOST ONLINE KHI LOAD TRANG
+        async function autoFetchFromHost() {
+            let config = [
+                { type: 'lotto', file: '535.txt' },
+                { type: 'mega', file: '645.txt' },
+                { type: 'power', file: '655.txt' }
+            ];
+            let successList = [];
 
-            let loadedTypes = [];
+            for (let item of config) {
+                try {
+                    let response = await fetch(item.file);
+                    if (response.ok) {
+                        let text = await response.text();
+                        parseAndSaveText(item.type, text);
+                        successList.push(item.type.toUpperCase());
+                    }
+                } catch (err) {
+                    console.log("Không thể tải tự động file: " + item.file);
+                }
+            }
 
-            Array.from(files).forEach(file => {
-                let filename = file.name.toLowerCase();
-                let targetType = '';
-                
-                if (filename.includes('535') || filename === '535.txt') targetType = 'lotto';
-                else if (filename.includes('645') || filename === '645.txt') targetType = 'mega';
-                else if (filename.includes('655') || filename === '655.txt') targetType = 'power';
+            if (successList.length > 0) {
+                document.getElementById('uploadStatus').innerText = loadedFileNames[currentType];
+                reloadCurrentMatrix();
+            } else {
+                // Nếu chạy offline hoàn toàn chưa có bộ nhớ, báo Đại ca chọn file thủ công
+                if(!localStorage.getItem('raw_data_lotto')) {
+                    document.getElementById('uploadStatus').innerText = "Vui lòng chọn file thủ công";
+                }
+            }
+        }
 
-                if (targetType) {
-                    let reader = new FileReader();
-                    reader.onload = function(evt) {
-                        let text = evt.target.result;
-                        let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-                        let parsedRows = [];
-                        lines.forEach(line => {
-                            let parts = line.split('|').map(p => p.trim());
-                            if(parts.length >= 2) {
-                                let dateStr = parts[0];
-                                let mainNums = parts[1].split(/\s+/).map(n => String(parseInt(n)).padStart(2, '0'));
-                                let specNum = parts[2] ? String(parseInt(parts[2])).padStart(2, '0') : null;
-                                parsedRows.push({ date: dateStr, main: mainNums, spec: specNum });
-                            }
-                        });
-                        let limitedRows = parsedRows.slice(0, 60);
-                        localStorage.setItem('raw_data_' + targetType, JSON.stringify(limitedRows));
-                        loadedFileNames[targetType] = file.name;
-                        
-                        if (targetType === currentType) {
-                            document.getElementById('uploadStatus').innerText = file.name;
-                            reloadCurrentMatrix();
-                        }
-                    };
-                    reader.readAsText(file);
-                    loadedTypes.push(targetType.toUpperCase());
+        function parseAndSaveText(targetType, text) {
+            let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            let parsedRows = [];
+            lines.forEach(line => {
+                let parts = line.split('|').map(p => p.trim());
+                if(parts.length >= 2) {
+                    let dateStr = parts[0];
+                    let mainNums = parts[1].split(/\s+/).map(n => String(parseInt(n)).padStart(2, '0'));
+                    let specNum = parts[2] ? String(parseInt(parts[2])).padStart(2, '0') : null;
+                    parsedRows.push({ date: dateStr, main: mainNums, spec: specNum });
                 }
             });
-
-            setTimeout(() => {
-                if (loadedTypes.length > 0) {
-                    alert("Đã đồng bộ thành công các loại hình: " + loadedTypes.join(', ') + " thưa Đại ca!");
-                } else {
-                    alert("Không tìm thấy file hợp lệ! Đại ca hãy chọn các file chứa tên '535', '645', hoặc '655' nhé.");
-                }
-            }, 300);
+            let limitedRows = parsedRows.slice(0, 60);
+            localStorage.setItem('raw_data_' + targetType, JSON.stringify(limitedRows));
         }
 
         function switchType(type) {
@@ -579,7 +566,10 @@
             document.querySelectorAll('.sidebar .tab-btn').forEach(btn => btn.classList.remove('active'));
             let idx = type === 'lotto' ? 0 : (type === 'mega' ? 1 : 2);
             document.querySelectorAll('.sidebar .tab-btn')[idx].classList.add('active');
-            document.getElementById('uploadStatus').innerText = loadedFileNames[type];
+            
+            let dataExist = localStorage.getItem('raw_data_' + type);
+            document.getElementById('uploadStatus').innerText = dataExist ? loadedFileNames[type] : "Chưa có dữ liệu";
+            
             let sideIframe = document.getElementById('sidebarResultIframe');
             if(type === 'lotto') sideIframe.src = "https://www.ketquadientoan.com/tat-ca-ky-xo-so-lotto-535.html";
             else if(type === 'mega') sideIframe.src = "https://www.ketquadientoan.com/tat-ca-ky-xo-so-mega-6-45.html";
@@ -606,24 +596,10 @@
         function handleFileSelect(e) {
             let file = e.target.files[0];
             if(!file) return;
-            loadedFileNames[currentType] = file.name;
-            document.getElementById('uploadStatus').innerText = file.name;
             let reader = new FileReader();
             reader.onload = function(evt) {
-                let text = evt.target.result;
-                let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-                let parsedRows = [];
-                lines.forEach(line => {
-                    let parts = line.split('|').map(p => p.trim());
-                    if(parts.length >= 2) {
-                        let dateStr = parts[0];
-                        let mainNums = parts[1].split(/\s+/).map(n => String(parseInt(n)).padStart(2, '0'));
-                        let specNum = parts[2] ? String(parseInt(parts[2])).padStart(2, '0') : null;
-                        parsedRows.push({ date: dateStr, main: mainNums, spec: specNum });
-                    }
-                });
-                let limitedRows = parsedRows.slice(0, 60);
-                localStorage.setItem('raw_data_' + currentType, JSON.stringify(limitedRows));
+                parseAndSaveText(currentType, evt.target.result);
+                document.getElementById('uploadStatus').innerText = file.name;
                 reloadCurrentMatrix();
             };
             reader.readAsText(file);
@@ -640,6 +616,7 @@
         function renderMatrix(rows) {
             let table = document.getElementById('matrixTable');
             table.innerHTML = '';
+            if(rows.length === 0) return;
             let mainCounts = Array(36).fill(0);
             let specCounts = Array(13).fill(0);
             rows.forEach(r => {
@@ -728,6 +705,7 @@
         function renderMegaMatrix(rows) {
             let table = document.getElementById('matrixTable');
             table.innerHTML = '';
+            if(rows.length === 0) return;
             let mainCounts = Array(46).fill(0);
             rows.forEach(r => {
                 r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=45) mainCounts[n]++; });
@@ -787,6 +765,7 @@
         function renderPowerMatrix(rows) {
             let table = document.getElementById('matrixTable');
             table.innerHTML = '';
+            if(rows.length === 0) return;
             let combinedCounts = Array(56).fill(0);
             rows.forEach(r => {
                 r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=55) combinedCounts[n]++; });
@@ -1024,11 +1003,16 @@
         }
 
         window.onload = function() { 
-            localStorage.removeItem('raw_data_lotto');
-            localStorage.removeItem('raw_data_mega');
-            localStorage.removeItem('raw_data_power');
-            
             setupPredictPanel();
+            
+            // Nếu trình duyệt đã có sẵn dữ liệu cũ trong bộ nhớ, vẽ biểu đồ ngay lập tức
+            if(localStorage.getItem('raw_data_lotto')) {
+                document.getElementById('uploadStatus').innerText = loadedFileNames[currentType];
+                reloadCurrentMatrix();
+            }
+            
+            // Gọi lệnh tự động quét file txt từ host online
+            autoFetchFromHost();
         };
     </script>
 </body>
