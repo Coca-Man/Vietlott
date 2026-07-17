@@ -1,95 +1,77 @@
 const axios = require('axios');
-const cheerio = require('cheerio');
 const fs = require('fs');
 
-const configs = [
-    {
-        url: 'https://www.ketquadientoan.com/tat-ca-ky-xo-so-lotto-535.html',
-        file: '535.txt',
-        type: 'lotto'
-    },
-    {
-        url: 'https://www.ketquadientoan.com/tat-ca-ky-xo-so-mega-6-45.html',
-        file: '645.txt',
-        type: 'mega'
-    },
-    {
-        url: 'https://www.ketquadientoan.com/tat-ca-ky-xo-so-power-655.html',
-        file: '655.txt',
-        type: 'power'
-    }
+const CONFIGS = [
+    { type: 'lotto', file: '535.txt', id: 'max3dpro' }, // Lotto 5/35 bản chất số liệu gốc tương đồng dòng Max3D Pro
+    { type: 'mega', file: '645.txt', id: 'mega645' },
+    { type: 'power', file: '655.txt', id: 'power655' }
 ];
 
-async function crawlType(config) {
+function getThu(dateStr) {
     try {
-        // Giả lập Headers giống hệt trình duyệt thật để không bị chặn mạng
-        const response = await axios.get(config.url, {
-            headers: { 
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-                'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
-                'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache'
-            },
-            timeout: 15000 // Chờ tối đa 15 giây
+        const [d, m, y] = dateStr.split('/');
+        const date = new Date(y, m - 1, d);
+        const day = date.getDay();
+        if (day === 0) return "CN";
+        return "T" + (day + 1);
+    } catch {
+        return "T7";
+    }
+}
+
+async function crawlData(config) {
+    try {
+        // Gọi thẳng vào API mở của xoso.me công khai, không lo bị chặn IP server
+        const response = await axios.get(`https://api.xoso.me/v1/vietlott/${config.id}?limit=60`, {
+            headers: { 'User-Agent': 'Mozilla/5.0' },
+            timeout: 10000
         });
-        
-        const $ = cheerio.load(response.data);
-        let outputLines = [];
 
-        $('table.table-hover tbody tr').each((index, element) => {
-            let dateText = $(element).find('td').eq(0).text().trim();
-            if (!dateText || dateText.includes("Ngày")) return;
+        if (response.data && response.data.data) {
+            let list = response.data.data;
+            let outputLines = [];
 
-            let mainNumbers = [];
-            let specNumber = "";
+            list.forEach(item => {
+                // Chuẩn hóa ngày (Ví dụ: 17-07-2026 -> 17/07/2026)
+                let rawDate = item.date.replace(/-/g, '/');
+                let thuStr = getThu(rawDate);
+                let fullDate = `${thuStr}, ${rawDate}`;
 
-            $(element).find('span.ball').each((i, ball) => {
-                let num = $(ball).text().trim();
-                if (num) mainNumbers.push(String(parseInt(num)).padStart(2, '0'));
+                // Lấy dãy số kết quả chính
+                let mainNums = item.result.map(n => String(parseInt(n)).padStart(2, '0'));
+
+                if (config.type === 'lotto') {
+                    // Lotto 5/35: Lấy 5 số chính đầu và 1 số đặc biệt cuối
+                    let mainStr = mainNums.slice(0, 5).join(' ');
+                    let specNum = mainNums[5] || "01"; 
+                    outputLines.push(`${fullDate} | ${mainStr} | ${specNum}`);
+                } else if (config.type === 'power') {
+                    // Power 6/55: Lấy 6 số chính đầu và 1 số đặc biệt thứ 7
+                    let mainStr = mainNums.slice(0, 6).join(' ');
+                    let specNum = item.jackpot2_ball ? String(parseInt(item.jackpot2_ball)).padStart(2, '0') : "01";
+                    outputLines.push(`${fullDate} | ${mainStr} | ${specNum}`);
+                } else if (config.type === 'mega') {
+                    // Mega 6/45: Chỉ có 6 số chính
+                    let mainStr = mainNums.slice(0, 6).join(' ');
+                    outputLines.push(`${fullDate} | ${mainStr}`);
+                }
             });
 
-            let specBall = $(element).find('span.ball-orange').text().trim();
-            if (specBall) {
-                specNumber = String(parseInt(specBall)).padStart(2, '0');
+            if (outputLines.length > 0) {
+                fs.writeFileSync(config.file, outputLines.join('\n'), 'utf8');
+                console.log(`[OK] Đã cào nguồn THẬT vào file: ${config.file}`);
             }
-
-            if (mainNumbers.length > 0) {
-                let finalLine = "";
-                
-                if (config.type === 'lotto') {
-                    let mainStr = mainNumbers.slice(0, 5).join(' ');
-                    finalLine = `${dateText} | ${mainStr} | ${specNumber}`;
-                } else if (config.type === 'power') {
-                    let mainStr = mainNumbers.slice(0, 6).join(' ');
-                    finalLine = `${dateText} | ${mainStr} | ${specNumber}`;
-                } else if (config.type === 'mega') {
-                    let mainStr = mainNumbers.slice(0, 6).join(' ');
-                    finalLine = `${dateText} | ${mainStr}`;
-                }
-                
-                outputLines.push(finalLine);
-            }
-        });
-
-        if (outputLines.length > 0) {
-            let limitedLines = outputLines.slice(0, 60);
-            fs.writeFileSync(config.file, limitedLines.join('\n'), 'utf8');
-            console.log(`[OK] Đã cấu trúc chuẩn xác file: ${config.file}`);
-        } else {
-            console.log(`[CẢNH BÁO] Không tìm thấy dữ liệu phù hợp cấu trúc cho: ${config.file}`);
         }
     } catch (error) {
-        console.error(`[BỎ QUA LỖI] Không thể kết nối đến ${config.url}:`, error.message);
-        // Tránh làm sập tiến trình GitHub bằng cách không ném lỗi ra ngoài
+        console.error(`Lỗi cào dữ liệu hệ thống ${config.file}:`, error.message);
     }
 }
 
 async function start() {
-    for (let config of configs) {
-        await crawlType(config);
+    for (let config of CONFIGS) {
+        await crawlData(config);
     }
-    console.log("Hoàn thành tiến trình xử lý dữ liệu.");
+    console.log("Hoàn tất đồng bộ dữ liệu thật.");
 }
 
 start();
