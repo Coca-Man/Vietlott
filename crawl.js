@@ -6,17 +6,17 @@ const configs = [
     {
         url: 'https://www.ketquadientoan.com/tat-ca-ky-xo-so-lotto-535.html',
         file: '535.txt',
-        isSpec: true
+        type: 'lotto'
     },
     {
         url: 'https://www.ketquadientoan.com/tat-ca-ky-xo-so-mega-6-45.html',
         file: '645.txt',
-        isSpec: false
+        type: 'mega'
     },
     {
         url: 'https://www.ketquadientoan.com/tat-ca-ky-xo-so-power-655.html',
         file: '655.txt',
-        isSpec: true
+        type: 'power'
     }
 ];
 
@@ -28,45 +28,50 @@ async function crawlType(config) {
         const $ = cheerio.load(response.data);
         let outputLines = [];
 
-        // Tìm bảng danh sách kết quả
         $('table.table-hover tbody tr').each((index, element) => {
-            // Lấy cột Ngày quay số
+            // Giữ nguyên văn ngày tháng có cả Thứ (Ví dụ: "T7, 04/07/2026")
             let dateText = $(element).find('td').eq(0).text().trim();
-            if (!dateText || dateText.includes("Ngày")) return; // Bỏ qua dòng tiêu đề nếu có
-            
-            // Định dạng lại ngày bỏ thứ (Ví dụ: "T5, 16/07/2026" -> "16/07/2026")
-            if (dateText.includes(',')) {
-                dateText = dateText.split(',')[1].trim();
-            }
+            if (!dateText || dateText.includes("Ngày")) return;
 
-            // Lấy danh sách các quả bóng số
             let mainNumbers = [];
-            $(element).find('span.ball, span.ball-orange').each((i, ball) => {
+            let specNumber = "";
+
+            // Phân tách chính xác bóng đỏ (chính) và bóng cam (đặc biệt)
+            $(element).find('span.ball').each((i, ball) => {
                 let num = $(ball).text().trim();
                 if (num) mainNumbers.push(String(parseInt(num)).padStart(2, '0'));
             });
 
+            let specBall = $(element).find('span.ball-orange').text().trim();
+            if (specBall) {
+                specNumber = String(parseInt(specBall)).padStart(2, '0');
+            }
+
             if (mainNumbers.length > 0) {
                 let finalLine = "";
-                if (config.isSpec) {
-                    // Loại có số đặc biệt đứng cuối (Lotto 5/35 hoặc Power 6/55)
-                    let specNumber = mainNumbers.pop(); // Lấy quả bóng cuối cùng làm ĐB
-                    let mainStr = mainNumbers.join(' ');
+                
+                if (config.type === 'lotto') {
+                    // Lotto 5/35: Thứ, Ngày/Tháng/Năm | 5 số chính | 1 số đặc biệt
+                    let mainStr = mainNumbers.slice(0, 5).join(' ');
                     finalLine = `${dateText} | ${mainStr} | ${specNumber}`;
-                } else {
-                    // Loại chỉ có số chính (Mega 6/45)
-                    let mainStr = mainNumbers.join(' ');
+                } else if (config.type === 'power') {
+                    // Power 6/55: Thứ, Ngày/Tháng/Năm | 6 số chính | 1 số đặc biệt
+                    let mainStr = mainNumbers.slice(0, 6).join(' ');
+                    finalLine = `${dateText} | ${mainStr} | ${specNumber}`;
+                } else if (config.type === 'mega') {
+                    // Mega 6/45: Thứ, Ngày/Tháng/Năm | 6 số chính
+                    let mainStr = mainNumbers.slice(0, 6).join(' ');
                     finalLine = `${dateText} | ${mainStr}`;
                 }
+                
                 outputLines.push(finalLine);
             }
         });
 
         if (outputLines.length > 0) {
-            // Lấy tối đa 60 kỳ gần nhất để tối ưu ma trận của Đại ca
             let limitedLines = outputLines.slice(0, 60);
             fs.writeFileSync(config.file, limitedLines.join('\n'), 'utf8');
-            console.log(`[OK] Đã cào và lưu thành công file: ${config.file}`);
+            console.log(`[OK] Đã cấu trúc chuẩn xác file: ${config.file}`);
         }
     } catch (error) {
         console.error(`[LỖI] Không thể cào dữ liệu từ ${config.url}:`, error.message);
