@@ -5,6 +5,10 @@ on:
     - cron: '30 6,14 * * *' # Chạy tự động vào lúc 13h30 và 21h30 (Giờ Việt Nam) hàng ngày
   workflow_dispatch: # Cho phép Đại ca bấm nút chạy thủ công bất kỳ lúc nào
 
+# CẤP QUYỀN ĐỂ ROBOT CÓ THỂ GHI ĐÈ VÀ ĐẨY FILE TEXT LÊN HOST ONLINE
+permissions:
+  contents: write
+
 jobs:
   crawl:
     runs-on: ubuntu-latest
