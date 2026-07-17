@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout mã nguồn
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }} # Cấp mã định danh chính thống để có quyền Push
 
       - name: Cài đặt Node.js
         uses: actions/setup-node@v3
@@ -32,4 +34,6 @@ jobs:
           git config --global user.name "GitHub Action Bot"
           git config --global user.email "action@github.com"
           git add 535.txt 645.txt 655.txt
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Robot tự động cập nhật kết quả mới" && git push)
+          
+          # Kiểm tra xem có thay đổi mới không, nếu có thì mới Commit và Push lên host với Token xác thực
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Robot tự động cập nhật kết quả mới" && git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main)
