@@ -504,6 +504,88 @@
         .admin-table th { background: #1c1c24; color: #00f2fe; padding: 4px; border: 1px solid #2d2d3d; }
         .admin-table td { padding: 4px; border: 1px solid #2d2d3d; background: #111116; }
         .admin-input { background: #16161f; border: 1px solid #3d3d52; color: #fff; font-size: 0.65rem; padding: 2px 4px; border-radius: 3px; width: 70px; }
+
+        /* PHẦN CSS THIẾT KẾ RIÊNG CHO BẢNG CẬP NHẬT PHÂN CHIA 2 BÊN MỚI */
+        .inline-update-board {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            background: #13131a;
+            border: 1px solid #2d2d3d;
+            border-radius: 6px;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .board-left-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #09090d;
+            border: 1px dashed #3d3d52;
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+        }
+        .btn-gemini-link {
+            background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px rgba(66, 133, 244, 0.3);
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-gemini-link:hover {
+            box-shadow: 0 0 15px rgba(66, 133, 244, 0.6);
+            transform: scale(1.02);
+        }
+        .board-right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .raw-data-textarea {
+            width: 100%;
+            height: 70px;
+            background: #1c1c24;
+            border: 1px solid #3d3d52;
+            color: #ffab00;
+            font-family: monospace;
+            font-size: 0.65rem;
+            padding: 4px;
+            border-radius: 4px;
+            box-sizing: border-box;
+            resize: none;
+            outline: none;
+        }
+        .raw-data-textarea:focus {
+            border-color: #00f2fe;
+            box-shadow: 0 0 5px rgba(0, 242, 254, 0.3);
+        }
+        .btn-board-push {
+            width: 100%;
+            padding: 5px;
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            color: #000;
+            font-weight: bold;
+            font-size: 0.65rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        .btn-board-push:hover {
+            box-shadow: 0 0 8px rgba(0, 242, 254, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -537,22 +619,31 @@
                 <button class="tab-btn" onclick="switchType('power')">Power 6/55</button>
                 <button class="tab-btn" onclick="window.location.href='old.html'" style="background: #22222b; color: #8a8a9e; border-color: #3d3d52;">Giao diện cũ</button>
             </div>
-            <div class="panel" style="padding: 4px; flex-shrink: 0;">
+            
+            <div class="panel" style="padding: 4px; flex-shrink: 0; display: flex; flex-direction: column; gap: 4px;">
                 <div class="upload-container-layout">
-                    
                     <!-- BẢNG TRẠNG THÁI ĐỒNG BỘ ĐÈN LED NEON THÔNG MINH -->
-                    <div class="status-sync-box" id="globalStatusBox" onclick="document.getElementById('fileInput').click()" title="Bấm để chọn file lẻ bổ sung">
+                    <div class="status-sync-box" id="globalStatusBox" title="Trạng thái đồng bộ dữ liệu trực tuyến">
                         <div class="status-item" id="statusLotto"><span class="tick">✓</span>5/35</div>
                         <div class="status-item" id="statusMega"><span class="tick">✓</span>6/45</div>
                         <div class="status-item" id="statusPower"><span class="tick">✓</span>6/55</div>
-                        <input type="file" id="fileInput" accept=".txt" style="display:none" onchange="handleFileSelect(event)">
                     </div>
-                    
                     <button class="btn-clear-premium" id="adminDeleteBtn" onclick="clearCurrentData()" title="Xoá dữ liệu đài này">🗑️ XOÁ</button>
-                    <button class="btn-quick-update" onclick="document.getElementById('multiFileInput').click()">CẬP NHẬT</button>
-                    <input type="file" id="multiFileInput" accept=".txt" multiple style="display:none" onchange="handleMultiFileSelect(event)">
+                </div>
+
+                <!-- BẢNG CHIA 2 BÊN: MỞ GEMINI & DÁN DỮ LIỆU ĐẨY LÊN ĐÁM MÂY -->
+                <div class="inline-update-board">
+                    <div class="board-left-panel">
+                        <div style="font-size: 0.55rem; color: #8a8a9e; margin-bottom: 6px; font-weight: bold; line-height: 1.2;">Xử lý thông minh</div>
+                        <a class="btn-gemini-link" href="https://gemini.google.com/app/44cfac50974dfc1c?hl=vi" target="_blank">🚀 Mở Gemini</a>
+                    </div>
+                    <div class="board-right-panel">
+                        <textarea class="raw-data-textarea" id="boardRawInput" placeholder="Dán kết quả đài hiện tại vào đây...&#10;Định dạng: Ngày | Bộ số"></textarea>
+                        <button class="btn-board-push" onclick="handleBoardDataPush()">Cập nhật</button>
+                    </div>
                 </div>
             </div>
+
             <div class="panel" style="display: flex; flex-direction: column; flex: 1; min-height: 0; padding: 4px; height: 100%;">
                 <div class="section-title" style="margin-bottom: 2px; flex-shrink: 0;">🔮 Khóa số nuôi &amp; Dự đoán</div>
                 <div class="lock-horizontal-layout">
@@ -801,82 +892,39 @@
             return `rgb(${r}, ${g}, ${b})`;
         }
 
-        function handleMultiFileSelect(e) {
-            let files = e.target.files;
-            if (files.length === 0) return;
-            let loadedTypes = [];
+        // --- HÀM XỬ LÝ ĐỌC VÀ ĐẨY DỮ LIỆU TỪ Ô TEXTAREA LÊN ĐÁM MÂY ---
+        function handleBoardDataPush() {
+            let text = document.getElementById('boardRawInput').value.trim();
+            if (!text) {
+                alert("Đại ca chưa dán dữ liệu vào ô trống kìa ạ!");
+                return;
+            }
 
-            Array.from(files).forEach(file => {
-                let filename = file.name.toLowerCase();
-                let targetType = '';
-                if (filename.includes('535') || filename === '535.txt') targetType = 'lotto';
-                else if (filename.includes('645') || filename === '645.txt') targetType = 'mega';
-                else if (filename.includes('655') || filename === '655.txt') targetType = 'power';
-
-                if (targetType) {
-                    let reader = new FileReader();
-                    reader.onload = function(evt) {
-                        let text = evt.target.result;
-                        let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-                        let parsedRows = [];
-                        lines.forEach(line => {
-                            let parts = line.split('|').map(p => p.trim());
-                            if(parts.length >= 2) {
-                                let dateStr = parts[0];
-                                let mainNums = parts[1].split(/\s+/).map(n => String(parseInt(n)).padStart(2, '0'));
-                                let specNum = parts[2] ? String(parseInt(parts[2])).padStart(2, '0') : null;
-                                parsedRows.push({ date: dateStr, main: mainNums, spec: specNum });
-                            }
-                        });
-                        let limitedRows = parsedRows.slice(0, 60);
-                        
-                        if (limitedRows.length === 0) {
-                            alert(`File ${file.name} trống hoặc sai cấu trúc định dạng kết quả, hệ thống đã bỏ qua!`);
-                            return;
-                        }
-
-                        db.ref('vietlott_matrix_data/' + targetType).set(limitedRows);
-                        loadedTypes.push(targetType.toUpperCase());
-                    };
-                    reader.readAsText(file);
+            let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            let parsedRows = [];
+            
+            lines.forEach(line => {
+                let parts = line.split('|').map(p => p.trim());
+                if(parts.length >= 2) {
+                    let dateStr = parts[0];
+                    let mainNums = parts[1].split(/\s+/).map(n => String(parseInt(n)).padStart(2, '0'));
+                    let specNum = parts[2] ? String(parseInt(parts[2])).padStart(2, '0') : null;
+                    parsedRows.push({ date: dateStr, main: mainNums, spec: specNum });
                 }
             });
 
-            setTimeout(() => {
-                if (loadedTypes.length > 0) {
-                    alert("Đã đẩy đồng bộ lên Mạng tổng đám mây các loại: " + loadedTypes.join(', ') + " thưa Đại ca!");
-                }
-            }, 500);
-        }
+            let limitedRows = parsedRows.slice(0, 60);
 
-        function handleFileSelect(e) {
-            let file = e.target.files[0];
-            if(!file) return;
-            let reader = new FileReader();
-            reader.onload = function(evt) {
-                let text = evt.target.result;
-                let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-                let parsedRows = [];
-                lines.forEach(line => {
-                    let parts = line.split('|').map(p => p.trim());
-                    if(parts.length >= 2) {
-                        let dateStr = parts[0];
-                        let mainNums = parts[1].split(/\s+/).map(n => String(parseInt(n)).padStart(2, '0'));
-                        let specNum = parts[2] ? String(parseInt(parts[2])).padStart(2, '0') : null;
-                        parsedRows.push({ date: dateStr, main: mainNums, spec: specNum });
-                    }
-                });
-                let limitedRows = parsedRows.slice(0, 60);
+            // Kiểm tra bộ lọc chặn file lỗi tuyệt đối
+            if (limitedRows.length === 0) {
+                alert("Dữ liệu không đúng định dạng cấu trúc kết quả (Ngày | Bộ số) thưa Đại ca! Hệ thống đã chặn lại.");
+                return;
+            }
 
-                if (limitedRows.length === 0) {
-                    alert("File trống hoặc sai cấu trúc định dạng kết quả thưa Đại ca! Vui lòng kiểm tra lại.");
-                    return;
-                }
-
-                db.ref('vietlott_matrix_data/' + currentType).set(limitedRows);
-                alert("Đã đồng bộ file đơn lên Mạng tổng đám mây thưa Đại ca!");
-            };
-            reader.readAsText(file);
+            // Đẩy lên nhánh đài hiện tại đang mở trên giao diện
+            db.ref('vietlott_matrix_data/' + currentType).set(limitedRows);
+            document.getElementById('boardRawInput').value = ''; // Xoá trắng ô sau khi nạp xong
+            alert(`Đã đồng bộ dữ liệu đài ${currentType.toUpperCase()} lên Mạng tổng đám mây thành công thưa Đại ca!`);
         }
 
         function switchType(type) {
@@ -903,7 +951,6 @@
             document.getElementById('viewAdminBtn').classList.toggle('active', view === 'admin');
         }
 
-        // --- ĐỊNH NGHĨA HÀM THỬ VÀ BỎ TRÊN MA TRẬN CHO ĐẠI CA ---
         function tryOnMatrix(type, mainNumsStr, specNumStr) {
             let arr = mainNumsStr.split(',');
             testSets[type].main = arr;
