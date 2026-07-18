@@ -1,0 +1,51 @@
+CẤU TRÚC FILE DỮ LIỆU CHUẨN CHO 3 LOẠI FILE TEXT (data_535.txt, data_645.txt, data_655.txt)
+
+Định dạng chung:
+Thứ, Ngày/Tháng/Năm | Số chính 1  Số chính 2  Số chính 3 ... | Số đặc biệt (nếu có)
+
+--------------------------------------------------
+
+1. Cấu trúc file data_535.txt (Lotto 5/35):
+- Gồm 3 phần phân tách bởi 2 dấu gạch đứng (|).
+- Phần 1: Ngày tháng hiển thị nguyên văn (Ví dụ: T7, 04/07/2026).
+- Phần 2: Gồm 5 số chính, cách nhau bằng khoảng trắng.
+- Phần 3: Gồm 1 số đặc biệt (từ 01 đến 12).
+
+Ví dụ các dòng dữ liệu mẫu cho file data_535.txt:
+T7, 04/07/2026 | 02 14 19 28 30 | 11
+T5, 02/07/2026 | 07 12 14 21 25 | 03
+T3, 30/06/2026 | 10 12 14 18 25 | 11
+
+--------------------------------------------------
+
+2. Cấu trúc file data_645.txt (Mega 6/45):
+- Gồm 2 phần phân tách bởi 1 dấu gạch đứng (|) vì Mega không có số đặc biệt.
+- Phần 1: Ngày tháng hiển thị nguyên văn (Ví dụ: T4, 01/07/2026).
+- Phần 2: Gồm 6 số chính (từ 01 đến 45), cách nhau bằng khoảng trắng.
+
+Ví dụ các dòng dữ liệu mẫu cho file data_645.txt:
+T6, 03/07/2026 | 06 20 21 28 30 39
+T4, 01/07/2026 | 05 12 22 23 39 41
+CN, 28/06/2026 | 01 08 15 19 33 42
+
+--------------------------------------------------
+
+3. Cấu trúc file data_655.txt (Power 6/55):
+- Gồm 3 phần phân tách bởi 2 dấu gạch đứng (|).
+- Phần 1: Ngày tháng hiển thị nguyên văn (Ví dụ: T5, 02/07/2026).
+- Phần 2: Gồm 6 số chính (từ 01 đến 55), cách nhau bằng khoảng trắng.
+- Phần 3: Gồm 1 số đặc biệt thứ 7 (vùng cầu vàng).
+
+Ví dụ các dòng dữ liệu mẫu cho file data_655.txt:
+T7, 04/07/2026 | 13 15 18 23 31 43 | 41
+T5, 02/07/2026 | 01 09 18 27 33 45 | 10
+T3, 30/06/2026 | 04 11 25 29 36 50 | 08
+
+--------------------------------------------------
+
+LƯU Ý QUAN TRỌNG KHI SOẠN THẢO FILE:
+1. Các con số chính phải được cách nhau bằng dấu cách (khoảng trắng) rõ ràng.
+2. Không chèn thêm các ký tự lạ hoặc dòng trống vô nghĩa ở giữa file để tránh thuật toán đọc lỗi.
+3. Hệ thống tự động lấy tối đa 60 dòng dữ liệu đầu tiên từ trên xuống dưới trong file text của Đại ca để dựng biểu đồ xu hướng.
+4. Cấu trúc trong file này chỉ để học các dữ liệu sẽ được lấy thực tế từ người cung cấp hình hoặc dãy dữ liệu này để tránh dùng lại dữ liệu minh hoạ làm sai dữ liệu.
+5. Dữ liệu sẽ được chuyển đổi sang Plaintext để người dùng dễ copy hoặc tải về file text.
