@@ -121,7 +121,6 @@
             height: calc(100vh - 45px);
         }
         
-        /* TĂNG CHIỀU RỘNG SIDEBAR LÊN 360PX ĐỂ ĐỦ ĐỘ RỘNG HIỂN THỊ THẲNG HÀNG */
         .sidebar { 
             width: 360px; 
             background: #13131a; 
@@ -150,55 +149,108 @@
             height: 100%;
             box-sizing: border-box;
         }
-        .tabs { display: flex; gap: 6px; flex-shrink: 0; }
-        .tab-btn { flex: 1; padding: 5px; background: #1c1c24; border: 1px solid #2d2d3d; color: #8a8a9e; cursor: pointer; border-radius: 6px; font-weight: bold; font-size: 0.75rem; transition: all 0.2s; text-transform: uppercase; white-space: nowrap; }
-        .tab-btn.active { background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color: #000; border-color: transparent; box-shadow: 0 0 10px rgba(0, 242, 254, 0.4); }
+        
+        /* ĐỒNG BỘ ĐẸP CHO KHU VỰC TABS */
+        .tabs { display: flex; gap: 4px; flex-shrink: 0; width: 100%; }
+        .tab-btn { 
+            flex: 1; 
+            height: 32px;
+            background: #1c1c24; 
+            border: 1px solid #2d2d3d; 
+            color: #8a8a9e; 
+            cursor: pointer; 
+            border-radius: 5px; 
+            font-weight: bold; 
+            font-size: 0.65rem; 
+            transition: all 0.2s; 
+            text-transform: uppercase; 
+            white-space: nowrap; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .tab-btn.active { 
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); 
+            color: #000; 
+            border-color: transparent; 
+            box-shadow: 0 0 8px rgba(0, 242, 254, 0.4); 
+        }
+
         .section-title { font-size: 0.7rem; font-weight: 800; color: #00f2fe; text-transform: uppercase; margin-bottom: 4px; display: flex; align-items: center; gap: 4px; letter-spacing: 0.5px; }
         .panel { background: #1c1c24; border: 1px solid #2d2d3d; padding: 6px; border-radius: 6px; }
         
+        /* FIX LỖI 3 NÚT NẠP/XOÁ FILE ĐỀU TĂM TẮP */
         .upload-container-layout {
             display: flex;
             gap: 6px;
-            align-items: stretch;
+            align-items: center;
+            width: 100%;
         }
         .file-upload-box { 
-            flex: 1;
+            flex: 1.2;
+            height: 34px;
             border: 1px dashed #3d3d52; 
-            padding: 5px; 
-            text-align: center; 
-            border-radius: 6px; 
+            border-radius: 5px; 
             cursor: pointer; 
             background: #16161f; 
             transition: all 0.2s; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            gap: 6px; 
+            gap: 4px; 
+            box-sizing: border-box;
         }
         .file-upload-box:hover { border-color: #00f2fe; background: #1c1c28; }
-        .file-upload-box p { margin: 0; font-size: 0.7rem; color: #a0a0b0; font-weight: bold; line-height: 1.2; }
+        .file-upload-box p { margin: 0; font-size: 0.65rem; color: #a0a0b0; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
         .btn-quick-update {
+            flex: 1;
+            height: 34px;
             background: #111116;
-            border: 1px solid #00f2fe;
+            border: 1.5px solid #00f2fe;
             color: #00f2fe;
-            font-size: 0.7rem;
-            font-weight: 800;
-            padding: 0 8px;
-            border-radius: 6px;
+            font-size: 0.65rem;
+            font-weight: bold;
+            border-radius: 5px;
             cursor: pointer;
             text-transform: uppercase;
             transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 8px rgba(0, 242, 254, 0.15);
+            box-shadow: 0 0 6px rgba(0, 242, 254, 0.15);
             white-space: nowrap;
+            box-sizing: border-box;
         }
         .btn-quick-update:hover {
             background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
             color: #000;
-            box-shadow: 0 0 12px rgba(0, 242, 254, 0.4);
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
+        }
+        
+        .btn-clear-premium {
+            height: 34px;
+            background: #111116;
+            color: #ff0055;
+            border: 1.5px solid #ff0055;
+            padding: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.65rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            box-shadow: 0 0 6px rgba(255, 0, 85, 0.15);
+            transition: all 0.2s;
+            white-space: nowrap;
+            box-sizing: border-box;
+        }
+        .btn-clear-premium:hover {
+            background: #ff0055;
+            color: #fff;
+            box-shadow: 0 0 10px #ff0055;
         }
 
         .matrix-viewport { 
@@ -413,16 +465,21 @@
                 <button class="tab-btn active" onclick="switchType('lotto')">Lotto 5/35</button>
                 <button class="tab-btn" onclick="switchType('mega')">Mega 6/45</button>
                 <button class="tab-btn" onclick="switchType('power')">Power 6/55</button>
-            <!-- DÁN CHÈN NÚT MỚI VÀO ĐÂY -->
-    <button class="tab-btn" onclick="window.location.href='old.html'" style="background: #22222b; color: #8a8a9e; border-color: #3d3d52;">Giao diện cũ</button>
-</div>
+                <button class="tab-btn" onclick="window.location.href='old.html'" style="background: #22222b; color: #8a8a9e; border-color: #3d3d52;">Giao diện cũ</button>
+            </div>
             <div class="panel" style="padding: 4px; flex-shrink: 0;">
                 <div class="upload-container-layout">
+                    <!-- 1. Ô CHỌN FILE -->
                     <div class="file-upload-box" onclick="document.getElementById('fileInput').click()">
-                        <span style="font-size: 1rem;">📄</span>
+                        <span style="font-size: 0.85rem; line-height: 1;">📄</span>
                         <p id="uploadStatus">Chọn File Lotto 5/35 (.txt)</p>
                         <input type="file" id="fileInput" accept=".txt" style="display:none" onchange="handleFileSelect(event)">
                     </div>
+                    
+                    <!-- 2. NÚT XOÁ GIỮA PREMIUM -->
+                    <button class="btn-clear-premium" onclick="clearCurrentData()" title="Xoá dữ liệu đài này">🗑️ XOÁ</button>
+
+                    <!-- 3. NÚT CẬP NHẬT NHANH -->
                     <button class="btn-quick-update" onclick="document.getElementById('multiFileInput').click()">CẬP NHẬT NHANH</button>
                     <input type="file" id="multiFileInput" accept=".txt" multiple style="display:none" onchange="handleMultiFileSelect(event)">
                 </div>
@@ -440,15 +497,15 @@
                     </div>
                 </div>
 				<div style="display: flex; align-items: center; gap: 4px; margin-bottom: 4px; background: #16161f; padding: 4px; border-radius: 4px; border: 1px solid #22222b;">
-    <span style="font-size: 0.65rem; font-weight: bold; color: #8a8a9e; white-space: nowrap;">Chiến thuật:</span>
-    <select class="count-select" id="algoSelect" style="flex: 1; font-size: 0.65rem; padding: 2px;">
-        <option value="combined" selected>⚡ Kết hợp cả 3 phương pháp</option>
-        <option value="hotcold">🔥 Vòng lặp Nóng & Lạnh</option>
-        <option value="nobet">❌ Né số bệt (Kỳ gần nhất)</option>
-        <option value="pair">🔗 Cặp số đi cùng (Bạc nhớ)</option>
-        <option value="random_mix">🎲 Trộn ngẫu nhiên hệ thống</option>
-    </select>
-</div>
+                    <span style="font-size: 0.65rem; font-weight: bold; color: #8a8a9e; white-space: nowrap;">Chiến thuật:</span>
+                    <select class="count-select" id="algoSelect" style="flex: 1; font-size: 0.65rem; padding: 2px;">
+                        <option value="combined" selected>⚡ Kết hợp cả 3 phương pháp</option>
+                        <option value="hotcold">🔥 Vòng lặp Nóng & Lạnh</option>
+                        <option value="nobet">❌ Né số bệt (Kỳ gần nhất)</option>
+                        <option value="pair">🔗 Cặp số đi cùng (Bạc nhớ)</option>
+                        <option value="random_mix">🎲 Trộn ngẫu nhiên hệ thống</option>
+                    </select>
+                </div>
                 <button class="btn-predict-trigger" onclick="generatePredictions()">Xử lý dự đoán hệ thống</button>
                 <div class="predict-box" id="predictContainer"></div>
                 <div class="section-title" style="margin-top: 4px; margin-bottom: 2px; flex-shrink: 0; color: #ff007f;">📋 Tất cả kết quả</div>
@@ -937,13 +994,12 @@
 
             let formattedLines = [];
             activePredictions.forEach((pred, index) => {
+                if (!pred) return;
                 let lineStr = `S `;
                 if (type === 'lotto') {
                     let mainPart = pred.main.join(' ');
                     lineStr += `${mainPart}-${pred.spec}`;
-                } else if (type === 'mega') {
-                    lineStr += `${pred.main.join(' ')}`;
-                } else if (type === 'power') {
+                } else {
                     lineStr += `${pred.main.join(' ')}`;
                 }
                 formattedLines.push(lineStr);
@@ -993,7 +1049,6 @@
             }, 150);
         }
 
-        // Hàm phụ tách riêng để tạo hoặc dự đoán lại duy nhất 1 dòng
         function generateSingleRow(index, label, rows, container) {
             let maxRange = currentType === 'lotto' ? 35 : (currentType === 'mega' ? 45 : 55);
             let mainSize = currentType === 'lotto' ? 5 : 6;
@@ -1113,7 +1168,6 @@
             let predictionObj = (currentType === 'mega') ? { main: resultSet } : { main: resultSet, spec: sNum };
             activePredictions[index] = predictionObj;
 
-            // Xử lý tạo HTML giao diện cho dòng
             let rowDiv = document.getElementById(`predictRow_${index}`);
             if (!rowDiv) {
                 rowDiv = document.createElement('div');
@@ -1141,7 +1195,6 @@
             rowDiv.innerHTML = rowInner;
         }
 
-        // Hàm xóa hẳn dữ liệu hiển thị của 1 dòng cụ thể
         function clearSinglePrediction(index, label) {
             activePredictions[index] = null;
             document.getElementById(`ballsArea_${index}`).innerHTML = `<div style="font-size:0.65rem; color:#555; font-style:italic; padding-left:4px;">Đã xoá dãy số...</div>`;
@@ -1156,7 +1209,6 @@
         }
 
         window.onload = function() { 
-            // KHÔNG XÓA NỮA: Tự động kiểm tra và nạp lại dữ liệu cũ đã lưu khi Đại ca F5 trang web
             let savedLotto = localStorage.getItem('raw_data_lotto');
             let savedMega = localStorage.getItem('raw_data_mega');
             let savedPower = localStorage.getItem('raw_data_power');
@@ -1166,8 +1218,20 @@
             if (savedPower) loadedFileNames.power = "Dữ liệu đang lưu (Host)";
 
             setupPredictPanel();
-            reloadCurrentMatrix(); // Tự động vẽ lại biểu đồ ngay lập tức
+            reloadCurrentMatrix(); 
         };
+
+        function clearCurrentData() {
+            if (confirm(`Đại ca có chắc chắn muốn xoá toàn bộ dữ liệu đang lưu của đài ${currentType.toUpperCase()} không?`)) {
+                localStorage.removeItem('raw_data_' + currentType);
+                let tbody = document.getElementById('matrixTbody');
+                if (tbody) tbody.innerHTML = '';
+                let container = document.getElementById('predictContainer');
+                if (container) container.innerHTML = '<div style="font-size:0.7rem; color:#8a8a9e; text-align:center; padding:5px;">Chưa có dữ liệu phân tích.</div>';
+                alert(`Đã xoá sạch dữ liệu đài ${currentType.toUpperCase()} thành công thưa Đại ca!`);
+                window.location.reload();
+            }
+        }
     </script>
 </body>
 </html>
