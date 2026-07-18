@@ -801,7 +801,6 @@
             return `rgb(${r}, ${g}, ${b})`;
         }
 
-        // --- BỘ LỌC CHẶN FILE LỖI / SAI ĐỊNH DẠNG TUYỆT ĐỐI ---
         function handleMultiFileSelect(e) {
             let files = e.target.files;
             if (files.length === 0) return;
@@ -831,7 +830,6 @@
                         });
                         let limitedRows = parsedRows.slice(0, 60);
                         
-                        // Chặn đẩy dữ liệu nếu file trống rỗng hoặc sai cấu trúc hoàn toàn
                         if (limitedRows.length === 0) {
                             alert(`File ${file.name} trống hoặc sai cấu trúc định dạng kết quả, hệ thống đã bỏ qua!`);
                             return;
@@ -870,7 +868,6 @@
                 });
                 let limitedRows = parsedRows.slice(0, 60);
 
-                // Chặn đẩy dữ liệu nếu file trống rỗng hoặc sai cấu trúc hoàn toàn
                 if (limitedRows.length === 0) {
                     alert("File trống hoặc sai cấu trúc định dạng kết quả thưa Đại ca! Vui lòng kiểm tra lại.");
                     return;
@@ -904,6 +901,20 @@
             document.getElementById('viewMatrixBtn').classList.toggle('active', view === 'matrix');
             document.getElementById('viewIframeBtn').classList.toggle('active', view === 'iframe');
             document.getElementById('viewAdminBtn').classList.toggle('active', view === 'admin');
+        }
+
+        // --- ĐỊNH NGHĨA HÀM THỬ VÀ BỎ TRÊN MA TRẬN CHO ĐẠI CA ---
+        function tryOnMatrix(type, mainNumsStr, specNumStr) {
+            let arr = mainNumsStr.split(',');
+            testSets[type].main = arr;
+            testSets[type].spec = specNumStr ? specNumStr : null;
+            reloadCurrentMatrix();
+        }
+
+        function clearTestMatrix(type) {
+            testSets[type].main = [];
+            testSets[type].spec = null;
+            reloadCurrentMatrix();
         }
 
         function reloadCurrentMatrix() {
