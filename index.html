@@ -39,6 +39,34 @@
             letter-spacing: 15px;
             font-family: 'Arial Black', sans-serif;
         }
+
+        /* GIAO DIỆN MÀN HÌNH ĐĂNG NHẬP CHUYÊN NGHIỆP */
+        #loginOverlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #09090d;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-box {
+            background: #13131a;
+            border: 2px solid #00f2fe;
+            box-shadow: 0 0 25px rgba(0, 242, 254, 0.3);
+            padding: 25px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 320px;
+            text-align: center;
+        }
+        .login-title { font-size: 1.1rem; font-weight: 900; color: #00f2fe; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1px; }
+        .login-input { width: 100%; background: #1c1c24; border: 1px solid #2d2d3d; color: #fff; padding: 8px 12px; border-radius: 5px; margin-bottom: 10px; font-size: 0.8rem; font-weight: bold; box-sizing: border-box; outline: none; }
+        .login-input:focus { border-color: #00f2fe; box-shadow: 0 0 8px rgba(0, 242, 254, 0.3); }
+        .btn-login { width: 100%; padding: 8px; background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); border: none; color: #000; font-weight: bold; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
+        .btn-login:hover { box-shadow: 0 0 12px rgba(0, 242, 254, 0.5); }
+        .login-error { color: #ff0055; font-size: 0.7rem; font-weight: bold; margin-bottom: 10px; display: none; }
+
         .header-premium { 
             background: #111118; 
             padding: 4px 15px; 
@@ -447,15 +475,33 @@
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: #09090d; }
         ::-webkit-scrollbar-thumb { background: #2d2d3d; border-radius: 3px; }
+
+        /* CSS BẢNG QUẢN LÝ THÀNH VIÊN VÀ NHẬT KÝ */
+        .admin-table { width: 100%; color: #fff; border-collapse: collapse; font-size: 0.65rem; margin-top: 5px; }
+        .admin-table th { background: #1c1c24; color: #00f2fe; padding: 4px; border: 1px solid #2d2d3d; }
+        .admin-table td { padding: 4px; border: 1px solid #2d2d3d; background: #111116; }
+        .admin-input { background: #16161f; border: 1px solid #3d3d52; color: #fff; font-size: 0.65rem; padding: 2px 4px; border-radius: 3px; width: 70px; }
     </style>
 </head>
 <body>
+
+    <!-- MÀN HÌNH ĐĂNG NHẬP BẮT BUỘC -->
+    <div id="loginOverlay">
+        <div class="login-box">
+            <div class="login-title">Hệ thống CVN Premium</div>
+            <div class="login-error" id="loginError">Tài khoản hoặc mật khẩu không đúng!</div>
+            <input type="text" id="loginUser" class="login-input" placeholder="Tên đăng nhập">
+            <input type="password" id="loginPass" class="login-input" placeholder="Mật khẩu">
+            <button class="btn-login" onclick="handleSystemLogin()">Đăng nhập</button>
+        </div>
+    </div>
+
     <div class="header-premium">
         <img class="header-logo" src="logo.png" alt="CVN Logo">
         <div class="title-wrapper">
             <span class="cosmic-icon icon-sun">☀️</span>
             <span class="cosmic-icon icon-star">⭐</span>
-            <h1>Thống kê và dự đoán Vietlott by CVN</h1>
+            <h1 id="headerTitle">Thống kê và dự đoán Vietlott by CVN</h1>
             <span class="cosmic-icon icon-star">⭐</span>
             <span class="cosmic-icon icon-moon">🌙</span>
         </div>
@@ -475,7 +521,8 @@
                         <p id="uploadStatus">Chọn File Lotto 5/35 (.txt)</p>
                         <input type="file" id="fileInput" accept=".txt" style="display:none" onchange="handleFileSelect(event)">
                     </div>
-                    <button class="btn-clear-premium" onclick="clearCurrentData()" title="Xoá dữ liệu đài này">🗑️ XOÁ</button>
+                    <!-- Nút xóa quyền lực (Sẽ ẩn nếu không phải Admin Đại ca) -->
+                    <button class="btn-clear-premium" id="adminDeleteBtn" onclick="clearCurrentData()" title="Xoá dữ liệu đài này">🗑️ XOÁ</button>
                     <button class="btn-quick-update" onclick="document.getElementById('multiFileInput').click()">CẬP NHẬT NHANH</button>
                     <input type="file" id="multiFileInput" accept=".txt" multiple style="display:none" onchange="handleMultiFileSelect(event)">
                 </div>
@@ -512,7 +559,7 @@
         </div>
         <div class="main-content">
             <div class="tabs" style="margin-bottom: 6px; align-items: center;">
-                <button class="tab-btn active" id="viewMatrixBtn" onclick="switchView('matrix')">Biểu đồ ma trận xu hướng (Tối đa 60 kỳ)</button>
+                <button class="tab-btn active" id="viewMatrixBtn" onclick="switchView('matrix')">Biểu đồ ma trận xu hướng</button>
                 <div style="display: flex; align-items: center; gap: 4px; padding: 0 4px;">
                     <span style="font-size: 0.65rem; font-weight: bold; color: #8a8a9e; white-space: nowrap;">Thống kê:</span>
                     <select class="count-select" id="countLimitSelect" onchange="reloadCurrentMatrix()">
@@ -526,12 +573,36 @@
                     </select>
                 </div>
                 <button class="tab-btn" id="viewIframeBtn" onclick="switchView('iframe')">Trực tiếp kết quả điện toán</button>
+                <!-- Nút Tab đặc quyền mở bảng điều khiển quản trị của Đại ca -->
+                <button class="tab-btn" id="viewAdminBtn" onclick="switchView('admin')" style="display: none; background: #22111a; color: #ff0055; border-color: #551122;">🛡️ QUẢN TRỊ</button>
             </div>
+            
             <div class="matrix-viewport" id="matrixView">
                 <table id="matrixTable"></table>
             </div>
+            
             <div class="iframe-container" id="iframeView" style="display: none;">
                 <iframe id="resultIframe" src="https://www.ketquadientoan.com/"></iframe>
+            </div>
+
+            <!-- GIAO DIỆN KHU VỰC THƯ MỤC ẨN QUẢN TRỊ (CHỈ ĐẠI CA THẤY) -->
+            <div class="matrix-viewport" id="adminView" style="display: none; padding: 10px;">
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1; background: #1c1c24; padding: 8px; border-radius: 6px; border: 1px solid #2d2d3d;">
+                        <div class="section-title">👥 THÊM THÀNH VIÊN MỚI</div>
+                        <div style="display:flex; gap:5px; margin-bottom:8px;">
+                            <input type="text" id="newAccUser" class="admin-input" placeholder="Tên đăng nhập" style="width:100px;">
+                            <input type="text" id="newAccPass" class="admin-input" placeholder="Mật khẩu" style="width:100px;">
+                            <button onclick="addNewAccountOnline()" style="background:#00ff66; color:#000; border:none; padding:2px 8px; font-weight:bold; border-radius:3px; font-size:0.65rem; cursor:pointer;">+ THÊM</button>
+                        </div>
+                        <div class="section-title">Danh sách tài khoản hệ thống</div>
+                        <div id="accountsListArea" style="max-height: 200px; overflow-y: auto;"></div>
+                    </div>
+                    <div style="flex: 1.5; background: #1c1c24; padding: 8px; border-radius: 6px; border: 1px solid #2d2d3d;">
+                        <div class="section-title" style="color:#ffab00;">📜 NHẬT KÝ ĐĂNG NHẬP HỆ THỐNG</div>
+                        <div id="logsListArea" style="max-height: 320px; overflow-y: auto;"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -551,7 +622,7 @@
     </div>
 
     <script>
-        // --- 1. TÍCH HỢP CẤU HÌNH MẠNG TỔNG FIREBASE CỦA ĐẠI CA ---
+        // --- CẤU HÌNH MẠNG TỔNG FIREBASE CHÍNH THỨC CỦA ĐẠI CA ---
         const firebaseConfig = {
             apiKey: "AIzaSyCPAYMe0TMPGsBHHocO4FaEH9KONB_KV3Q",
             authDomain: "vietlott-cvn.firebaseapp.com",
@@ -567,19 +638,112 @@
         let currentType = 'lotto';
         let currentView = 'matrix';
         let globalOnlineData = { lotto: [], mega: [], power: [] };
-        let loadedFileNames = {
-            lotto: "Đang kết nối cổng mạng tổng...",
-            mega: "Đang kết nối cổng mạng tổng...",
-            power: "Đang kết nối cổng mạng tổng..."
-        };
-        let testSets = {
-            lotto: { main: [], spec: null },
-            mega: { main: [] },
-            power: { main: [], spec: null }
-        };
+        let currentUserRole = 'member'; 
+        let currentUserName = '';
+        let loadedFileNames = { lotto: "Kết nối...", mega: "Kết nối...", power: "Kết nối..." };
+        let testSets = { lotto: { main: [], spec: null }, mega: { main: [] }, power: { main: [], spec: null } };
         let activePredictions = [];
 
-        // --- 2. CƠ CHẾ LẮNG NGHE ĐỒNG BỘ DỮ LIỆU ONLINE ---
+        // --- HÀM XỬ LÝ ĐĂNG NHẬP & PHÂN QUYỀN TỐI CAO ---
+        function handleSystemLogin() {
+            let u = document.getElementById('loginUser').value.trim();
+            let p = document.getElementById('loginPass').value.trim();
+            
+            if(!u || !p) return;
+
+            // Kiểm tra danh bạ tài khoản trực tuyến trên Firebase
+            db.ref('system_accounts').once('value', (snapshot) => {
+                let accounts = snapshot.val() || {};
+                
+                if (accounts[u] && accounts[u].password === p) {
+                    currentUserRole = accounts[u].role;
+                    currentUserName = u;
+                    
+                    // Ẩn màn hình đăng nhập
+                    document.getElementById('loginOverlay').style.display = 'none';
+                    
+                    // Ghi nhận nhật ký vào lịch sử hệ thống đám mây
+                    let timeStr = new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
+                    db.ref('login_history').push({
+                        username: u,
+                        role: currentUserRole === 'admin' ? 'Đại ca (Admin)' : 'Thành viên',
+                        time: timeStr
+                    });
+
+                    // Phân quyền hiển thị tính năng xóa dữ liệu
+                    if (currentUserRole === 'admin') {
+                        document.getElementById('adminDeleteBtn').style.display = 'flex';
+                        document.getElementById('viewAdminBtn').style.display = 'block';
+                        document.getElementById('headerTitle').innerText = "Thống kê Vietlott - XIN CHÀO ĐẠI CA!";
+                        loadAdminPanels();
+                    } else {
+                        document.getElementById('adminDeleteBtn').style.display = 'none';
+                        document.getElementById('viewAdminBtn').style.display = 'none';
+                        document.getElementById('headerTitle').innerText = `Thống kê Vietlott - Chào Thành viên: ${u}`;
+                    }
+
+                    // Khởi động đồng bộ ma trận số
+                    startSyncingDatabase();
+                } else {
+                    document.getElementById('loginError').style.display = 'block';
+                }
+            });
+        }
+
+        // --- TẢI THÔNG TIN VÀO BẢNG ĐIỀU KHIỂN QUẢN TRỊ CỦA ĐẠI CA ---
+        function loadAdminPanels() {
+            // Tải danh sách tài khoản
+            db.ref('system_accounts').on('value', (snapshot) => {
+                let accounts = snapshot.val() || {};
+                let html = `<table class="admin-table"><tr><th>Tài khoản</th><th>Mật khẩu</th><th>Quyền</th><th>Hành động</th></tr>`;
+                for (let acc in accounts) {
+                    html += `<tr>
+                        <td>${acc}</td>
+                        <td>${accounts[acc].password}</td>
+                        <td>${accounts[acc].role === 'admin' ? 'Đại ca' : 'Thành viên'}</td>
+                        <td>
+                            ${accounts[acc].role === 'admin' ? '-' : `<button onclick="deleteAccountOnline('${acc}')" style="background:#ff0055; color:#fff; border:none; padding:1px 4px; border-radius:2px; cursor:pointer;">Xoá</button>`}
+                        </td>
+                    </tr>`;
+                }
+                html += `</table>`;
+                document.getElementById('accountsListArea').innerHTML = html;
+            });
+
+            // Tải bảng lịch sử ghi nhận đăng nhập
+            db.ref('login_history').limitToLast(30).on('value', (snapshot) => {
+                let logs = snapshot.val() || {};
+                let html = `<table class="admin-table"><tr><th>Tên tài khoản</th><th>Vai trò</th><th>Thời gian vào web</th></tr>`;
+                let logArray = [];
+                for (let id in logs) logArray.unshift(logs[id]); // Đảo ngược danh sách để log mới nhất lên đầu
+                logArray.forEach(log => {
+                    html += `<tr>
+                        <td style="color:#00f2fe; font-weight:bold;">${log.username}</td>
+                        <td>${log.role}</td>
+                        <td style="color:#ffab00;">${log.time}</td>
+                    </tr>`;
+                });
+                html += `</table>`;
+                document.getElementById('logsListArea').innerHTML = html;
+            });
+        }
+
+        function addNewAccountOnline() {
+            let u = document.getElementById('newAccUser').value.trim().toLowerCase();
+            let p = document.getElementById('newAccPass').value.trim();
+            if(!u || !p) { alert("Đại ca nhập thiếu tên hoặc mật khẩu rồi ạ!"); return; }
+            db.ref('system_accounts/' + u).set({ password: p, role: 'member' });
+            document.getElementById('newAccUser').value = '';
+            document.getElementById('newAccPass').value = '';
+            alert("Đã thêm tài khoản thành viên mới thành công thưa Đại ca!");
+        }
+
+        function deleteAccountOnline(username) {
+            if (confirm(`Đại ca có chắc chắn muốn huỷ quyền truy cập của tài khoản [${username}] không?`)) {
+                db.ref('system_accounts/' + username).remove();
+            }
+        }
+
         function startSyncingDatabase() {
             db.ref('vietlott_matrix_data').on('value', (snapshot) => {
                 let data = snapshot.val();
@@ -587,7 +751,6 @@
                     globalOnlineData.lotto = data.lotto || [];
                     globalOnlineData.mega = data.mega || [];
                     globalOnlineData.power = data.power || [];
-
                     loadedFileNames.lotto = globalOnlineData.lotto.length > 0 ? "Mạng tổng Trực tuyến (Đã đồng bộ)" : "Chưa có dữ liệu mạng tổng";
                     loadedFileNames.mega = globalOnlineData.mega.length > 0 ? "Mạng tổng Trực tuyến (Đã đồng bộ)" : "Chưa có dữ liệu mạng tổng";
                     loadedFileNames.power = globalOnlineData.power.length > 0 ? "Mạng tổng Trực tuyến (Đã đồng bộ)" : "Chưa có dữ liệu mạng tổng";
@@ -624,18 +787,15 @@
             let files = e.target.files;
             if (files.length === 0) return;
             let loadedTypes = [];
-            let count = 0;
 
             Array.from(files).forEach(file => {
                 let filename = file.name.toLowerCase();
                 let targetType = '';
-                
                 if (filename.includes('535') || filename === '535.txt') targetType = 'lotto';
                 else if (filename.includes('645') || filename === '645.txt') targetType = 'mega';
                 else if (filename.includes('655') || filename === '655.txt') targetType = 'power';
 
                 if (targetType) {
-                    count++;
                     let reader = new FileReader();
                     reader.onload = function(evt) {
                         let text = evt.target.result;
@@ -651,8 +811,6 @@
                             }
                         });
                         let limitedRows = parsedRows.slice(0, 60);
-                        
-                        // ĐẨY TRỰC TIẾP LÊN FIREBASE ĐỂ TẤT CẢ CÁC MÁY CÙNG ĐỒNG BỘ
                         db.ref('vietlott_matrix_data/' + targetType).set(limitedRows);
                         loadedTypes.push(targetType.toUpperCase());
                     };
@@ -662,9 +820,7 @@
 
             setTimeout(() => {
                 if (loadedTypes.length > 0) {
-                    alert("Đã đồng bộ thành công dữ liệu Mạng tổng cho các loại: " + loadedTypes.join(', ') + " thưa Đại ca!");
-                } else {
-                    alert("Không tìm thấy file hợp lệ! Đại ca chọn file chứa tên '535', '645', hoặc '655' nhé.");
+                    alert("Đã đẩy đồng bộ lên Mạng tổng đám mây các loại: " + loadedTypes.join(', ') + " thưa Đại ca!");
                 }
             }, 500);
         }
@@ -685,17 +841,13 @@
 
         function switchView(view) {
             currentView = view;
-            if(view === 'matrix') {
-                document.getElementById('matrixView').style.display = 'block';
-                document.getElementById('iframeView').style.display = 'none';
-                document.getElementById('viewMatrixBtn').classList.add('active');
-                document.getElementById('viewIframeBtn').classList.remove('active');
-            } else {
-                document.getElementById('matrixView').style.display = 'none';
-                document.getElementById('iframeView').style.display = 'block';
-                document.getElementById('viewMatrixBtn').classList.remove('active');
-                document.getElementById('viewIframeBtn').classList.add('active');
-            }
+            document.getElementById('matrixView').style.display = view === 'matrix' ? 'block' : 'none';
+            document.getElementById('iframeView').style.display = view === 'iframe' ? 'block' : 'none';
+            document.getElementById('adminView').style.display = view === 'admin' ? 'block' : 'none';
+            
+            document.getElementById('viewMatrixBtn').classList.toggle('active', view === 'matrix');
+            document.getElementById('viewIframeBtn').classList.toggle('active', view === 'iframe');
+            document.getElementById('viewAdminBtn').classList.toggle('active', view === 'admin');
         }
 
         function handleFileSelect(e) {
@@ -971,18 +1123,6 @@
             document.getElementById('predictContainer').innerHTML = '';
         }
 
-        function tryOnMatrix(type, mainStr, specStr) {
-            testSets[type].main = mainStr.split(',');
-            testSets[type].spec = specStr ? specStr : null;
-            reloadCurrentMatrix();
-        }
-
-        function clearTestMatrix(type) {
-            testSets[type].main = [];
-            testSets[type].spec = null;
-            reloadCurrentMatrix();
-        }
-
         function openComposeModal(type, rowIndex) {
             if (activePredictions.length === 0) return;
             let message = "";
@@ -1009,9 +1149,7 @@
             document.getElementById('composeModal').style.display = 'flex';
         }
 
-        function closeComposeModal() {
-            document.getElementById('composeModal').style.display = 'none';
-        }
+        function closeComposeModal() { document.getElementById('composeModal').style.display = 'none'; }
 
         function copyComposeText() {
             let text = document.getElementById('modalTextContent').innerText;
@@ -1038,7 +1176,6 @@
                 container.innerHTML = '';
                 let labels = ['A', 'B', 'C', 'D', 'E'];
                 activePredictions = Array(5).fill(null);
-                
                 for (let i = 0; i < 5; i++) {
                     generateSingleRow(i, labels[i], rows, container);
                 }
@@ -1056,7 +1193,6 @@
             });
 
             let lastDraw = rows[0] ? rows[0].main.map(n => String(parseInt(n)).padStart(2, '0')) : [];
-
             let currentAlgo = chosenAlgo;
             if (chosenAlgo === 'random_mix') {
                 let algos = ['hotcold', 'nobet', 'pair', 'combined'];
@@ -1078,25 +1214,16 @@
             if (currentAlgo === 'nobet') {
                 let maxBetAllowed = Math.floor(Math.random() * 3); 
                 let currentBetCount = 0;
+                resultSet.forEach(num => { if (lastDraw.includes(num)) currentBetCount++; });
 
-                resultSet.forEach(num => {
-                    if (lastDraw.includes(num)) currentBetCount++;
-                });
-
-                let freshPool = [];
-                let betPool = [];
-                
+                let freshPool = []; let betPool = [];
                 for (let j = 1; j <= maxRange; j++) {
                     let s = String(j).padStart(2, '0');
                     if (!resultSet.includes(s)) {
-                        if (lastDraw.includes(s)) {
-                            betPool.push(s);
-                        } else {
-                            freshPool.push(s);
-                        }
+                        if (lastDraw.includes(s)) betPool.push(s);
+                        else freshPool.push(s);
                     }
                 }
-
                 freshPool.sort(() => Math.random() - 0.5);
                 betPool.sort(() => Math.random() - 0.5);
 
@@ -1104,12 +1231,9 @@
                     if (currentBetCount < maxBetAllowed && betPool.length > 0) {
                         resultSet.push(betPool.shift());
                         currentBetCount++;
-                    } 
-                    else if (freshPool.length > 0) {
+                    } else if (freshPool.length > 0) {
                         resultSet.push(freshPool.shift());
-                    } else {
-                        break;
-                    }
+                    } else break;
                 }
             } else {
                 let pool = [];
@@ -1120,29 +1244,20 @@
 
                 if (currentAlgo === 'hotcold') {
                     pool.sort((a, b) => {
-                        let scoreA = freq[parseInt(a)];
-                        let scoreB = freq[parseInt(b)];
+                        let scoreA = freq[parseInt(a)]; let scoreB = freq[parseInt(b)];
                         return (index % 2 === 0) ? (scoreB - scoreA) : (scoreA - scoreB);
                     });
-                } 
-                else if (currentAlgo === 'pair' || currentAlgo === 'combined') {
+                } else if (currentAlgo === 'pair' || currentAlgo === 'combined') {
                     if (locked.length > 0) {
                         let pairCounts = Array(maxRange + 1).fill(0);
                         rows.forEach(r => {
                             let hasLocked = locked.some(l => r.main.includes(l));
-                            if (hasLocked) {
-                                r.main.forEach(num => pairCounts[parseInt(num)]++);
-                            }
+                            if (hasLocked) r.main.forEach(num => pairCounts[parseInt(num)]++);
                         });
                         pool.sort((a, b) => pairCounts[parseInt(b)] - pairCounts[parseInt(a)]);
-                    } else {
-                        pool.sort(() => Math.random() - 0.5);
-                    }
+                    } else pool.sort(() => Math.random() - 0.5);
                 }
-
-                while (resultSet.length < mainSize && pool.length > 0) {
-                    resultSet.push(pool.shift());
-                }
+                while (resultSet.length < mainSize && pool.length > 0) resultSet.push(pool.shift());
             }
 
             resultSet.sort((a, b) => parseInt(a) - parseInt(b));
@@ -1166,18 +1281,14 @@
 
             let rowDiv = document.getElementById(`predictRow_${index}`);
             if (!rowDiv) {
-                rowDiv = document.createElement('div');
-                rowDiv.className = 'predict-row';
-                rowDiv.id = `predictRow_${index}`;
+                rowDiv = document.createElement('div'); rowDiv.className = 'predict-row'; rowDiv.id = `predictRow_${index}`;
                 container.appendChild(rowDiv);
             }
 
             let rowInner = `<div class="predict-row-label">${label}</div>`;
             rowInner += `<div id="ballsArea_${index}" style="display:flex; gap:4px; align-items:center;">`;
             resultSet.forEach(num => { rowInner += `<div class="ball-predict" style="background-color: #006633">${num}</div>`; }); 
-            if (currentType !== 'mega') { 
-                rowInner += `<div style="color:#555; font-weight:bold;">|</div><div class="ball-predict" style="background-color: #ff7300">${sNum}</div>`; 
-            }
+            if (currentType !== 'mega') rowInner += `<div style="color:#555; font-weight:bold;">|</div><div class="ball-predict" style="background-color: #ff7300">${sNum}</div>`; 
             rowInner += `</div>`;
             
             rowInner += `<div style="flex:1;"></div>`; 
@@ -1187,7 +1298,6 @@
             rowInner += `<button class="action-inline-btn btn-compose" onclick="openComposeModal('${currentType}', ${index})">Soạn</button>`; 
             rowInner += `<button class="action-inline-btn" style="border-color:#555; color:#aaa;" onclick="clearSinglePrediction(${index}, '${label}')" title="Xoá dãy số">🗑️</button>`;
             rowInner += `</div>`;
-            
             rowDiv.innerHTML = rowInner;
         }
 
@@ -1196,23 +1306,32 @@
             document.getElementById(`ballsArea_${index}`).innerHTML = `<div style="font-size:0.65rem; color:#555; font-style:italic; padding-left:4px;">Đã xoá dãy số...</div>`;
             let rows = globalOnlineData[currentType] || [];
             let container = document.getElementById('predictContainer');
-
             document.getElementById(`actionsArea_${index}`).innerHTML = `
                 <button class="action-inline-btn btn-try" style="border-color:#00ff66; color:#00ff66;" onclick="generateSingleRow(${index}, '${label}', ${JSON.stringify(rows).replace(/"/g, '&quot;')}, ${container.id})" title="Dự đoán lại dãy này">🔄 Dự đoán lại</button>
             `;
         }
 
         function clearCurrentData() {
+            if (currentUserRole !== 'admin') return;
             if (confirm(`Đại ca có chắc chắn muốn xoá dữ liệu đài ${currentType.toUpperCase()} trên Mạng tổng đám mây không? Tất cả các máy khác cũng sẽ bị xoá.`)) {
                 db.ref('vietlott_matrix_data/' + currentType).remove();
                 alert(`Đã xoá sạch dữ liệu đài ${currentType.toUpperCase()} trên Mạng tổng thành công thưa Đại ca!`);
             }
         }
 
-        // Khởi chạy đồng bộ mạng tổng ngay khi mở trang web
+        // KHO CHỨA TÀI KHOẢN GỐC (Tự động khởi tạo lên Firebase nếu cơ sở dữ liệu trống)
         window.onload = function() { 
             setupPredictPanel();
-            startSyncingDatabase();
+            
+            // Khởi tạo tài khoản Admin tối cao cho Đại ca và tài khoản mẫu ban đầu
+            db.ref('system_accounts').once('value', (snapshot) => {
+                if (!snapshot.exists()) {
+                    db.ref('system_accounts').set({
+                        "daica": { password: "123", role: "admin" }, // Tài khoản Admin của Đại ca
+                        "member1": { password: "456", role: "member" } // Tài khoản Hội viên mẫu 1
+                    });
+                }
+            });
         };
     </script>
 </body>
