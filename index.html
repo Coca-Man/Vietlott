@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Thống kê và dự đoán Vietlott by CVN - FINAL PREMIUM</title>
+    <!-- Nhúng thư viện Firebase thế hệ mới chạy trực tiếp trên Web trình duyệt -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <style>
         html, body {
             height: 100vh;
@@ -150,7 +153,6 @@
             box-sizing: border-box;
         }
         
-        /* ĐỒNG BỘ ĐẸP CHO KHU VỰC TABS */
         .tabs { display: flex; gap: 4px; flex-shrink: 0; width: 100%; }
         .tab-btn { 
             flex: 1; 
@@ -179,7 +181,6 @@
         .section-title { font-size: 0.7rem; font-weight: 800; color: #00f2fe; text-transform: uppercase; margin-bottom: 4px; display: flex; align-items: center; gap: 4px; letter-spacing: 0.5px; }
         .panel { background: #1c1c24; border: 1px solid #2d2d3d; padding: 6px; border-radius: 6px; }
         
-        /* FIX LỖI 3 NÚT NẠP/XOÁ FILE ĐỀU TĂM TẮP */
         .upload-container-layout {
             display: flex;
             gap: 6px;
@@ -469,17 +470,12 @@
             </div>
             <div class="panel" style="padding: 4px; flex-shrink: 0;">
                 <div class="upload-container-layout">
-                    <!-- 1. Ô CHỌN FILE -->
                     <div class="file-upload-box" onclick="document.getElementById('fileInput').click()">
                         <span style="font-size: 0.85rem; line-height: 1;">📄</span>
                         <p id="uploadStatus">Chọn File Lotto 5/35 (.txt)</p>
                         <input type="file" id="fileInput" accept=".txt" style="display:none" onchange="handleFileSelect(event)">
                     </div>
-                    
-                    <!-- 2. NÚT XOÁ GIỮA PREMIUM -->
                     <button class="btn-clear-premium" onclick="clearCurrentData()" title="Xoá dữ liệu đài này">🗑️ XOÁ</button>
-
-                    <!-- 3. NÚT CẬP NHẬT NHANH -->
                     <button class="btn-quick-update" onclick="document.getElementById('multiFileInput').click()">CẬP NHẬT NHANH</button>
                     <input type="file" id="multiFileInput" accept=".txt" multiple style="display:none" onchange="handleMultiFileSelect(event)">
                 </div>
@@ -517,7 +513,6 @@
         <div class="main-content">
             <div class="tabs" style="margin-bottom: 6px; align-items: center;">
                 <button class="tab-btn active" id="viewMatrixBtn" onclick="switchView('matrix')">Biểu đồ ma trận xu hướng (Tối đa 60 kỳ)</button>
-                
                 <div style="display: flex; align-items: center; gap: 4px; padding: 0 4px;">
                     <span style="font-size: 0.65rem; font-weight: bold; color: #8a8a9e; white-space: nowrap;">Thống kê:</span>
                     <select class="count-select" id="countLimitSelect" onchange="reloadCurrentMatrix()">
@@ -530,7 +525,6 @@
                         <option value="60">60 kỳ</option>
                     </select>
                 </div>
-
                 <button class="tab-btn" id="viewIframeBtn" onclick="switchView('iframe')">Trực tiếp kết quả điện toán</button>
             </div>
             <div class="matrix-viewport" id="matrixView">
@@ -542,7 +536,6 @@
         </div>
     </div>
 
-    <!-- Cấu trúc Modal Soạn tin nhắn -->
     <div class="modal-overlay" id="composeModal">
         <div class="modal-box">
             <div class="modal-title">
@@ -558,12 +551,26 @@
     </div>
 
     <script>
+        // --- 1. TÍCH HỢP CẤU HÌNH MẠNG TỔNG FIREBASE CỦA ĐẠI CA ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCPAYMe0TMPGsBHHocO4FaEH9KONB_KV3Q",
+            authDomain: "vietlott-cvn.firebaseapp.com",
+            databaseURL: "https://vietlott-cvn-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "vietlott-cvn",
+            storageBucket: "vietlott-cvn.firebasestorage.app",
+            messagingSenderId: "851092496389",
+            appId: "1:851092496389:web:f8859cf96a742f545a3c6c"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
         let currentType = 'lotto';
         let currentView = 'matrix';
+        let globalOnlineData = { lotto: [], mega: [], power: [] };
         let loadedFileNames = {
-            lotto: "Chọn File Lotto 5/35 (.txt)",
-            mega: "Chọn File Mega 6/45 (.txt)",
-            power: "Chọn File Power 6/55 (.txt)"
+            lotto: "Đang kết nối cổng mạng tổng...",
+            mega: "Đang kết nối cổng mạng tổng...",
+            power: "Đang kết nối cổng mạng tổng..."
         };
         let testSets = {
             lotto: { main: [], spec: null },
@@ -571,6 +578,28 @@
             power: { main: [], spec: null }
         };
         let activePredictions = [];
+
+        // --- 2. CƠ CHẾ LẮNG NGHE ĐỒNG BỘ DỮ LIỆU ONLINE ---
+        function startSyncingDatabase() {
+            db.ref('vietlott_matrix_data').on('value', (snapshot) => {
+                let data = snapshot.val();
+                if (data) {
+                    globalOnlineData.lotto = data.lotto || [];
+                    globalOnlineData.mega = data.mega || [];
+                    globalOnlineData.power = data.power || [];
+
+                    loadedFileNames.lotto = globalOnlineData.lotto.length > 0 ? "Mạng tổng Trực tuyến (Đã đồng bộ)" : "Chưa có dữ liệu mạng tổng";
+                    loadedFileNames.mega = globalOnlineData.mega.length > 0 ? "Mạng tổng Trực tuyến (Đã đồng bộ)" : "Chưa có dữ liệu mạng tổng";
+                    loadedFileNames.power = globalOnlineData.power.length > 0 ? "Mạng tổng Trực tuyến (Đã đồng bộ)" : "Chưa có dữ liệu mạng tổng";
+                } else {
+                    loadedFileNames.lotto = "Chưa có dữ liệu mạng tổng";
+                    loadedFileNames.mega = "Chưa có dữ liệu mạng tổng";
+                    loadedFileNames.power = "Chưa có dữ liệu mạng tổng";
+                }
+                document.getElementById('uploadStatus').innerText = loadedFileNames[currentType];
+                reloadCurrentMatrix();
+            });
+        }
 
         function getHeatmapColor(count, maxCount) {
             if (count === 0) return '#f8fafc';
@@ -594,8 +623,8 @@
         function handleMultiFileSelect(e) {
             let files = e.target.files;
             if (files.length === 0) return;
-
             let loadedTypes = [];
+            let count = 0;
 
             Array.from(files).forEach(file => {
                 let filename = file.name.toLowerCase();
@@ -606,6 +635,7 @@
                 else if (filename.includes('655') || filename === '655.txt') targetType = 'power';
 
                 if (targetType) {
+                    count++;
                     let reader = new FileReader();
                     reader.onload = function(evt) {
                         let text = evt.target.result;
@@ -621,26 +651,22 @@
                             }
                         });
                         let limitedRows = parsedRows.slice(0, 60);
-                        localStorage.setItem('raw_data_' + targetType, JSON.stringify(limitedRows));
-                        loadedFileNames[targetType] = file.name;
                         
-                        if (targetType === currentType) {
-                            document.getElementById('uploadStatus').innerText = file.name;
-                            reloadCurrentMatrix();
-                        }
+                        // ĐẨY TRỰC TIẾP LÊN FIREBASE ĐỂ TẤT CẢ CÁC MÁY CÙNG ĐỒNG BỘ
+                        db.ref('vietlott_matrix_data/' + targetType).set(limitedRows);
+                        loadedTypes.push(targetType.toUpperCase());
                     };
                     reader.readAsText(file);
-                    loadedTypes.push(targetType.toUpperCase());
                 }
             });
 
             setTimeout(() => {
                 if (loadedTypes.length > 0) {
-                    alert("Đã đồng bộ thành công các loại hình: " + loadedTypes.join(', ') + " thưa Đại ca!");
+                    alert("Đã đồng bộ thành công dữ liệu Mạng tổng cho các loại: " + loadedTypes.join(', ') + " thưa Đại ca!");
                 } else {
-                    alert("Không tìm thấy file hợp lệ! Đại ca hãy chọn các file chứa tên '535', '645', hoặc '655' nhé.");
+                    alert("Không tìm thấy file hợp lệ! Đại ca chọn file chứa tên '535', '645', hoặc '655' nhé.");
                 }
-            }, 300);
+            }, 500);
         }
 
         function switchType(type) {
@@ -675,8 +701,6 @@
         function handleFileSelect(e) {
             let file = e.target.files[0];
             if(!file) return;
-            loadedFileNames[currentType] = file.name;
-            document.getElementById('uploadStatus').innerText = file.name;
             let reader = new FileReader();
             reader.onload = function(evt) {
                 let text = evt.target.result;
@@ -692,15 +716,14 @@
                     }
                 });
                 let limitedRows = parsedRows.slice(0, 60);
-                localStorage.setItem('raw_data_' + currentType, JSON.stringify(limitedRows));
-                reloadCurrentMatrix();
+                db.ref('vietlott_matrix_data/' + currentType).set(limitedRows);
+                alert("Đã đồng bộ file đơn lên Mạng tổng đám mây thưa Đại ca!");
             };
             reader.readAsText(file);
         }
 
         function reloadCurrentMatrix() {
-            let data = localStorage.getItem('raw_data_' + currentType);
-            let rows = data ? JSON.parse(data) : [];
+            let rows = globalOnlineData[currentType] || [];
             if(currentType === 'lotto') renderMatrix(rows);
             else if(currentType === 'mega') renderMegaMatrix(rows);
             else if(currentType === 'power') renderPowerMatrix(rows);
@@ -709,6 +732,7 @@
         function renderMatrix(rows) {
             let table = document.getElementById('matrixTable');
             table.innerHTML = '';
+            if (rows.length === 0) return;
             let mainCounts = Array(36).fill(0);
             let specCounts = Array(13).fill(0);
             rows.forEach(r => {
@@ -797,6 +821,7 @@
         function renderMegaMatrix(rows) {
             let table = document.getElementById('matrixTable');
             table.innerHTML = '';
+            if (rows.length === 0) return;
             let mainCounts = Array(46).fill(0);
             rows.forEach(r => {
                 r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=45) mainCounts[n]++; });
@@ -856,6 +881,7 @@
         function renderPowerMatrix(rows) {
             let table = document.getElementById('matrixTable');
             table.innerHTML = '';
+            if (rows.length === 0) return;
             let combinedCounts = Array(56).fill(0);
             rows.forEach(r => {
                 r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=55) combinedCounts[n]++; });
@@ -945,32 +971,6 @@
             document.getElementById('predictContainer').innerHTML = '';
         }
 
-        function getSmartPredictedSet(size, maxRange) {
-            let inputs = document.querySelectorAll('.lock-main-val');
-            let locked = [];
-            inputs.forEach(input => {
-                let v = input.value.trim();
-                if(v !== "") {
-                    let n = parseInt(v);
-                    if(n >= 1 && n <= maxRange) locked.push(String(n).padStart(2, '0'));
-                }
-            });
-            let pool = [];
-            for(let i = 1; i <= maxRange; i++) {
-                let s = String(i).padStart(2, '0');
-                if(!locked.includes(s)) pool.push(s);
-            }
-            for (let i = pool.length - 1; i > 0; i--) {
-                let j = Math.floor(Math.random() * (i + 1));
-                [pool[i], pool[j]] = [pool[j], pool[i]];
-            }
-            let resultSet = [...locked];
-            while(resultSet.length < size && pool.length > 0) {
-                resultSet.push(pool.shift());
-            }
-            return resultSet.sort((a,b) => parseInt(a) - parseInt(b));
-        }
-
         function tryOnMatrix(type, mainStr, specStr) {
             testSets[type].main = mainStr.split(',');
             testSets[type].spec = specStr ? specStr : null;
@@ -985,7 +985,6 @@
 
         function openComposeModal(type, rowIndex) {
             if (activePredictions.length === 0) return;
-            
             let message = "";
             let prefix = "";
             if (type === 'lotto') prefix = "535 K1";
@@ -1006,7 +1005,6 @@
             });
 
             message = `${prefix} ${formattedLines.join(' ')}`;
-            
             document.getElementById('modalTextContent').innerText = message;
             document.getElementById('composeModal').style.display = 'flex';
         }
@@ -1028,12 +1026,10 @@
             let container = document.getElementById('predictContainer');
             container.innerHTML = '<div style="font-size:0.7rem; color:#8a8a9e; text-align:center; padding:5px;">Đang chạy ma trận phân tích...</div>';
             
-            let rawData = localStorage.getItem('raw_data_' + currentType); 
-            let rows = rawData ? JSON.parse(rawData) : [];
-            
+            let rows = globalOnlineData[currentType] || [];
             if (rows.length === 0) {
                 setTimeout(() => {
-                    container.innerHTML = '<div style="font-size:0.7rem; color:#ff0055; text-align:center; padding:5px;">Đại ca cần bấm "CẬP NHẬT NHANH" nạp file số trước mới phân tích được ạ!</div>';
+                    container.innerHTML = '<div style="font-size:0.7rem; color:#ff0055; text-align:center; padding:5px;">Mạng tổng chưa nạp dữ liệu đài này thưa Đại ca!</div>';
                 }, 200);
                 return;
             }
@@ -1198,9 +1194,7 @@
         function clearSinglePrediction(index, label) {
             activePredictions[index] = null;
             document.getElementById(`ballsArea_${index}`).innerHTML = `<div style="font-size:0.65rem; color:#555; font-style:italic; padding-left:4px;">Đã xoá dãy số...</div>`;
-            
-            let rawData = localStorage.getItem('raw_data_' + currentType); 
-            let rows = rawData ? JSON.parse(rawData) : [];
+            let rows = globalOnlineData[currentType] || [];
             let container = document.getElementById('predictContainer');
 
             document.getElementById(`actionsArea_${index}`).innerHTML = `
@@ -1208,30 +1202,18 @@
             `;
         }
 
-        window.onload = function() { 
-            let savedLotto = localStorage.getItem('raw_data_lotto');
-            let savedMega = localStorage.getItem('raw_data_mega');
-            let savedPower = localStorage.getItem('raw_data_power');
-
-            if (savedLotto) loadedFileNames.lotto = "Dữ liệu đang lưu (Host)";
-            if (savedMega) loadedFileNames.mega = "Dữ liệu đang lưu (Host)";
-            if (savedPower) loadedFileNames.power = "Dữ liệu đang lưu (Host)";
-
-            setupPredictPanel();
-            reloadCurrentMatrix(); 
-        };
-
         function clearCurrentData() {
-            if (confirm(`Đại ca có chắc chắn muốn xoá toàn bộ dữ liệu đang lưu của đài ${currentType.toUpperCase()} không?`)) {
-                localStorage.removeItem('raw_data_' + currentType);
-                let tbody = document.getElementById('matrixTbody');
-                if (tbody) tbody.innerHTML = '';
-                let container = document.getElementById('predictContainer');
-                if (container) container.innerHTML = '<div style="font-size:0.7rem; color:#8a8a9e; text-align:center; padding:5px;">Chưa có dữ liệu phân tích.</div>';
-                alert(`Đã xoá sạch dữ liệu đài ${currentType.toUpperCase()} thành công thưa Đại ca!`);
-                window.location.reload();
+            if (confirm(`Đại ca có chắc chắn muốn xoá dữ liệu đài ${currentType.toUpperCase()} trên Mạng tổng đám mây không? Tất cả các máy khác cũng sẽ bị xoá.`)) {
+                db.ref('vietlott_matrix_data/' + currentType).remove();
+                alert(`Đã xoá sạch dữ liệu đài ${currentType.toUpperCase()} trên Mạng tổng thành công thưa Đại ca!`);
             }
         }
+
+        // Khởi chạy đồng bộ mạng tổng ngay khi mở trang web
+        window.onload = function() { 
+            setupPredictPanel();
+            startSyncingDatabase();
+        };
     </script>
 </body>
 </html>
