@@ -255,32 +255,6 @@
             text-shadow: 0 0 6px #ff0055, 0 0 12px #ff0055;
         }
         
-        .btn-quick-update {
-            flex: 0.9;
-            height: 34px;
-            background: #111116;
-            border: 1.5px solid #00f2fe;
-            color: #00f2fe;
-            font-size: 0.65rem;
-            font-weight: bold;
-            border-radius: 5px;
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 6px rgba(0, 242, 254, 0.15);
-            white-space: nowrap;
-            box-sizing: border-box;
-            letter-spacing: 0.5px;
-        }
-        .btn-quick-update:hover {
-            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-            color: #000;
-            box-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
-        }
-        
         .btn-clear-premium {
             height: 34px;
             background: #111116;
@@ -505,8 +479,7 @@
         .admin-table td { padding: 4px; border: 1px solid #2d2d3d; background: #111116; }
         .admin-input { background: #16161f; border: 1px solid #3d3d52; color: #fff; font-size: 0.65rem; padding: 2px 4px; border-radius: 3px; width: 70px; }
 
-        /* PHẦN CSS THIẾT KẾ RIÊNG CHO BẢNG CẬP NHẬT PHÂN CHIA 2 BÊN MỚI */
-        .inline-update-board {
+        #adminUpdateBoard {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
@@ -622,17 +595,18 @@
             
             <div class="panel" style="padding: 4px; flex-shrink: 0; display: flex; flex-direction: column; gap: 4px;">
                 <div class="upload-container-layout">
-                    <!-- BẢNG TRẠNG THÁI ĐỒNG BỘ ĐÈN LED NEON THÔNG MINH -->
-                    <div class="status-sync-box" id="globalStatusBox" title="Trạng thái đồng bộ dữ liệu trực tuyến">
+                    <!-- BẢNG TRẠNG THÁI ĐỒNG BỘ ĐÈN LED NEON THÔNG MINH - KHI BẤM KÍCH HOẠT CHỌN NHIỀU FILE -->
+                    <div class="status-sync-box" id="globalStatusBox" onclick="document.getElementById('multiFileInput').click()" title="Bấm vào đây để nạp nhanh 1 hoặc cùng lúc cả 3 file kết quả (.txt)">
                         <div class="status-item" id="statusLotto"><span class="tick">✓</span>5/35</div>
                         <div class="status-item" id="statusMega"><span class="tick">✓</span>6/45</div>
                         <div class="status-item" id="statusPower"><span class="tick">✓</span>6/55</div>
+                        <input type="file" id="multiFileInput" accept=".txt" multiple style="display:none" onchange="handleMultiFileSelect(event)">
                     </div>
                     <button class="btn-clear-premium" id="adminDeleteBtn" onclick="clearCurrentData()" title="Xoá dữ liệu đài này">🗑️ XOÁ</button>
                 </div>
 
-                <!-- BẢNG CHIA 2 BÊN: MỞ GEMINI & DÁN DỮ LIỆU ĐẨY LÊN ĐÁM MÂY -->
-                <div class="inline-update-board">
+                <!-- BẢNG CHIA 2 BÊN: ĐỘC QUYỀN CHỈ HIỂN THỊ CHO ADMIN (ĐẠI CA) -->
+                <div class="inline-update-board" id="adminUpdateBoard" style="display: none;">
                     <div class="board-left-panel">
                         <div style="font-size: 0.55rem; color: #8a8a9e; margin-bottom: 6px; font-weight: bold; line-height: 1.2;">Xử lý thông minh</div>
                         <a class="btn-gemini-link" href="https://gemini.google.com/app/44cfac50974dfc1c?hl=vi" target="_blank">🚀 Mở Gemini</a>
@@ -777,13 +751,16 @@
                         time: timeStr
                     });
 
+                    // PHÂN QUYỀN ĐỘC QUYỀN CHO ADMIN (ĐẠI CA)
                     if (currentUserRole === 'admin') {
                         document.getElementById('adminDeleteBtn').style.display = 'flex';
+                        document.getElementById('adminUpdateBoard').style.display = 'grid'; // Hiện bảng Gemini/Dán dữ liệu
                         document.getElementById('viewAdminBtn').style.display = 'block';
                         document.getElementById('headerTitle').innerText = "Thống kê Vietlott - XIN CHÀO ĐẠI CA!";
                         loadAdminPanels();
                     } else {
                         document.getElementById('adminDeleteBtn').style.display = 'none';
+                        document.getElementById('adminUpdateBoard').style.display = 'none'; // Thành viên sẽ bị ẩn hoàn toàn
                         document.getElementById('viewAdminBtn').style.display = 'none';
                         document.getElementById('headerTitle').innerText = `Thống kê Vietlott - Chào Thành viên: ${u}`;
                     }
@@ -892,14 +869,68 @@
             return `rgb(${r}, ${g}, ${b})`;
         }
 
-        // --- HÀM XỬ LÝ ĐỌC VÀ ĐẨY DỮ LIỆU TỪ Ô TEXTAREA LÊN ĐÁM MÂY ---
+        // --- KHU VỰC BẤM Ô DẤU TÍCH CHỌN 1 HOẶC 3 FILE TỰ ĐỘNG ĐỒNG BỘ ---
+        function handleMultiFileSelect(e) {
+            let files = e.target.files;
+            if (files.length === 0) return;
+            let loadedTypes = [];
+
+            Array.from(files).forEach(file => {
+                let filename = file.name.toLowerCase();
+                let targetType = '';
+                if (filename.includes('535') || filename === '535.txt') targetType = 'lotto';
+                else if (filename.includes('645') || filename === '645.txt') targetType = 'mega';
+                else if (filename.includes('655') || filename === '655.txt') targetType = 'power';
+
+                if (targetType) {
+                    let reader = new FileReader();
+                    reader.onload = function(evt) {
+                        let text = evt.target.result;
+                        let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                        let parsedRows = [];
+                        lines.forEach(line => {
+                            let parts = line.split('|').map(p => p.trim());
+                            if(parts.length >= 2) {
+                                let dateStr = parts[0];
+                                let mainNums = parts[1].split(/\s+/).map(n => String(parseInt(n)).padStart(2, '0'));
+                                let specNum = parts[2] ? String(parseInt(parts[2])).padStart(2, '0') : null;
+                                parsedRows.push({ date: dateStr, main: mainNums, spec: specNum });
+                            }
+                        });
+                        let limitedRows = parsedRows.slice(0, 60);
+                        
+                        if (limitedRows.length === 0) {
+                            alert(`File ${file.name} trống hoặc sai định dạng cấu trúc!`);
+                            return;
+                        }
+
+                        db.ref('vietlott_matrix_data/' + targetType).set(limitedRows);
+                        loadedTypes.push(targetType.toUpperCase());
+                    };
+                    reader.readAsText(file);
+                }
+            });
+
+            setTimeout(() => {
+                if (loadedTypes.length > 0) {
+                    alert("Hệ thống nhận diện file đã đồng bộ lên đám mây: " + loadedTypes.join(', '));
+                }
+            }, 500);
+            e.target.value = ''; // Reset input để lần sau chọn lại vẫn chạy tốt
+        }
+
+        // --- NÚT CẬP NHẬT ĐA NĂNG: CÓ DỮ LIỆU THÌ UP, KHÔNG CÓ THÌ LOAD LẠI TỪ ĐÁM MÂY ---
         function handleBoardDataPush() {
             let text = document.getElementById('boardRawInput').value.trim();
+            
+            // Trường hợp ô dán dữ liệu TRỐNG -> Đồng bộ kéo dữ liệu đám mây về ma trận nền
             if (!text) {
-                alert("Đại ca chưa dán dữ liệu vào ô trống kìa ạ!");
+                startSyncingDatabase();
+                alert(`Đã làm mới và đồng bộ lại dữ liệu đài ${currentType.toUpperCase()} từ đám mây thưa Đại ca!`);
                 return;
             }
 
+            // Trường hợp có dữ liệu dán -> Thực hiện phân tích đẩy lên đám mây
             let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
             let parsedRows = [];
             
@@ -915,16 +946,14 @@
 
             let limitedRows = parsedRows.slice(0, 60);
 
-            // Kiểm tra bộ lọc chặn file lỗi tuyệt đối
             if (limitedRows.length === 0) {
-                alert("Dữ liệu không đúng định dạng cấu trúc kết quả (Ngày | Bộ số) thưa Đại ca! Hệ thống đã chặn lại.");
+                alert("Dữ liệu sai cấu trúc (Ngày | Bộ số) thưa Đại ca!");
                 return;
             }
 
-            // Đẩy lên nhánh đài hiện tại đang mở trên giao diện
             db.ref('vietlott_matrix_data/' + currentType).set(limitedRows);
-            document.getElementById('boardRawInput').value = ''; // Xoá trắng ô sau khi nạp xong
-            alert(`Đã đồng bộ dữ liệu đài ${currentType.toUpperCase()} lên Mạng tổng đám mây thành công thưa Đại ca!`);
+            document.getElementById('boardRawInput').value = ''; 
+            alert(`Đã đồng bộ dữ liệu dán đài ${currentType.toUpperCase()} lên Mạng tổng thành công thưa Đại ca!`);
         }
 
         function switchType(type) {
@@ -1347,7 +1376,16 @@
                         pool.sort((a, b) => pairCounts[parseInt(b)] - pairCounts[parseInt(a)]);
                     } else pool.sort(() => Math.random() - 0.5);
                 }
-                while (resultSet.length < mainSize && pool.length > 0) resultSet.push(pool.shift());
+
+                let needed = mainSize - resultSet.length;
+                if (needed > 0 && pool.length > 0) {
+                    let candidatesCount = Math.min(pool.length, needed + 5);
+                    let topCandidates = pool.slice(0, candidatesCount);
+                    topCandidates.sort(() => Math.random() - 0.5);
+                    for(let k = 0; k < needed; k++) {
+                        if(topCandidates.length > 0) resultSet.push(topCandidates.shift());
+                    }
+                }
             }
 
             resultSet.sort((a, b) => parseInt(a) - parseInt(b));
