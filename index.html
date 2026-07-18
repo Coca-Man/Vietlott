@@ -209,15 +209,13 @@
         .section-title { font-size: 0.7rem; font-weight: 800; color: #00f2fe; text-transform: uppercase; margin-bottom: 4px; display: flex; align-items: center; gap: 4px; letter-spacing: 0.5px; }
         .panel { background: #1c1c24; border: 1px solid #2d2d3d; padding: 6px; border-radius: 6px; }
         
-        /* CSS CHO KHU VỰC 3 NÚT ĐỒNG BỘ MỚI TINH */
+        /* KHU VỰC THANH ĐỒNG BỘ THÔNG MINH */
         .upload-container-layout {
             display: flex;
             gap: 6px;
             align-items: center;
             width: 100%;
         }
-        
-        /* KHUNG TRẠNG THÁI ĐỒNG BỘ THÔNG MINH */
         .status-sync-box { 
             flex: 1.4;
             height: 34px;
@@ -249,7 +247,6 @@
             color: #3d3d52;
             transition: all 0.3s;
         }
-        /* Style kích hoạt đỏ neon khi từng đài có dữ liệu */
         .status-item.active {
             color: #fff;
         }
@@ -543,7 +540,7 @@
             <div class="panel" style="padding: 4px; flex-shrink: 0;">
                 <div class="upload-container-layout">
                     
-                    <!-- BẢNG TRẠNG THÁI ĐỒNG BỘ THÔNG MINH MỚI THAY THẾ Ô CHỌN FILE CŨ -->
+                    <!-- BẢNG TRẠNG THÁI ĐỒNG BỘ ĐÈN LED NEON THÔNG MINH -->
                     <div class="status-sync-box" id="globalStatusBox" onclick="document.getElementById('fileInput').click()" title="Bấm để chọn file lẻ bổ sung">
                         <div class="status-item" id="statusLotto"><span class="tick">✓</span>5/35</div>
                         <div class="status-item" id="statusMega"><span class="tick">✓</span>6/45</div>
@@ -552,8 +549,6 @@
                     </div>
                     
                     <button class="btn-clear-premium" id="adminDeleteBtn" onclick="clearCurrentData()" title="Xoá dữ liệu đài này">🗑️ XOÁ</button>
-                    
-                    <!-- SỬA CHỮ CẬP NHẬT NHANH THÀNH CẬP NHẬT -->
                     <button class="btn-quick-update" onclick="document.getElementById('multiFileInput').click()">CẬP NHẬT</button>
                     <input type="file" id="multiFileInput" accept=".txt" multiple style="display:none" onchange="handleMultiFileSelect(event)">
                 </div>
@@ -759,7 +754,6 @@
             }
         }
 
-        // --- CƠ CHẾ KIỂM TRA ĐỒNG BỘ VÀ ĐỔI MÀU LED NEON THEO Ý ĐẠI CA ---
         function startSyncingDatabase() {
             db.ref('vietlott_matrix_data').on('value', (snapshot) => {
                 let data = snapshot.val() || {};
@@ -771,12 +765,10 @@
                 let hasMega = globalOnlineData.mega.length > 0;
                 let hasPower = globalOnlineData.power.length > 0;
 
-                // Kích hoạt tích đỏ neon cho từng đài
                 document.getElementById('statusLotto').classList.toggle('active', hasLotto);
                 document.getElementById('statusMega').classList.toggle('active', hasMega);
                 document.getElementById('statusPower').classList.toggle('active', hasPower);
 
-                // Nếu có đủ cả 3 loại dữ liệu -> Khung chuyển sang sáng xanh lá
                 let box = document.getElementById('globalStatusBox');
                 if (hasLotto && hasMega && hasPower) {
                     box.style.borderColor = '#00ff66';
@@ -809,6 +801,7 @@
             return `rgb(${r}, ${g}, ${b})`;
         }
 
+        // --- BỘ LỌC CHẶN FILE LỖI / SAI ĐỊNH DẠNG TUYỆT ĐỐI ---
         function handleMultiFileSelect(e) {
             let files = e.target.files;
             if (files.length === 0) return;
@@ -837,6 +830,13 @@
                             }
                         });
                         let limitedRows = parsedRows.slice(0, 60);
+                        
+                        // Chặn đẩy dữ liệu nếu file trống rỗng hoặc sai cấu trúc hoàn toàn
+                        if (limitedRows.length === 0) {
+                            alert(`File ${file.name} trống hoặc sai cấu trúc định dạng kết quả, hệ thống đã bỏ qua!`);
+                            return;
+                        }
+
                         db.ref('vietlott_matrix_data/' + targetType).set(limitedRows);
                         loadedTypes.push(targetType.toUpperCase());
                     };
@@ -849,6 +849,37 @@
                     alert("Đã đẩy đồng bộ lên Mạng tổng đám mây các loại: " + loadedTypes.join(', ') + " thưa Đại ca!");
                 }
             }, 500);
+        }
+
+        function handleFileSelect(e) {
+            let file = e.target.files[0];
+            if(!file) return;
+            let reader = new FileReader();
+            reader.onload = function(evt) {
+                let text = evt.target.result;
+                let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                let parsedRows = [];
+                lines.forEach(line => {
+                    let parts = line.split('|').map(p => p.trim());
+                    if(parts.length >= 2) {
+                        let dateStr = parts[0];
+                        let mainNums = parts[1].split(/\s+/).map(n => String(parseInt(n)).padStart(2, '0'));
+                        let specNum = parts[2] ? String(parseInt(parts[2])).padStart(2, '0') : null;
+                        parsedRows.push({ date: dateStr, main: mainNums, spec: specNum });
+                    }
+                });
+                let limitedRows = parsedRows.slice(0, 60);
+
+                // Chặn đẩy dữ liệu nếu file trống rỗng hoặc sai cấu trúc hoàn toàn
+                if (limitedRows.length === 0) {
+                    alert("File trống hoặc sai cấu trúc định dạng kết quả thưa Đại ca! Vui lòng kiểm tra lại.");
+                    return;
+                }
+
+                db.ref('vietlott_matrix_data/' + currentType).set(limitedRows);
+                alert("Đã đồng bộ file đơn lên Mạng tổng đám mây thưa Đại ca!");
+            };
+            reader.readAsText(file);
         }
 
         function switchType(type) {
@@ -873,30 +904,6 @@
             document.getElementById('viewMatrixBtn').classList.toggle('active', view === 'matrix');
             document.getElementById('viewIframeBtn').classList.toggle('active', view === 'iframe');
             document.getElementById('viewAdminBtn').classList.toggle('active', view === 'admin');
-        }
-
-        function handleFileSelect(e) {
-            let file = e.target.files[0];
-            if(!file) return;
-            let reader = new FileReader();
-            reader.onload = function(evt) {
-                let text = evt.target.result;
-                let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-                let parsedRows = [];
-                lines.forEach(line => {
-                    let parts = line.split('|').map(p => p.trim());
-                    if(parts.length >= 2) {
-                        let dateStr = parts[0];
-                        let mainNums = parts[1].split(/\s+/).map(n => String(parseInt(n)).padStart(2, '0'));
-                        let specNum = parts[2] ? String(parseInt(parts[2])).padStart(2, '0') : null;
-                        parsedRows.push({ date: dateStr, main: mainNums, spec: specNum });
-                    }
-                });
-                let limitedRows = parsedRows.slice(0, 60);
-                db.ref('vietlott_matrix_data/' + currentType).set(limitedRows);
-                alert("Đã đồng bộ file đơn lên Mạng tổng đám mây thưa Đại ca!");
-            };
-            reader.readAsText(file);
         }
 
         function reloadCurrentMatrix() {
