@@ -3,291 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <title>Thống kê và dự đoán Vietlott by CVN - FINAL PREMIUM</title>
-    <!-- Nhúng thư viện Firebase thế hệ mới chạy trực tiếp trên Web trình duyệt -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <style>
-        html, body {
-            height: 100vh;
-            min-height: 100vh;
-            max-height: 100vh;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            box-sizing: border-box;
-        }
-        body { 
-            font-family: 'Segoe UI', Arial, sans-serif; 
-            background-color: #0d0d11; 
-            color: #fff; 
-            display: flex;
-            flex-direction: column;
-            padding: 6px;
-        }
-        body::before {
-            content: "CVN PREMIUM SYSTEMS";
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-25deg);
-            font-size: 8vw;
-            font-weight: 900;
-            color: rgba(0, 242, 254, 0.012);
-            z-index: -1;
-            pointer-events: none;
-            white-space: nowrap;
-            letter-spacing: 15px;
-            font-family: 'Arial Black', sans-serif;
-        }
-
-        /* GIAO DIỆN MÀN HÌNH ĐĂNG NHẬP CHUYÊN NGHIỆP */
-        #loginOverlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: #09090d;
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .login-box {
-            background: #13131a;
-            border: 2px solid #00f2fe;
-            box-shadow: 0 0 25px rgba(0, 242, 254, 0.3);
-            padding: 25px;
-            border-radius: 8px;
-            width: 100%;
-            max-width: 320px;
-            text-align: center;
-        }
+        html, body { height: 100vh; min-height: 100vh; max-height: 100vh; margin: 0; padding: 0; overflow: hidden; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #0d0d11; color: #fff; display: flex; flex-direction: column; padding: 6px; }
+        body::before { content: "CVN PREMIUM SYSTEMS"; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg); font-size: 8vw; font-weight: 900; color: rgba(0, 242, 254, 0.012); z-index: -1; pointer-events: none; white-space: nowrap; letter-spacing: 15px; font-family: 'Arial Black', sans-serif; }
+        #loginOverlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #09090d; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .login-box { background: #13131a; border: 2px solid #00f2fe; box-shadow: 0 0 25px rgba(0, 242, 254, 0.3); padding: 25px; border-radius: 8px; width: 100%; max-width: 320px; text-align: center; }
         .login-title { font-size: 1.1rem; font-weight: 900; color: #00f2fe; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1px; }
         .login-input { width: 100%; background: #1c1c24; border: 1px solid #2d2d3d; color: #fff; padding: 8px 12px; border-radius: 5px; margin-bottom: 10px; font-size: 0.8rem; font-weight: bold; box-sizing: border-box; outline: none; }
         .login-input:focus { border-color: #00f2fe; box-shadow: 0 0 8px rgba(0, 242, 254, 0.3); }
         .btn-login { width: 100%; padding: 8px; background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); border: none; color: #000; font-weight: bold; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
-        .btn-login:hover { box-shadow: 0 0 12px rgba(0, 242, 254, 0.5); }
         .login-error { color: #ff0055; font-size: 0.7rem; font-weight: bold; margin-bottom: 10px; display: none; }
-
-        .header-premium { 
-            background: #111118; 
-            padding: 4px 15px; 
-            border-radius: 6px; 
-            box-shadow: 0 0 15px rgba(0, 242, 254, 0.25), inset 0 0 10px rgba(255, 0, 127, 0.15); 
-            margin-bottom: 6px; 
-            border: 1px solid #222235;
-            position: relative;
-            overflow: hidden;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            animation: neonFlicker 5s infinite;
-        }
-        @keyframes neonFlicker {
-            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
-                border-color: #222235;
-                box-shadow: 0 0 15px rgba(0, 242, 254, 0.25), inset 0 0 10px rgba(255, 0, 127, 0.15);
-            }
-            20%, 22%, 24%, 55% {
-                border-color: #00f2fe;
-                box-shadow: 0 0 25px rgba(0, 242, 254, 0.7), 0 0 10px rgba(255, 0, 127, 0.5), inset 0 0 15px rgba(0, 242, 254, 0.3);
-            }
-        }
-        .header-premium::after {
-            content: '';
-            position: absolute;
-            bottom: 0; left: 0; right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, #ff007f, #7928ca, #00f2fe, #ffab00, #ff007f);
-            background-size: 300% 100%;
-            animation: premiumNeonBar 4s linear infinite;
-        }
-        @keyframes premiumNeonBar {
-            0% { background-position: 0% 50%; }
-            100% { background-position: 300% 50%; }
-        }
-        .header-logo {
-            height: 24px;
-            width: auto;
-            border-radius: 4px;
-            filter: drop-shadow(0 0 4px rgba(0, 242, 254, 0.6));
-        }
-        .title-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .header-premium h1 { 
-            margin: 0; 
-            font-size: 1.15rem; 
-            font-weight: 900; 
-            text-transform: uppercase; 
-            color: #fff;
-            letter-spacing: 1.2px;
-            text-shadow: 0 0 3px #fff, 0 0 8px #00f2fe, 0 0 15px #7928ca;
-            animation: textPulse 3s infinite alternate;
-        }
-        @keyframes textPulse {
-            0% { text-shadow: 0 0 3px #fff, 0 0 6px #00f2fe, 0 0 12px #7928ca; }
-            100% { text-shadow: 0 0 5px #fff, 0 0 12px #00f2fe, 0 0 20px #ff007f; }
-        }
-        .cosmic-icon {
-            font-size: 1rem;
-            animation: cosmicBlink var(--delay, 1s) infinite alternate;
-            display: inline-block;
-        }
+        .header-premium { background: #111118; padding: 4px 15px; border-radius: 6px; box-shadow: 0 0 15px rgba(0, 242, 254, 0.25), inset 0 0 10px rgba(255, 0, 127, 0.15); margin-bottom: 6px; border: 1px solid #222235; position: relative; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 12px; animation: neonFlicker 5s infinite; }
+        @keyframes neonFlicker { 0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { border-color: #222235; box-shadow: 0 0 15px rgba(0, 242, 254, 0.25), inset 0 0 10px rgba(255, 0, 127, 0.15); } 20%, 22%, 24%, 55% { border-color: #00f2fe; box-shadow: 0 0 25px rgba(0, 242, 254, 0.7), 0 0 10px rgba(255, 0, 127, 0.5), inset 0 0 15px rgba(0, 242, 254, 0.3); } }
+        .header-premium::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #ff007f, #7928ca, #00f2fe, #ffab00, #ff007f); background-size: 300% 100%; animation: premiumNeonBar 4s linear infinite; }
+        @keyframes premiumNeonBar { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }
+        .header-logo { height: 24px; width: auto; border-radius: 4px; filter: drop-shadow(0 0 4px rgba(0, 242, 254, 0.6)); }
+        .title-wrapper { display: flex; align-items: center; gap: 8px; }
+        .header-premium h1 { margin: 0; font-size: 1.15rem; font-weight: 900; text-transform: uppercase; color: #fff; letter-spacing: 1.2px; text-shadow: 0 0 3px #fff, 0 0 8px #00f2fe, 0 0 15px #7928ca; animation: textPulse 3s infinite alternate; }
+        @keyframes textPulse { 0% { text-shadow: 0 0 3px #fff, 0 0 6px #00f2fe, 0 0 12px #7928ca; } 100% { text-shadow: 0 0 5px #fff, 0 0 12px #00f2fe, 0 0 20px #ff007f; } }
+        .cosmic-icon { font-size: 1rem; animation: cosmicBlink var(--delay, 1s) infinite alternate; display: inline-block; }
         .icon-sun { color: #ffab00; text-shadow: 0 0 8px #ffab00; --delay: 1.4s; }
         .icon-star { color: #fff370; text-shadow: 0 0 6px #fff370; --delay: 0.7s; }
         .icon-moon { color: #00f2fe; text-shadow: 0 0 8px #00f2fe; --delay: 1.8s; }
-        @keyframes cosmicBlink {
-            0%, 88% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 5px currentColor); }
-            92%, 96% { opacity: 0.2; transform: scale(0.9); filter: none; }
-            94%, 100% { opacity: 1; transform: scale(1.05); filter: drop-shadow(0 0 8px currentColor); }
-        }
-        .container { 
-            display: flex; 
-            gap: 8px; 
-            flex: 1;
-            min-height: 0;
-            height: calc(100vh - 45px);
-        }
-        
-        .sidebar { 
-            width: 360px; 
-            background: #13131a; 
-            padding: 8px; 
-            border-radius: 8px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 6px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3); 
-            border: 1px solid #22222b;
-            flex-shrink: 0;
-            overflow: hidden;
-            height: 100%;
-            box-sizing: border-box;
-        }
-        .main-content { 
-            flex: 1; 
-            background: #13131a; 
-            padding: 8px; 
-            border-radius: 8px; 
-            display: flex; 
-            flex-direction: column; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3); 
-            border: 1px solid #22222b; 
-            overflow: hidden; 
-            height: 100%;
-            box-sizing: border-box;
-        }
-        
+        @keyframes cosmicBlink { 0%, 88% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 5px currentColor); } 92%, 96% { opacity: 0.2; transform: scale(0.9); filter: none; } 94%, 100% { opacity: 1; transform: scale(1.05); filter: drop-shadow(0 0 8px currentColor); } }
+        .container { display: flex; gap: 8px; flex: 1; min-height: 0; height: calc(100vh - 45px); }
+        .sidebar { width: 360px; background: #13131a; padding: 8px; border-radius: 8px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); border: 1px solid #22222b; flex-shrink: 0; overflow: hidden; height: 100%; box-sizing: border-box; }
+        .main-content { flex: 1; background: #13131a; padding: 8px; border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0,0,0,0.3); border: 1px solid #22222b; overflow: hidden; height: 100%; box-sizing: border-box; }
         .tabs { display: flex; gap: 4px; flex-shrink: 0; width: 100%; }
-        .tab-btn { 
-            flex: 1; 
-            height: 32px;
-            background: #1c1c24; 
-            border: 1px solid #2d2d3d; 
-            color: #8a8a9e; 
-            cursor: pointer; 
-            border-radius: 5px; 
-            font-weight: bold; 
-            font-size: 0.65rem; 
-            transition: all 0.2s; 
-            text-transform: uppercase; 
-            white-space: nowrap; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .tab-btn.active { 
-            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); 
-            color: #000; 
-            border-color: transparent; 
-            box-shadow: 0 0 8px rgba(0, 242, 254, 0.4); 
-        }
-
+        .tab-btn { flex: 1; height: 32px; background: #1c1c24; border: 1px solid #2d2d3d; color: #8a8a9e; cursor: pointer; border-radius: 5px; font-weight: bold; font-size: 0.65rem; transition: all 0.2s; text-transform: uppercase; white-space: nowrap; display: flex; align-items: center; justify-content: center; }
+        .tab-btn.active { background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color: #000; border-color: transparent; box-shadow: 0 0 8px rgba(0, 242, 254, 0.4); }
         .section-title { font-size: 0.7rem; font-weight: 800; color: #00f2fe; text-transform: uppercase; margin-bottom: 4px; display: flex; align-items: center; gap: 4px; letter-spacing: 0.5px; }
         .panel { background: #1c1c24; border: 1px solid #2d2d3d; padding: 6px; border-radius: 6px; }
-        
-        /* KHU VỰC THANH ĐỒNG BỘ THÔNG MINH */
-        .upload-container-layout {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-            width: 100%;
-        }
-        .status-sync-box { 
-            flex: 1.4;
-            height: 34px;
-            border: 1.5px solid #3d3d52; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            background: #16161f; 
-            transition: all 0.3s ease; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 8px; 
-            box-sizing: border-box;
-            padding: 0 4px;
-            user-select: none;
-            box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
-        }
-        .status-item {
-            font-size: 0.65rem;
-            font-weight: bold;
-            color: #6c6c80;
-            display: flex;
-            align-items: center;
-            gap: 2px;
-            transition: all 0.3s;
-        }
-        .status-item span.tick {
-            font-size: 0.75rem;
-            color: #3d3d52;
-            transition: all 0.3s;
-        }
-        .status-item.active {
-            color: #fff;
-        }
-        .status-item.active span.tick {
-            color: #ff0055;
-            text-shadow: 0 0 6px #ff0055, 0 0 12px #ff0055;
-        }
-        
-        .btn-clear-premium {
-            height: 34px;
-            background: #111116;
-            color: #ff0055;
-            border: 1.5px solid #ff0055;
-            padding: 0 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 0.65rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 3px;
-            box-shadow: 0 0 6px rgba(255, 0, 85, 0.15);
-            transition: all 0.2s;
-            white-space: nowrap;
-            box-sizing: border-box;
-        }
-        .btn-clear-premium:hover {
-            background: #ff0055;
-            color: #fff;
-            box-shadow: 0 0 10px #ff0055;
-        }
-
-        .matrix-viewport { 
-            flex: 1; 
-            overflow: auto; 
-            border: 1px solid #2d2d3d; 
-            border-radius: 6px; 
-            background: #09090d; 
-            max-height: calc(100% - 35px); 
-        }
+        .upload-container-layout { display: flex; gap: 6px; align-items: center; width: 100%; }
+        .status-sync-box { flex: 1.4; height: 34px; border: 1.5px solid #3d3d52; border-radius: 5px; cursor: pointer; background: #16161f; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; padding: 0 4px; user-select: none; box-shadow: inset 0 0 5px rgba(0,0,0,0.5); }
+        .status-item { font-size: 0.65rem; font-weight: bold; color: #6c6c80; display: flex; align-items: center; gap: 2px; transition: all 0.3s; }
+        .status-item span.tick { font-size: 0.75rem; color: #3d3d52; transition: all 0.3s; }
+        .status-item.active { color: #fff; }
+        .status-item.active span.tick { color: #ff0055; text-shadow: 0 0 6px #ff0055, 0 0 12px #ff0055; }
+        .btn-clear-premium { height: 34px; background: #111116; color: #ff0055; border: 1.5px solid #ff0055; padding: 0 10px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.65rem; display: flex; align-items: center; justify-content: center; gap: 3px; box-shadow: 0 0 6px rgba(255, 0, 85, 0.15); transition: all 0.2s; white-space: nowrap; box-sizing: border-box; }
+        .btn-clear-premium:hover { background: #ff0055; color: #fff; box-shadow: 0 0 10px #ff0055; }
+        .matrix-viewport { flex: 1; overflow: auto; border: 1px solid #2d2d3d; border-radius: 6px; background: #09090d; max-height: calc(100% - 35px); }
         table { border-collapse: separate; border-spacing: 1px; width: 100%; font-size: 0.7rem; text-align: center; }
         th, td { padding: 1px 0px; width: 18px; height: 18px; min-height: 18px; max-height: 18px; box-sizing: border-box; font-weight: 600; }
         th { background: #1c1c24; color: #a0a0b0; font-size: 0.65rem; position: sticky; top: 0; z-index: 10; height: 20px; }
@@ -308,29 +66,9 @@
         tr.test-row td { background: #0d1b2a; color: #00f2fe; font-weight: bold; border-bottom: 1px dashed #00f2fe; font-size: 0.65rem; }
         tr.test-row td.cell-test-active { background: #ff0055 !important; color: #fff !important; }
         tr.test-row td.cell-test-spec-active { background: #ffcc00 !important; color: #000 !important; }
-        
         tr.count-row td { background: #1c2d24; color: #00ff66; font-weight: bold; font-size: 0.65rem; border-bottom: 1px solid #2d2d3d; }
-
-        .predict-box { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 2px; 
-            background: #1c1c24; 
-            border: 1px solid #2d2d3d; 
-            padding: 3px; 
-            max-height: 170px; 
-            overflow-y: auto; 
-            flex-shrink: 0; 
-        }
-        .predict-row { 
-            display: flex; 
-            align-items: center; 
-            gap: 4px; 
-            background: #16161f; 
-            padding: 2px 3px; 
-            border-radius: 4px; 
-            border: 1px solid #22222b; 
-        }
+        .predict-box { display: flex; flex-direction: column; gap: 2px; background: #1c1c24; border: 1px solid #2d2d3d; padding: 3px; max-height: 170px; overflow-y: auto; flex-shrink: 0; }
+        .predict-row { display: flex; align-items: center; gap: 4px; background: #16161f; padding: 2px 3px; border-radius: 4px; border: 1px solid #22222b; }
         .predict-row-label { font-size: 0.65rem; font-weight: bold; color: #ff007f; width: 12px; }
         .ball-predict { width: 18px; height: 18px; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: bold; color: #fff; }
         .action-inline-btn { background: #22222b; border: 1px solid #3d3d52; color: #a0a0b0; padding: 1px 3px; font-size: 0.6rem; font-weight: bold; border-radius: 3px; cursor: pointer; }
@@ -341,108 +79,21 @@
         .btn-del:hover { background: #551111; color: #fff; }
         .btn-compose { border-color: #8800cc; color: #cc66ff; }
         .btn-compose:hover { background: #8800cc; color: #fff; }
-        
-        .count-select {
-            background: #111116;
-            color: #00f2fe;
-            border: 1px solid #2d2d3d;
-            font-size: 0.75rem;
-            font-weight: bold;
-            border-radius: 4px;
-            padding: 3px 6px;
-            cursor: pointer;
-            outline: none;
-            text-align: center;
-        }
-        .count-select:hover {
-            border-color: #00f2fe;
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.75);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        .modal-box {
-            background: #13131a;
-            border: 2px solid #00f2fe;
-            box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
-            border-radius: 8px;
-            width: 90%;
-            max-width: 420px;
-            padding: 12px;
-            box-sizing: border-box;
-            animation: modalFadeIn 0.25s ease;
-        }
-        @keyframes modalFadeIn {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-        .modal-title {
-            font-size: 0.85rem;
-            font-weight: 900;
-            color: #00f2fe;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-            text-shadow: 0 0 5px rgba(0, 242, 254, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .modal-close {
-            color: #8a8a9e;
-            font-size: 1.1rem;
-            cursor: pointer;
-            border: none;
-            background: none;
-        }
+        .count-select { background: #111116; color: #00f2fe; border: 1px solid #2d2d3d; font-size: 0.75rem; font-weight: bold; border-radius: 4px; padding: 3px 6px; cursor: pointer; outline: none; text-align: center; }
+        .count-select:hover { border-color: #00f2fe; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.75); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-box { background: #13131a; border: 2px solid #00f2fe; box-shadow: 0 0 20px rgba(0, 242, 254, 0.4); border-radius: 8px; width: 90%; max-width: 420px; padding: 12px; box-sizing: border-box; animation: modalFadeIn 0.25s ease; }
+        @keyframes modalFadeIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-title { font-size: 0.85rem; font-weight: 900; color: #00f2fe; text-transform: uppercase; margin-bottom: 8px; text-shadow: 0 0 5px rgba(0, 242, 254, 0.5); display: flex; align-items: center; justify-content: space-between; }
+        .modal-close { color: #8a8a9e; font-size: 1.1rem; cursor: pointer; border: none; background: none; }
         .modal-close:hover { color: #fff; }
-        .modal-content-area {
-            background: #09090d;
-            border: 1px solid #2d2d3d;
-            border-radius: 6px;
-            padding: 10px;
-            font-family: monospace;
-            font-size: 0.85rem;
-            color: #ffab00;
-            white-space: pre-wrap;
-            word-break: break-all;
-            user-select: all;
-            min-height: 40px;
-            margin-bottom: 10px;
-            line-height: 1.4;
-        }
-        .modal-actions {
-            display: flex;
-            gap: 8px;
-            justify-content: flex-end;
-        }
-        .modal-btn {
-            padding: 4px 10px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-            border: 1px solid transparent;
-        }
-        .modal-btn-copy {
-            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-            color: #000;
-        }
-        .modal-btn-copy:hover {
-            box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
-        }
-        .modal-btn-cancel {
-            background: #22222b;
-            border-color: #3d3d52;
-            color: #a0a0b0;
-        }
+        .modal-content-area { background: #09090d; border: 1px solid #2d2d3d; border-radius: 6px; padding: 10px; font-family: monospace; font-size: 0.85rem; color: #ffab00; white-space: pre-wrap; word-break: break-all; user-select: all; min-height: 40px; margin-bottom: 10px; line-height: 1.4; }
+        .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+        .modal-btn { padding: 4px 10px; font-size: 0.7rem; font-weight: bold; border-radius: 4px; cursor: pointer; border: 1px solid transparent; }
+        .modal-btn-copy { background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color: #000; }
+        .modal-btn-copy:hover { box-shadow: 0 0 10px rgba(0, 242, 254, 0.5); }
+        .modal-btn-cancel { background: #22222b; border-color: #3d3d52; color: #a0a0b0; }
         .modal-btn-cancel:hover { background: #2d2d3d; color: #fff; }
-
         .lock-horizontal-layout { display: flex; gap: 6px; align-items: center; background: #16161f; padding: 5px; border-radius: 6px; border: 1px solid #22222b; margin-bottom: 2px; flex-shrink: 0; }
         .lock-sub-section { display: flex; align-items: center; gap: 4px; }
         .lock-sub-title { font-size: 0.65rem; font-weight: bold; color: #8a8a9e; text-transform: uppercase; white-space: nowrap; }
@@ -452,118 +103,30 @@
         .lock-input.spec-lock { border-color: #ff7300; color: #ff9900; }
         .btn-predict-trigger { width: 100%; padding: 5px; background: linear-gradient(135deg, #ff007f 0%, #7928ca 100%); border: none; color: #fff; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.5px; box-shadow: 0 2px 8px rgba(255, 0, 127, 0.3); transition: all 0.2s; margin-bottom: 2px; flex-shrink: 0; }
         .btn-predict-trigger:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255, 0, 127, 0.5); }
-        
-        .sidebar-iframe-container { 
-            flex: 1; 
-            min-height: 0; 
-            border: 1px solid #2d2d3d; 
-            border-radius: 6px; 
-            overflow: hidden; 
-            background: #16161f; 
-            height: 100%; 
-        }
-        .sidebar-iframe-container iframe { 
-            width: 100%;
-            height: 100%;
-            border: none; 
-        }
-        
+        .sidebar-iframe-container { flex: 1; min-height: 0; border: 1px solid #2d2d3d; border-radius: 6px; overflow: hidden; background: #16161f; height: 100%; }
+        .sidebar-iframe-container iframe { width: 100%; height: 100%; border: none; }
         .iframe-container { flex: 1; border-radius: 6px; overflow: hidden; border: 1px solid #2d2d3d; background: #16161f; position: relative; height: 100%; }
         iframe { width: 100%; height: 100%; border: none; }
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: #09090d; }
         ::-webkit-scrollbar-thumb { background: #2d2d3d; border-radius: 3px; }
-
         .admin-table { width: 100%; color: #fff; border-collapse: collapse; font-size: 0.65rem; margin-top: 5px; }
         .admin-table th { background: #1c1c24; color: #00f2fe; padding: 4px; border: 1px solid #2d2d3d; }
         .admin-table td { padding: 4px; border: 1px solid #2d2d3d; background: #111116; }
         .admin-input { background: #16161f; border: 1px solid #3d3d52; color: #fff; font-size: 0.65rem; padding: 2px 4px; border-radius: 3px; width: 70px; }
-
-        #adminUpdateBoard {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            background: #13131a;
-            border: 1px solid #2d2d3d;
-            border-radius: 6px;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-        .board-left-panel {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: #09090d;
-            border: 1px dashed #3d3d52;
-            border-radius: 5px;
-            padding: 10px;
-            text-align: center;
-        }
-        .btn-gemini-link {
-            background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
-            color: #fff;
-            border: none;
-            padding: 8px 12px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-            text-transform: uppercase;
-            box-shadow: 0 0 10px rgba(66, 133, 244, 0.3);
-            transition: all 0.2s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .btn-gemini-link:hover {
-            box-shadow: 0 0 15px rgba(66, 133, 244, 0.6);
-            transform: scale(1.02);
-        }
-        .board-right-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        .raw-data-textarea {
-            width: 100%;
-            height: 70px;
-            background: #1c1c24;
-            border: 1px solid #3d3d52;
-            color: #ffab00;
-            font-family: monospace;
-            font-size: 0.65rem;
-            padding: 4px;
-            border-radius: 4px;
-            box-sizing: border-box;
-            resize: none;
-            outline: none;
-        }
-        .raw-data-textarea:focus {
-            border-color: #00f2fe;
-            box-shadow: 0 0 5px rgba(0, 242, 254, 0.3);
-        }
-        .btn-board-push {
-            width: 100%;
-            padding: 5px;
-            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-            color: #000;
-            font-weight: bold;
-            font-size: 0.65rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            text-transform: uppercase;
-        }
-        .btn-board-push:hover {
-            box-shadow: 0 0 8px rgba(0, 242, 254, 0.5);
-        }
+        #adminUpdateBoard { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #13131a; border: 1px solid #2d2d3d; border-radius: 6px; padding: 8px; box-sizing: border-box; }
+        .board-left-panel { display: flex; flex-direction: column; justify-content: center; align-items: center; background: #09090d; border: 1px dashed #3d3d52; border-radius: 5px; padding: 10px; text-align: center; }
+        .btn-gemini-link { background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); color: #fff; border: none; padding: 8px 12px; font-size: 0.7rem; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 10px rgba(66, 133, 244, 0.3); transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+        .btn-gemini-link:hover { box-shadow: 0 0 15px rgba(66, 133, 244, 0.6); transform: scale(1.02); }
+        .board-right-panel { display: flex; flex-direction: column; gap: 4px; }
+        .raw-data-textarea { width: 100%; height: 70px; background: #1c1c24; border: 1px solid #3d3d52; color: #ffab00; font-family: monospace; font-size: 0.65rem; padding: 4px; border-radius: 4px; box-sizing: border-box; resize: none; outline: none; }
+        .raw-data-textarea:focus { border-color: #00f2fe; box-shadow: 0 0 5px rgba(0, 242, 254, 0.3); }
+        .btn-board-push { width: 100%; padding: 5px; background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color: #000; font-weight: bold; font-size: 0.65rem; border: none; border-radius: 4px; cursor: pointer; text-transform: uppercase; }
+        .btn-board-push:hover { box-shadow: 0 0 8px rgba(0, 242, 254, 0.5); }
     </style>
 </head>
 <body>
 
-    <!-- MÀN HÌNH ĐĂNG NHẬP BẮT BUỘC -->
     <div id="loginOverlay">
         <div class="login-box">
             <div class="login-title">Hệ thống CVN Premium</div>
@@ -595,7 +158,6 @@
             
             <div class="panel" style="padding: 4px; flex-shrink: 0; display: flex; flex-direction: column; gap: 4px;">
                 <div class="upload-container-layout">
-                    <!-- BẢNG TRẠNG THÁI ĐỒNG BỘ ĐÈN LED NEON THÔNG MINH - KHI BẤM KÍCH HOẠT CHỌN NHIỀU FILE -->
                     <div class="status-sync-box" id="globalStatusBox" onclick="document.getElementById('multiFileInput').click()" title="Bấm vào đây để nạp nhanh 1 hoặc cùng lúc cả 3 file kết quả (.txt)">
                         <div class="status-item" id="statusLotto"><span class="tick">✓</span>5/35</div>
                         <div class="status-item" id="statusMega"><span class="tick">✓</span>6/45</div>
@@ -605,14 +167,13 @@
                     <button class="btn-clear-premium" id="adminDeleteBtn" onclick="clearCurrentData()" title="Xoá dữ liệu đài này">🗑️ XOÁ</button>
                 </div>
 
-                <!-- BẢNG CHIA 2 BÊN: ĐỘC QUYỀN CHỈ HIỂN THỊ CHO ADMIN (ĐẠI CA) -->
                 <div class="inline-update-board" id="adminUpdateBoard" style="display: none;">
                     <div class="board-left-panel">
                         <div style="font-size: 0.55rem; color: #8a8a9e; margin-bottom: 6px; font-weight: bold; line-height: 1.2;">Xử lý thông minh</div>
                         <a class="btn-gemini-link" href="https://gemini.google.com/app/44cfac50974dfc1c?hl=vi" target="_blank">🚀 Mở Gemini</a>
                     </div>
                     <div class="board-right-panel">
-                        <textarea class="raw-data-textarea" id="boardRawInput" placeholder="Dán kết quả đài hiện tại vào đây...&#10;Định dạng: Ngày | Bộ số"></textarea>
+                        <textarea class="raw-data-textarea" id="boardRawInput" placeholder="Dán văn bản kết quả vào đây... (Hệ thống tự động nhận diện thông minh loại hình đài)"></textarea>
                         <button class="btn-board-push" onclick="handleBoardDataPush()">Cập nhật</button>
                     </div>
                 </div>
@@ -711,7 +272,6 @@
     </div>
 
     <script>
-        // --- CẤU HÌNH MẠNG TỔNG FIREBASE CHÍNH THỨC CỦA ĐẠI CA ---
         const firebaseConfig = {
             apiKey: "AIzaSyCPAYMe0TMPGsBHHocO4FaEH9KONB_KV3Q",
             authDomain: "vietlott-cvn.firebaseapp.com",
@@ -745,22 +305,17 @@
                     document.getElementById('loginOverlay').style.display = 'none';
                     
                     let timeStr = new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
-                    db.ref('login_history').push({
-                        username: u,
-                        role: currentUserRole === 'admin' ? 'Đại ca (Admin)' : 'Thành viên',
-                        time: timeStr
-                    });
+                    db.ref('login_history').push({ username: u, role: currentUserRole === 'admin' ? 'Đại ca (Admin)' : 'Thành viên', time: timeStr });
 
-                    // PHÂN QUYỀN ĐỘC QUYỀN CHO ADMIN (ĐẠI CA)
                     if (currentUserRole === 'admin') {
                         document.getElementById('adminDeleteBtn').style.display = 'flex';
-                        document.getElementById('adminUpdateBoard').style.display = 'grid'; // Hiện bảng Gemini/Dán dữ liệu
+                        document.getElementById('adminUpdateBoard').style.display = 'grid'; 
                         document.getElementById('viewAdminBtn').style.display = 'block';
                         document.getElementById('headerTitle').innerText = "Thống kê Vietlott - XIN CHÀO ĐẠI CA!";
                         loadAdminPanels();
                     } else {
                         document.getElementById('adminDeleteBtn').style.display = 'none';
-                        document.getElementById('adminUpdateBoard').style.display = 'none'; // Thành viên sẽ bị ẩn hoàn toàn
+                        document.getElementById('adminUpdateBoard').style.display = 'none'; 
                         document.getElementById('viewAdminBtn').style.display = 'none';
                         document.getElementById('headerTitle').innerText = `Thống kê Vietlott - Chào Thành viên: ${u}`;
                     }
@@ -776,14 +331,7 @@
                 let accounts = snapshot.val() || {};
                 let html = `<table class="admin-table"><tr><th>Tài khoản</th><th>Mật khẩu</th><th>Quyền</th><th>Hành động</th></tr>`;
                 for (let acc in accounts) {
-                    html += `<tr>
-                        <td>${acc}</td>
-                        <td>${accounts[acc].password}</td>
-                        <td>${accounts[acc].role === 'admin' ? 'Đại ca' : 'Thành viên'}</td>
-                        <td>
-                            ${accounts[acc].role === 'admin' ? '-' : `<button onclick="deleteAccountOnline('${acc}')" style="background:#ff0055; color:#fff; border:none; padding:1px 4px; border-radius:2px; cursor:pointer;">Xoá</button>`}
-                        </td>
-                    </tr>`;
+                    html += `<tr><td>${acc}</td><td>${accounts[acc].password}</td><td>${accounts[acc].role === 'admin' ? 'Đại ca' : 'Thành viên'}</td><td>${accounts[acc].role === 'admin' ? '-' : `<button onclick="deleteAccountOnline('${acc}')" style="background:#ff0055; color:#fff; border:none; padding:1px 4px; border-radius:2px; cursor:pointer;">Xoá</button>`}</td></tr>`;
                 }
                 html += `</table>`;
                 document.getElementById('accountsListArea').innerHTML = html;
@@ -794,13 +342,7 @@
                 let html = `<table class="admin-table"><tr><th>Tên tài khoản</th><th>Vai trò</th><th>Thời gian vào web</th></tr>`;
                 let logArray = [];
                 for (let id in logs) logArray.unshift(logs[id]);
-                logArray.forEach(log => {
-                    html += `<tr>
-                        <td style="color:#00f2fe; font-weight:bold;">${log.username}</td>
-                        <td>${log.role}</td>
-                        <td style="color:#ffab00;">${log.time}</td>
-                    </tr>`;
-                });
+                logArray.forEach(log => { html += `<tr><td style="color:#00f2fe; font-weight:bold;">${log.username}</td><td>${log.role}</td><td style="color:#ffab00;">${log.time}</td></tr>`; });
                 html += `</table>`;
                 document.getElementById('logsListArea').innerHTML = html;
             });
@@ -809,18 +351,13 @@
         function addNewAccountOnline() {
             let u = document.getElementById('newAccUser').value.trim().toLowerCase();
             let p = document.getElementById('newAccPass').value.trim();
-            if(!u || !p) { alert("Đại ca nhập thiếu tên hoặc mật khẩu rồi ạ!"); return; }
+            if(!u || !p) { alert("Đại ca nhập thiếu thông tin ạ!"); return; }
             db.ref('system_accounts/' + u).set({ password: p, role: 'member' });
-            document.getElementById('newAccUser').value = '';
-            document.getElementById('newAccPass').value = '';
-            alert("Đã thêm tài khoản thành viên mới thành công thưa Đại ca!");
+            document.getElementById('newAccUser').value = ''; document.getElementById('newAccPass').value = '';
+            alert("Đã thêm tài khoản thành viên mới!");
         }
 
-        function deleteAccountOnline(username) {
-            if (confirm(`Đại ca có chắc chắn muốn huỷ quyền truy cập của tài khoản [${username}] không?`)) {
-                db.ref('system_accounts/' + username).remove();
-            }
-        }
+        function deleteAccountOnline(username) { if (confirm(`Đại ca huỷ quyền tài khoản [${username}]?`)) { db.ref('system_accounts/' + username).remove(); } }
 
         function startSyncingDatabase() {
             db.ref('vietlott_matrix_data').on('value', (snapshot) => {
@@ -845,7 +382,6 @@
                     box.style.borderColor = '#3d3d52';
                     box.style.boxShadow = 'inset 0 0 5px rgba(0,0,0,0.5)';
                 }
-
                 reloadCurrentMatrix();
             });
         }
@@ -857,19 +393,14 @@
             let r, g, b;
             if (ratio <= 0.5) {
                 let localRatio = ratio / 0.5;
-                r = Math.round(34 + (249 - 34) * localRatio);
-                g = Math.round(197 + (115 - 197) * localRatio);
-                b = Math.round(94 + (22 - 94) * localRatio);
+                r = Math.round(34 + (249 - 34) * localRatio); g = Math.round(197 + (115 - 197) * localRatio); b = Math.round(94 + (22 - 94) * localRatio);
             } else {
                 let localRatio = (ratio - 0.5) / 0.5;
-                r = Math.round(249 + (239 - 249) * localRatio);
-                g = Math.round(115 + (68 - 115) * localRatio);
-                b = Math.round(22 + (68 - 22) * localRatio);
+                r = Math.round(249 + (239 - 249) * localRatio); g = Math.round(115 + (68 - 115) * localRatio); b = Math.round(22 + (68 - 22) * localRatio);
             }
             return `rgb(${r}, ${g}, ${b})`;
         }
 
-        // --- KHU VỰC BẤM Ô DẤU TÍCH CHỌN 1 HOẶC 3 FILE TỰ ĐỘNG ĐỒNG BỘ ---
         function handleMultiFileSelect(e) {
             let files = e.target.files;
             if (files.length === 0) return;
@@ -898,12 +429,7 @@
                             }
                         });
                         let limitedRows = parsedRows.slice(0, 60);
-                        
-                        if (limitedRows.length === 0) {
-                            alert(`File ${file.name} trống hoặc sai định dạng cấu trúc!`);
-                            return;
-                        }
-
+                        if (limitedRows.length === 0) return;
                         db.ref('vietlott_matrix_data/' + targetType).set(limitedRows);
                         loadedTypes.push(targetType.toUpperCase());
                     };
@@ -911,29 +437,24 @@
                 }
             });
 
-            setTimeout(() => {
-                if (loadedTypes.length > 0) {
-                    alert("Hệ thống nhận diện file đã đồng bộ lên đám mây: " + loadedTypes.join(', '));
-                }
-            }, 500);
-            e.target.value = ''; // Reset input để lần sau chọn lại vẫn chạy tốt
+            setTimeout(() => { if (loadedTypes.length > 0) alert("Đèn LED trực tuyến đồng bộ file thành công: " + loadedTypes.join(', ')); }, 500);
+            e.target.value = '';
         }
 
-        // --- NÚT CẬP NHẬT ĐA NĂNG: CÓ DỮ LIỆU THÌ UP, KHÔNG CÓ THÌ LOAD LẠI TỪ ĐÁM MÂY ---
+        // --- NÂNG CẤP ĐỘC QUYỀN: TỰ ĐỘNG ĐỌC NỘI DUNG VĂN BẢN DÁN ĐỂ ĐẨY VÀO ĐÚNG ĐÀI ĐÁM MÂY ---
         function handleBoardDataPush() {
             let text = document.getElementById('boardRawInput').value.trim();
             
-            // Trường hợp ô dán dữ liệu TRỐNG -> Đồng bộ kéo dữ liệu đám mây về ma trận nền
             if (!text) {
                 startSyncingDatabase();
-                alert(`Đã làm mới và đồng bộ lại dữ liệu đài ${currentType.toUpperCase()} từ đám mây thưa Đại ca!`);
+                alert(`Đã làm mới dữ liệu đài ${currentType.toUpperCase()} từ Đám mây nền thưa Đại ca!`);
                 return;
             }
 
-            // Trường hợp có dữ liệu dán -> Thực hiện phân tích đẩy lên đám mây
             let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
             let parsedRows = [];
             
+            // Bước 1: Quét cấu trúc dữ liệu dán để bóc tách số
             lines.forEach(line => {
                 let parts = line.split('|').map(p => p.trim());
                 if(parts.length >= 2) {
@@ -947,13 +468,40 @@
             let limitedRows = parsedRows.slice(0, 60);
 
             if (limitedRows.length === 0) {
-                alert("Dữ liệu sai cấu trúc (Ngày | Bộ số) thưa Đại ca!");
+                alert("Dữ liệu dán sai cấu trúc (Ngày | Bộ số) rồi thưa Đại ca!");
                 return;
             }
 
-            db.ref('vietlott_matrix_data/' + currentType).set(limitedRows);
+            // Bước 2: Thuật toán nhận diện thông minh loại hình đài dựa theo dữ liệu dòng đầu tiên
+            let sampleRow = limitedRows[0];
+            let autoDetectedType = currentType; // Mặc định nếu không phát hiện sẽ lấy theo đài hiện tại
+
+            let firstRowRaw = lines[0].toLowerCase();
+            if (firstRowRaw.includes('535')) {
+                autoDetectedType = 'lotto';
+            } else if (firstRowRaw.includes('645')) {
+                autoDetectedType = 'mega';
+            } else if (firstRowRaw.includes('655')) {
+                autoDetectedType = 'power';
+            } else {
+                // Nhận diện theo số lượng quả bóng lọc được
+                if (sampleRow.main.length === 5) {
+                    autoDetectedType = 'lotto';
+                } else if (sampleRow.main.length === 6) {
+                    if (sampleRow.spec !== null) {
+                        autoDetectedType = 'power';
+                    } else {
+                        // Check xem có số nào lớn hơn 45 không
+                        let hasNumberOver45 = sampleRow.main.some(n => parseInt(n) > 45);
+                        autoDetectedType = hasNumberOver45 ? 'power' : 'mega';
+                    }
+                }
+            }
+
+            // Bước 3: Đồng bộ hỏa tốc lên đám mây đúng đài
+            db.ref('vietlott_matrix_data/' + autoDetectedType).set(limitedRows);
             document.getElementById('boardRawInput').value = ''; 
-            alert(`Đã đồng bộ dữ liệu dán đài ${currentType.toUpperCase()} lên Mạng tổng thành công thưa Đại ca!`);
+            alert(`Hệ thống nhận diện văn bản -> Đồng bộ thành công đài: ${autoDetectedType.toUpperCase()} thưa Đại ca!`);
         }
 
         function switchType(type) {
@@ -965,8 +513,7 @@
             if(type === 'lotto') sideIframe.src = "https://www.ketquadientoan.com/tat-ca-ky-xo-so-lotto-535.html";
             else if(type === 'mega') sideIframe.src = "https://www.ketquadientoan.com/tat-ca-ky-xo-so-mega-6-45.html";
             else if(type === 'power') sideIframe.src = "https://www.ketquadientoan.com/tat-ca-ky-xo-so-power-655.html";
-            setupPredictPanel();
-            reloadCurrentMatrix();
+            setupPredictPanel(); reloadCurrentMatrix();
         }
 
         function switchView(view) {
@@ -974,490 +521,168 @@
             document.getElementById('matrixView').style.display = view === 'matrix' ? 'block' : 'none';
             document.getElementById('iframeView').style.display = view === 'iframe' ? 'block' : 'none';
             document.getElementById('adminView').style.display = view === 'admin' ? 'block' : 'none';
-            
             document.getElementById('viewMatrixBtn').classList.toggle('active', view === 'matrix');
             document.getElementById('viewIframeBtn').classList.toggle('active', view === 'iframe');
             document.getElementById('viewAdminBtn').classList.toggle('active', view === 'admin');
         }
 
-        function tryOnMatrix(type, mainNumsStr, specNumStr) {
-            let arr = mainNumsStr.split(',');
-            testSets[type].main = arr;
-            testSets[type].spec = specNumStr ? specNumStr : null;
-            reloadCurrentMatrix();
-        }
-
-        function clearTestMatrix(type) {
-            testSets[type].main = [];
-            testSets[type].spec = null;
-            reloadCurrentMatrix();
-        }
-
-        function reloadCurrentMatrix() {
-            let rows = globalOnlineData[currentType] || [];
-            if(currentType === 'lotto') renderMatrix(rows);
-            else if(currentType === 'mega') renderMegaMatrix(rows);
-            else if(currentType === 'power') renderPowerMatrix(rows);
-        }
+        function tryOnMatrix(type, mainNumsStr, specNumStr) { let arr = mainNumsStr.split(','); testSets[type].main = arr; testSets[type].spec = specNumStr ? specNumStr : null; reloadCurrentMatrix(); }
+        function clearTestMatrix(type) { testSets[type].main = []; testSets[type].spec = null; reloadCurrentMatrix(); }
+        function reloadCurrentMatrix() { let rows = globalOnlineData[currentType] || []; if(currentType === 'lotto') renderMatrix(rows); else if(currentType === 'mega') renderMegaMatrix(rows); else if(currentType === 'power') renderPowerMatrix(rows); }
 
         function renderMatrix(rows) {
-            let table = document.getElementById('matrixTable');
-            table.innerHTML = '';
-            if (rows.length === 0) return;
-            let mainCounts = Array(36).fill(0);
-            let specCounts = Array(13).fill(0);
-            rows.forEach(r => {
-                r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=35) mainCounts[n]++; });
-                if(r.spec) { let s = parseInt(r.spec); if(s>=1 && s<=12) specCounts[s]++; }
-            });
-            let maxMainCount = Math.max(...mainCounts);
-            let maxSpecCount = Math.max(...specCounts);
-            let headTr = document.createElement('tr');
-            headTr.className = 'header-nums';
-            headTr.innerHTML = `<th class="col-fixed-idx">Kỳ</th><th class="col-fixed-date">Ngày quay</th>`;
-            for(let i = 1; i <= 35; i++) {
-                let numStr = String(i).padStart(2, '0');
-                let bgColor = getHeatmapColor(mainCounts[i], maxMainCount);
-                headTr.innerHTML += `<th class="main-num-head" style="background-color: ${bgColor};">${numStr}</th>`;
-            }
+            let table = document.getElementById('matrixTable'); table.innerHTML = ''; if (rows.length === 0) return;
+            let mainCounts = Array(36).fill(0); let specCounts = Array(13).fill(0);
+            rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=35) mainCounts[n]++; }); if(r.spec) { let s = parseInt(r.spec); if(s>=1 && s<=12) specCounts[s]++; } });
+            let maxMainCount = Math.max(...mainCounts); let maxSpecCount = Math.max(...specCounts);
+            let headTr = document.createElement('tr'); headTr.className = 'header-nums'; headTr.innerHTML = `<th class="col-fixed-idx">Kỳ</th><th class="col-fixed-date">Ngày quay</th>`;
+            for(let i = 1; i <= 35; i++) { let numStr = String(i).padStart(2, '0'); let bgColor = getHeatmapColor(mainCounts[i], maxMainCount); headTr.innerHTML += `<th class="main-num-head" style="background-color: ${bgColor};">${numStr}</th>`; }
             headTr.innerHTML += `<th style="background:#09090d; width:4px;"></th>`;
-            for(let i = 1; i <= 12; i++) {
-                let numStr = String(i).padStart(2, '0');
-                let bgColor = getHeatmapColor(specCounts[i], maxSpecCount);
-                headTr.innerHTML += `<th class="spec-num-head" style="background-color: ${bgColor};">${numStr}</th>`;
-            }
+            for(let i = 1; i <= 12; i++) { let numStr = String(i).padStart(2, '0'); let bgColor = getHeatmapColor(specCounts[i], maxSpecCount); headTr.innerHTML += `<th class="spec-num-head" style="background-color: ${bgColor};">${numStr}</th>`; }
             table.appendChild(headTr);
 
-            let testTr = document.createElement('tr');
-            testTr.className = 'test-row';
-            testTr.innerHTML = `<td class="cell-idx">🧪</td><td style="text-align:left; padding-left:4px; font-weight:bold; white-space:nowrap;">THỬ NGHIỆM</td>`;
+            let testTr = document.createElement('tr'); testTr.className = 'test-row'; testTr.innerHTML = `<td class="cell-idx">🧪</td><td style="text-align:left; padding-left:4px; font-weight:bold; white-space:nowrap;">THỬ NGHIỆM</td>`;
             let tSet = testSets.lotto;
-            for(let i = 1; i <= 35; i++) {
-                let numStr = String(i).padStart(2, '0');
-                let activeClass = tSet.main.includes(numStr) ? 'cell-test-active' : '';
-                testTr.innerHTML += `<td class="${activeClass}">${tSet.main.includes(numStr) ? numStr : ''}</td>`;
-            }
+            for(let i = 1; i <= 35; i++) { let numStr = String(i).padStart(2, '0'); let activeClass = tSet.main.includes(numStr) ? 'cell-test-active' : ''; testTr.innerHTML += `<td class="${activeClass}">${tSet.main.includes(numStr) ? numStr : ''}</td>`; }
             testTr.innerHTML += `<td style="background:#09090d;"></td>`;
-            for(let i = 1; i <= 12; i++) {
-                let numStr = String(i).padStart(2, '0');
-                let activeClass = (tSet.spec === numStr) ? 'cell-test-spec-active' : '';
-                testTr.innerHTML += `<td class="${activeClass}">${(tSet.spec === numStr) ? numStr : ''}</td>`;
-            }
+            for(let i = 1; i <= 12; i++) { let numStr = String(i).padStart(2, '0'); let activeClass = (tSet.spec === numStr) ? 'cell-test-spec-active' : ''; testTr.innerHTML += `<td class="${activeClass}">${(tSet.spec === numStr) ? numStr : ''}</td>`; }
             table.appendChild(testTr);
 
-            let limit = parseInt(document.getElementById('countLimitSelect').value);
-            let limitRows = rows.slice(0, limit);
-            let freqMain = Array(36).fill(0);
-            let freqSpec = Array(13).fill(0);
-            limitRows.forEach(r => {
-                r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=35) freqMain[n]++; });
-                if(r.spec) { let s = parseInt(r.spec); if(s>=1 && s<=12) freqSpec[s]++; }
-            });
-
-            let countTr = document.createElement('tr');
-            countTr.className = 'count-row';
-            countTr.innerHTML = `<td class="cell-idx">📊</td><td style="text-align:left; padding-left:4px; font-weight:bold; white-space:nowrap; color:#00ff66;">XUẤT HIỆN (${limit}K)</td>`;
-            for(let i = 1; i <= 35; i++) {
-                countTr.innerHTML += `<td>${freqMain[i] > 0 ? freqMain[i] : ''}</td>`;
-            }
+            let limit = parseInt(document.getElementById('countLimitSelect').value); let limitRows = rows.slice(0, limit);
+            let freqMain = Array(36).fill(0); let freqSpec = Array(13).fill(0);
+            limitRows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=35) freqMain[n]++; }); if(r.spec) { let s = parseInt(r.spec); if(s>=1 && s<=12) freqSpec[s]++; } });
+            let countTr = document.createElement('tr'); countTr.className = 'count-row'; countTr.innerHTML = `<td class="cell-idx">📊</td><td style="text-align:left; padding-left:4px; font-weight:bold; white-space:nowrap; color:#00ff66;">XUẤT HIỆN (${limit}K)</td>`;
+            for(let i = 1; i <= 35; i++) { countTr.innerHTML += `<td>${freqMain[i] > 0 ? freqMain[i] : ''}</td>`; }
             countTr.innerHTML += `<td style="background:#09090d;"></td>`;
-            for(let i = 1; i <= 12; i++) {
-                countTr.innerHTML += `<td>${freqSpec[i] > 0 ? freqSpec[i] : ''}</td>`;
-            }
+            for(let i = 1; i <= 12; i++) { countTr.innerHTML += `<td>${freqSpec[i] > 0 ? freqSpec[i] : ''}</td>`; }
             table.appendChild(countTr);
 
             rows.forEach((row, idx) => {
-                let tr = document.createElement('tr');
-                let displayIdx = idx + 1;
-                tr.innerHTML = `<td class="cell-idx">${String(displayIdx).padStart(2, '0')}</td><td class="cell-date">${row.date}</td>`;
-                for(let i = 1; i <= 35; i++) {
-                    let numStr = String(i).padStart(2, '0');
-                    let isAct = row.main.includes(numStr);
-                    let isTestAct = tSet.main.includes(numStr);
-                    let cls = isAct ? 'cell-main-num active' : (isTestAct ? 'cell-main-num test-active' : 'cell-main-num');
-                    tr.innerHTML += `<td class="${cls}">${isAct ? numStr : ''}</td>`;
-                }
+                let tr = document.createElement('tr'); let displayIdx = idx + 1; tr.innerHTML = `<td class="cell-idx">${String(displayIdx).padStart(2, '0')}</td><td class="cell-date">${row.date}</td>`;
+                for(let i = 1; i <= 35; i++) { let numStr = String(i).padStart(2, '0'); let isAct = row.main.includes(numStr); let isTestAct = tSet.main.includes(numStr); let cls = isAct ? 'cell-main-num active' : (isTestAct ? 'cell-main-num test-active' : 'cell-main-num'); tr.innerHTML += `<td class="${cls}">${isAct ? numStr : ''}</td>`; }
                 tr.innerHTML += `<td style="background:#09090d;"></td>`;
-                for(let i = 1; i <= 12; i++) {
-                    let numStr = String(i).padStart(2, '0');
-                    let isAct = (row.spec === numStr);
-                    let isTestAct = (tSet.spec === numStr);
-                    let cls = isAct ? 'cell-spec-num active-spec' : (isTestAct ? 'cell-spec-num test-spec-active' : 'cell-spec-num');
-                    tr.innerHTML += `<td class="${cls}">${isAct ? numStr : ''}</td>`;
-                }
+                for(let i = 1; i <= 12; i++) { let numStr = String(i).padStart(2, '0'); let isAct = (row.spec === numStr); let isTestAct = (tSet.spec === numStr); let cls = isAct ? 'cell-spec-num active-spec' : (isTestAct ? 'cell-spec-num test-spec-active' : 'cell-spec-num'); tr.innerHTML += `<td class="${cls}">${isAct ? numStr : ''}</td>`; }
                 table.appendChild(tr);
             });
         }
 
         function renderMegaMatrix(rows) {
-            let table = document.getElementById('matrixTable');
-            table.innerHTML = '';
-            if (rows.length === 0) return;
-            let mainCounts = Array(46).fill(0);
-            rows.forEach(r => {
-                r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=45) mainCounts[n]++; });
-            });
+            let table = document.getElementById('matrixTable'); table.innerHTML = ''; if (rows.length === 0) return;
+            let mainCounts = Array(46).fill(0); rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=45) mainCounts[n]++; }); });
             let maxMainCount = Math.max(...mainCounts);
-            let headTr = document.createElement('tr');
-            headTr.className = 'header-nums';
-            headTr.innerHTML = `<th class="col-fixed-idx">Kỳ</th><th class="col-fixed-date">Ngày quay</th>`;
-            for(let i = 1; i <= 45; i++) {
-                let numStr = String(i).padStart(2, '0');
-                let bgColor = getHeatmapColor(mainCounts[i], maxMainCount);
-                headTr.innerHTML += `<th class="main-num-head" style="background-color: ${bgColor};">${numStr}</th>`;
-            }
+            let headTr = document.createElement('tr'); headTr.className = 'header-nums'; headTr.innerHTML = `<th class="col-fixed-idx">Kỳ</th><th class="col-fixed-date">Ngày quay</th>`;
+            for(let i = 1; i <= 45; i++) { let numStr = String(i).padStart(2, '0'); let bgColor = getHeatmapColor(mainCounts[i], maxMainCount); headTr.innerHTML += `<th class="main-num-head" style="background-color: ${bgColor};">${numStr}</th>`; }
             table.appendChild(headTr);
 
-            let testTr = document.createElement('tr');
-            testTr.className = 'test-row';
-            testTr.innerHTML = `<td class="cell-idx">🧪</td><td style="text-align:left; padding-left:4px; font-weight:bold; white-space:nowrap;">THỬ NGHIỆM</td>`;
+            let testTr = document.createElement('tr'); testTr.className = 'test-row'; testTr.innerHTML = `<td class="cell-idx">🧪</td><td style="text-align:left; padding-left:4px; font-weight:bold; white-space:nowrap;">THỬ NGHIỆM</td>`;
             let tSet = testSets.mega;
-            for(let i = 1; i <= 45; i++) {
-                let numStr = String(i).padStart(2, '0');
-                let activeClass = tSet.main.includes(numStr) ? 'cell-test-active' : '';
-                testTr.innerHTML += `<td class="${activeClass}">${tSet.main.includes(numStr) ? numStr : ''}</td>`;
-            }
+            for(let i = 1; i <= 45; i++) { let numStr = String(i).padStart(2, '0'); let activeClass = tSet.main.includes(numStr) ? 'cell-test-active' : ''; testTr.innerHTML += `<td class="${activeClass}">${tSet.main.includes(numStr) ? numStr : ''}</td>`; }
             table.appendChild(testTr);
 
-            let limit = parseInt(document.getElementById('countLimitSelect').value);
-            let limitRows = rows.slice(0, limit);
-            let freqMain = Array(46).fill(0);
-            limitRows.forEach(r => {
-                r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=45) freqMain[n]++; });
-            });
-
-            let countTr = document.createElement('tr');
-            countTr.className = 'count-row';
-            countTr.innerHTML = `<td class="cell-idx">📊</td><td style="text-align:left; padding-left:4px; font-weight:bold; white-space:nowrap; color:#00ff66;">XUẤT HIỆN (${limit}K)</td>`;
-            for(let i = 1; i <= 45; i++) {
-                countTr.innerHTML += `<td>${freqMain[i] > 0 ? freqMain[i] : ''}</td>`;
-            }
+            let limit = parseInt(document.getElementById('countLimitSelect').value); let limitRows = rows.slice(0, limit);
+            let freqMain = Array(46).fill(0); limitRows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=45) freqMain[n]++; }); });
+            let countTr = document.createElement('tr'); countTr.className = 'count-row'; countTr.innerHTML = `<td class="cell-idx">📊</td><td style="text-align:left; padding-left:4px; font-weight:bold; white-space:nowrap; color:#00ff66;">XUẤT HIỆN (${limit}K)</td>`;
+            for(let i = 1; i <= 45; i++) { countTr.innerHTML += `<td>${freqMain[i] > 0 ? freqMain[i] : ''}</td>`; }
             table.appendChild(countTr);
 
             rows.forEach((row, idx) => {
-                let tr = document.createElement('tr');
-                let displayIdx = idx + 1;
-                tr.innerHTML = `<td class="cell-idx">${String(displayIdx).padStart(2, '0')}</td><td class="cell-date">${row.date}</td>`;
-                for(let i = 1; i <= 45; i++) {
-                    let numStr = String(i).padStart(2, '0');
-                    let isAct = row.main.includes(numStr);
-                    let isTestAct = tSet.main.includes(numStr);
-                    let cls = isAct ? 'cell-main-num active' : (isTestAct ? 'cell-main-num test-active' : 'cell-main-num');
-                    tr.innerHTML += `<td class="${cls}">${isAct ? numStr : ''}</td>`;
-                }
+                let tr = document.createElement('tr'); let displayIdx = idx + 1; tr.innerHTML = `<td class="cell-idx">${String(displayIdx).padStart(2, '0')}</td><td class="cell-date">${row.date}</td>`;
+                for(let i = 1; i <= 45; i++) { let numStr = String(i).padStart(2, '0'); let isAct = row.main.includes(numStr); let isTestAct = tSet.main.includes(numStr); let cls = isAct ? 'cell-main-num active' : (isTestAct ? 'cell-main-num test-active' : 'cell-main-num'); tr.innerHTML += `<td class="${cls}">${isAct ? numStr : ''}</td>`; }
                 table.appendChild(tr);
             });
         }
 
         function renderPowerMatrix(rows) {
-            let table = document.getElementById('matrixTable');
-            table.innerHTML = '';
-            if (rows.length === 0) return;
-            let combinedCounts = Array(56).fill(0);
-            rows.forEach(r => {
-                r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=55) combinedCounts[n]++; });
-                if(r.spec) { let s = parseInt(r.spec); if(s>=1 && s<=55) combinedCounts[s]++; }
-            });
+            let table = document.getElementById('matrixTable'); table.innerHTML = ''; if (rows.length === 0) return;
+            let combinedCounts = Array(56).fill(0); rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=55) combinedCounts[n]++; }); if(r.spec) { let s = parseInt(r.spec); if(s>=1 && s<=55) combinedCounts[s]++; } });
             let maxCount = Math.max(...combinedCounts);
-            let headTr = document.createElement('tr');
-            headTr.className = 'header-nums';
-            headTr.innerHTML = `<th class="col-fixed-idx">Kỳ</th><th class="col-fixed-date">Ngày quay</th>`;
-            for(let i = 1; i <= 55; i++) {
-                let numStr = String(i).padStart(2, '0');
-                let bgColor = getHeatmapColor(combinedCounts[i], maxCount);
-                headTr.innerHTML += `<th class="main-num-head" style="background-color: ${bgColor};">${numStr}</th>`;
-            }
+            let headTr = document.createElement('tr'); headTr.className = 'header-nums'; headTr.innerHTML = `<th class="col-fixed-idx">Kỳ</th><th class="col-fixed-date">Ngày quay</th>`;
+            for(let i = 1; i <= 55; i++) { let numStr = String(i).padStart(2, '0'); let bgColor = getHeatmapColor(combinedCounts[i], maxCount); headTr.innerHTML += `<th class="main-num-head" style="background-color: ${bgColor};">${numStr}</th>`; }
             table.appendChild(headTr);
 
-            let testTr = document.createElement('tr');
-            testTr.className = 'test-row';
-            testTr.innerHTML = `<td class="cell-idx">🧪</td><td style="text-align:left; padding-left:4px; font-weight:bold; white-space:nowrap;">THỬ NGHIỆM</td>`;
+            let testTr = document.createElement('tr'); testTr.className = 'test-row'; testTr.innerHTML = `<td class="cell-idx">🧪</td><td style="text-align:left; padding-left:4px; font-weight:bold; white-space:nowrap;">THỬ NGHIỆM</td>`;
             let tSet = testSets.power;
-            for(let i = 1; i <= 55; i++) {
-                let numStr = String(i).padStart(2, '0');
-                let isMainTest = tSet.main.includes(numStr);
-                let isSpecTest = (tSet.spec === numStr);
-                let activeClass = '';
-                if (isMainTest) activeClass = 'cell-test-active';
-                else if (isSpecTest) activeClass = 'cell-test-spec-active';
-                testTr.innerHTML += `<td class="${activeClass}">${(isMainTest || isSpecTest) ? numStr : ''}</td>`;
-            }
+            for(let i = 1; i <= 55; i++) { let numStr = String(i).padStart(2, '0'); let isMainTest = tSet.main.includes(numStr); let isSpecTest = (tSet.spec === numStr); let activeClass = isMainTest ? 'cell-test-active' : (isSpecTest ? 'cell-test-spec-active' : ''); testTr.innerHTML += `<td class="${activeClass}">${(isMainTest || isSpecTest) ? numStr : ''}</td>`; }
             table.appendChild(testTr);
 
-            let limit = parseInt(document.getElementById('countLimitSelect').value);
-            let limitRows = rows.slice(0, limit);
-            let freqMain = Array(56).fill(0);
-            let freqSpec = Array(56).fill(0);
-            limitRows.forEach(r => {
-                r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=55) freqMain[n]++; });
-                if(r.spec) { let s = parseInt(r.spec); if(s>=1 && s<=55) freqSpec[s]++; }
-            });
-
-            let countTr = document.createElement('tr');
-            countTr.className = 'count-row';
-            countTr.innerHTML = `<td class="cell-idx">📊</td><td style="text-align:left; padding-left:4px; font-weight:bold; white-space:nowrap; color:#00ff66;">XUẤT HIỆN (${limit}K)</td>`;
-            for(let i = 1; i <= 55; i++) {
-                let totalCount = freqMain[i] + freqSpec[i];
-                countTr.innerHTML += `<td>${totalCount > 0 ? totalCount : ''}</td>`;
-            }
+            let limit = parseInt(document.getElementById('countLimitSelect').value); let limitRows = rows.slice(0, limit);
+            let freqMain = Array(56).fill(0); let freqSpec = Array(56).fill(0);
+            limitRows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=55) freqMain[n]++; }); if(r.spec) { let s = parseInt(r.spec); if(s>=1 && s<=55) freqSpec[s]++; } });
+            let countTr = document.createElement('tr'); countTr.className = 'count-row'; countTr.innerHTML = `<td class="cell-idx">📊</td><td style="text-align:left; padding-left:4px; font-weight:bold; white-space:nowrap; color:#00ff66;">XUẤT HIỆN (${limit}K)</td>`;
+            for(let i = 1; i <= 55; i++) { let totalCount = freqMain[i] + freqSpec[i]; countTr.innerHTML += `<td>${totalCount > 0 ? totalCount : ''}</td>`; }
             table.appendChild(countTr);
 
             rows.forEach((row, idx) => {
-                let tr = document.createElement('tr');
-                let displayIdx = idx + 1;
-                tr.innerHTML = `<td class="cell-idx">${String(displayIdx).padStart(2, '0')}</td><td class="cell-date">${row.date}</td>`;
-                for(let i = 1; i <= 55; i++) {
-                    let numStr = String(i).padStart(2, '0');
-                    let isAct = row.main.includes(numStr);
-                    let isSpecAct = (row.spec === numStr);
-                    let isTestAct = tSet.main.includes(numStr);
-                    let isTestSpecAct = (tSet.spec === numStr);
-                    let cls = 'cell-main-num';
-                    if (isAct) cls = 'cell-main-num active';
-                    else if (isSpecAct) cls = 'cell-main-num active-spec-in-main';
-                    else if (isTestAct) cls = 'cell-main-num test-active';
-                    else if (isTestSpecAct) cls = 'cell-main-num test-spec-active';
-                    tr.innerHTML += `<td class="${cls}">${(isAct || isSpecAct) ? numStr : ''}</td>`;
-                }
+                let tr = document.createElement('tr'); let displayIdx = idx + 1; tr.innerHTML = `<td class="cell-idx">${String(displayIdx).padStart(2, '0')}</td><td class="cell-date">${row.date}</td>`;
+                for(let i = 1; i <= 55; i++) { let numStr = String(i).padStart(2, '0'); let isAct = row.main.includes(numStr); let isSpecAct = (row.spec === numStr); let isTestAct = tSet.main.includes(numStr); let isTestSpecAct = (tSet.spec === numStr); let cls = 'cell-main-num'; if (isAct) cls = 'cell-main-num active'; else if (isSpecAct) cls = 'cell-main-num active-spec-in-main'; else if (isTestAct) cls = 'cell-main-num test-active'; else if (isTestSpecAct) cls = 'cell-main-num test-spec-active'; tr.innerHTML += `<td class="${cls}">${(isAct || isSpecAct) ? numStr : ''}</td>`; }
                 table.appendChild(tr);
             });
         }
 
         function setupPredictPanel() {
-            let mainGroup = document.getElementById('mainLockGroup');
-            let specGroup = document.getElementById('specLockGroup');
-            let specSection = document.getElementById('specLockSection');
-            mainGroup.innerHTML = '';
-            specGroup.innerHTML = '';
-            let mainCount = currentType === 'lotto' ? 5 : 6;
-            for(let i = 0; i < mainCount; i++) {
-                mainGroup.innerHTML += `<input type="text" maxlength="2" class="lock-input lock-main-val" placeholder="-">`;
-            }
-            if(currentType === 'mega') {
-                specSection.style.display = 'none';
-            } else {
-                specSection.style.display = 'flex';
-                specGroup.innerHTML = `<input type="text" maxlength="2" class="lock-input spec-lock lock-spec-val" placeholder="-">`;
-            }
+            let mainGroup = document.getElementById('mainLockGroup'); let specGroup = document.getElementById('specLockGroup'); let specSection = document.getElementById('specLockSection');
+            mainGroup.innerHTML = ''; specGroup.innerHTML = ''; let mainCount = currentType === 'lotto' ? 5 : 6;
+            for(let i = 0; i < mainCount; i++) { mainGroup.innerHTML += `<input type="text" maxlength="2" class="lock-input lock-main-val" placeholder="-">`; }
+            if(currentType === 'mega') { specSection.style.display = 'none'; } else { specSection.style.display = 'flex'; specGroup.innerHTML = `<input type="text" maxlength="2" class="lock-input spec-lock lock-spec-val" placeholder="-">`; }
             document.getElementById('predictContainer').innerHTML = '';
         }
 
         function openComposeModal(type, rowIndex) {
             if (activePredictions.length === 0) return;
-            let message = "";
-            let prefix = "";
-            if (type === 'lotto') prefix = "535 K1";
-            else if (type === 'mega') prefix = "645 K1";
-            else if (type === 'power') prefix = "655 K1";
-
+            let message = ""; let prefix = type === 'lotto' ? "535 K1" : (type === 'mega' ? "645 K1" : "655 K1");
             let formattedLines = [];
-            activePredictions.forEach((pred, index) => {
-                if (!pred) return;
-                let lineStr = `S `;
-                if (type === 'lotto') {
-                    let mainPart = pred.main.join(' ');
-                    lineStr += `${mainPart}-${pred.spec}`;
-                } else {
-                    lineStr += `${pred.main.join(' ')}`;
-                }
-                formattedLines.push(lineStr);
-            });
-
+            activePredictions.forEach((pred, index) => { if (!pred) return; let lineStr = `S `; if (type === 'lotto') { lineStr += `${pred.main.join(' ')}-${pred.spec}`; } else { lineStr += `${pred.main.join(' ')}`; } formattedLines.push(lineStr); });
             message = `${prefix} ${formattedLines.join(' ')}`;
-            document.getElementById('modalTextContent').innerText = message;
-            document.getElementById('composeModal').style.display = 'flex';
+            document.getElementById('modalTextContent').innerText = message; document.getElementById('composeModal').style.display = 'flex';
         }
-
         function closeComposeModal() { document.getElementById('composeModal').style.display = 'none'; }
-
-        function copyComposeText() {
-            let text = document.getElementById('modalTextContent').innerText;
-            navigator.clipboard.writeText(text).then(() => {
-                alert("Đã sao chép tin nhắn soạn mua bộ số thành công, thưa Đại ca!");
-            }).catch(err => {
-                alert("Lỗi sao chép, Đại ca hãy quét chọn tay nhé.");
-            });
-        }
+        function copyComposeText() { let text = document.getElementById('modalTextContent').innerText; navigator.clipboard.writeText(text).then(() => { alert("Đã sao chép bộ số thưa Đại ca!"); }).catch(err => { alert("Lỗi sao chép!"); }); }
 
         function generatePredictions() {
-            let container = document.getElementById('predictContainer');
-            container.innerHTML = '<div style="font-size:0.7rem; color:#8a8a9e; text-align:center; padding:5px;">Đang chạy ma trận phân tích...</div>';
-            
+            let container = document.getElementById('predictContainer'); container.innerHTML = '<div style="font-size:0.7rem; color:#8a8a9e; text-align:center; padding:5px;">Đang chạy ma trận phân tích...</div>';
             let rows = globalOnlineData[currentType] || [];
-            if (rows.length === 0) {
-                setTimeout(() => {
-                    container.innerHTML = '<div style="font-size:0.7rem; color:#ff0055; text-align:center; padding:5px;">Mạng tổng chưa nạp dữ liệu đài này thưa Đại ca!</div>';
-                }, 200);
-                return;
-            }
-
-            setTimeout(() => {
-                container.innerHTML = '';
-                let labels = ['A', 'B', 'C', 'D', 'E'];
-                activePredictions = Array(5).fill(null);
-                for (let i = 0; i < 5; i++) {
-                    generateSingleRow(i, labels[i], rows, container);
-                }
-            }, 150);
+            if (rows.length === 0) { setTimeout(() => { container.innerHTML = '<div style="font-size:0.7rem; color:#ff0055; text-align:center; padding:5px;">Mạng tổng chưa nạp dữ liệu đài này thưa Đại ca!</div>'; }, 200); return; }
+            setTimeout(() => { container.innerHTML = ''; let labels = ['A', 'B', 'C', 'D', 'E']; activePredictions = Array(5).fill(null); for (let i = 0; i < 5; i++) { generateSingleRow(i, labels[i], rows, container); } }, 150);
         }
 
         function generateSingleRow(index, label, rows, container) {
-            let maxRange = currentType === 'lotto' ? 35 : (currentType === 'mega' ? 45 : 55);
-            let mainSize = currentType === 'lotto' ? 5 : 6;
-            let chosenAlgo = document.getElementById('algoSelect').value;
-
-            let freq = Array(maxRange + 1).fill(0);
-            rows.forEach(r => {
-                r.main.forEach(num => { let n = parseInt(num); if(n <= maxRange) freq[n]++; });
-            });
-
+            let maxRange = currentType === 'lotto' ? 35 : (currentType === 'mega' ? 45 : 55); let mainSize = currentType === 'lotto' ? 5 : 6; let chosenAlgo = document.getElementById('algoSelect').value;
+            let freq = Array(maxRange + 1).fill(0); rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n <= maxRange) freq[n]++; }); });
             let lastDraw = rows[0] ? rows[0].main.map(n => String(parseInt(n)).padStart(2, '0')) : [];
-            let currentAlgo = chosenAlgo;
-            if (chosenAlgo === 'random_mix') {
-                let algos = ['hotcold', 'nobet', 'pair', 'combined'];
-                currentAlgo = algos[Math.floor(Math.random() * algos.length)];
-            }
-
-            let inputs = document.querySelectorAll('.lock-main-val'); 
-            let locked = [];
-            inputs.forEach(input => {
-                let v = input.value.trim();
-                if(v !== "") {
-                    let n = parseInt(v);
-                    if(n >= 1 && n <= maxRange) locked.push(String(n).padStart(2, '0'));
-                }
-            });
-
+            let currentAlgo = chosenAlgo === 'random_mix' ? ['hotcold', 'nobet', 'pair', 'combined'][Math.floor(Math.random() * 4)] : chosenAlgo;
+            let inputs = document.querySelectorAll('.lock-main-val'); let locked = [];
+            inputs.forEach(input => { let v = input.value.trim(); if(v !== "") { let n = parseInt(v); if(n >= 1 && n <= maxRange) locked.push(String(n).padStart(2, '0')); } });
             let resultSet = [...locked];
 
             if (currentAlgo === 'nobet') {
-                let maxBetAllowed = Math.floor(Math.random() * 3); 
-                let currentBetCount = 0;
-                resultSet.forEach(num => { if (lastDraw.includes(num)) currentBetCount++; });
-
+                let maxBetAllowed = Math.floor(Math.random() * 3); let currentBetCount = 0; resultSet.forEach(num => { if (lastDraw.includes(num)) currentBetCount++; });
                 let freshPool = []; let betPool = [];
-                for (let j = 1; j <= maxRange; j++) {
-                    let s = String(j).padStart(2, '0');
-                    if (!resultSet.includes(s)) {
-                        if (lastDraw.includes(s)) betPool.push(s);
-                        else freshPool.push(s);
-                    }
-                }
-                freshPool.sort(() => Math.random() - 0.5);
-                betPool.sort(() => Math.random() - 0.5);
-
-                while (resultSet.length < mainSize) {
-                    if (currentBetCount < maxBetAllowed && betPool.length > 0) {
-                        resultSet.push(betPool.shift());
-                        currentBetCount++;
-                    } else if (freshPool.length > 0) {
-                        resultSet.push(freshPool.shift());
-                    } else break;
-                }
+                for (let j = 1; j <= maxRange; j++) { let s = String(j).padStart(2, '0'); if (!resultSet.includes(s)) { if (lastDraw.includes(s)) betPool.push(s); else freshPool.push(s); } }
+                freshPool.sort(() => Math.random() - 0.5); betPool.sort(() => Math.random() - 0.5);
+                while (resultSet.length < mainSize) { if (currentBetCount < maxBetAllowed && betPool.length > 0) { resultSet.push(betPool.shift()); currentBetCount++; } else if (freshPool.length > 0) { resultSet.push(freshPool.shift()); } else break; }
             } else {
-                let pool = [];
-                for(let j = 1; j <= maxRange; j++) {
-                    let s = String(j).padStart(2, '0');
-                    if(!locked.includes(s)) pool.push(s);
-                }
-
-                if (currentAlgo === 'hotcold') {
-                    pool.sort((a, b) => {
-                        let scoreA = freq[parseInt(a)]; let scoreB = freq[parseInt(b)];
-                        return (index % 2 === 0) ? (scoreB - scoreA) : (scoreA - scoreB);
-                    });
-                } else if (currentAlgo === 'pair' || currentAlgo === 'combined') {
-                    if (locked.length > 0) {
-                        let pairCounts = Array(maxRange + 1).fill(0);
-                        rows.forEach(r => {
-                            let hasLocked = locked.some(l => r.main.includes(l));
-                            if (hasLocked) r.main.forEach(num => pairCounts[parseInt(num)]++);
-                        });
-                        pool.sort((a, b) => pairCounts[parseInt(b)] - pairCounts[parseInt(a)]);
-                    } else pool.sort(() => Math.random() - 0.5);
-                }
-
-                let needed = mainSize - resultSet.length;
-                if (needed > 0 && pool.length > 0) {
-                    let candidatesCount = Math.min(pool.length, needed + 5);
-                    let topCandidates = pool.slice(0, candidatesCount);
-                    topCandidates.sort(() => Math.random() - 0.5);
-                    for(let k = 0; k < needed; k++) {
-                        if(topCandidates.length > 0) resultSet.push(topCandidates.shift());
-                    }
-                }
+                let pool = []; for(let j = 1; j <= maxRange; j++) { let s = String(j).padStart(2, '0'); if(!locked.includes(s)) pool.push(s); }
+                if (currentAlgo === 'hotcold') { pool.sort((a, b) => { let scoreA = freq[parseInt(a)]; let scoreB = freq[parseInt(b)]; return (index % 2 === 0) ? (scoreB - scoreA) : (scoreA - scoreB); }); }
+                else if (currentAlgo === 'pair' || currentAlgo === 'combined') { if (locked.length > 0) { let pairCounts = Array(maxRange + 1).fill(0); rows.forEach(r => { let hasLocked = locked.some(l => r.main.includes(l)); if (hasLocked) r.main.forEach(num => pairCounts[parseInt(num)]++); }); pool.sort((a, b) => pairCounts[parseInt(b)] - pairCounts[parseInt(a)]); } else pool.sort(() => Math.random() - 0.5); }
+                let needed = mainSize - resultSet.length; if (needed > 0 && pool.length > 0) { let candidatesCount = Math.min(pool.length, needed + 5); let topCandidates = pool.slice(0, candidatesCount); topCandidates.sort(() => Math.random() - 0.5); for(let k = 0; k < needed; k++) { if(topCandidates.length > 0) resultSet.push(topCandidates.shift()); } }
             }
-
             resultSet.sort((a, b) => parseInt(a) - parseInt(b));
 
-            let sNum = "";
-            if (currentType !== 'mega') { 
-                let specInput = document.querySelector('.lock-spec-val'); 
-                if (specInput && specInput.value.trim() !== "") { 
-                    let val = parseInt(specInput.value.trim()); 
-                    let maxSpec = currentType === 'lotto' ? 12 : 55; 
-                    if (val >= 1 && val <= maxSpec) sNum = String(val).padStart(2, '0');
-                }
-                if (!sNum) {
-                    let maxSpec = currentType === 'lotto' ? 12 : 55; 
-                    sNum = String(Math.floor(Math.random() * maxSpec) + 1).padStart(2, '0');
-                }
-            }
+            let sNum = ""; if (currentType !== 'mega') { let specInput = document.querySelector('.lock-spec-val'); if (specInput && specInput.value.trim() !== "") { let val = parseInt(specInput.value.trim()); let maxSpec = currentType === 'lotto' ? 12 : 55; if (val >= 1 && val <= maxSpec) sNum = String(val).padStart(2, '0'); } if (!sNum) { let maxSpec = currentType === 'lotto' ? 12 : 55; sNum = String(Math.floor(Math.random() * maxSpec) + 1).padStart(2, '0'); } }
+            activePredictions[index] = (currentType === 'mega') ? { main: resultSet } : { main: resultSet, spec: sNum };
 
-            let predictionObj = (currentType === 'mega') ? { main: resultSet } : { main: resultSet, spec: sNum };
-            activePredictions[index] = predictionObj;
-
-            let rowDiv = document.getElementById(`predictRow_${index}`);
-            if (!rowDiv) {
-                rowDiv = document.createElement('div'); rowDiv.className = 'predict-row'; rowDiv.id = `predictRow_${index}`;
-                container.appendChild(rowDiv);
-            }
-
-            let rowInner = `<div class="predict-row-label">${label}</div>`;
-            rowInner += `<div id="ballsArea_${index}" style="display:flex; gap:4px; align-items:center;">`;
-            resultSet.forEach(num => { rowInner += `<div class="ball-predict" style="background-color: #006633">${num}</div>`; }); 
-            if (currentType !== 'mega') rowInner += `<div style="color:#555; font-weight:bold;">|</div><div class="ball-predict" style="background-color: #ff7300">${sNum}</div>`; 
-            rowInner += `</div>`;
-            
-            rowInner += `<div style="flex:1;"></div>`; 
-            rowInner += `<div id="actionsArea_${index}" style="display:flex; gap:2px; align-items:center;">`;
-            rowInner += `<button class="action-inline-btn btn-try" onclick="tryOnMatrix('${currentType}', '${resultSet.join(',')}', ${sNum ? "'"+sNum+"'" : 'null'})">Thử</button>`; 
-            rowInner += `<button class="action-inline-btn btn-del" onclick="clearTestMatrix('${currentType}')">Bỏ</button>`; 
-            rowInner += `<button class="action-inline-btn btn-compose" onclick="openComposeModal('${currentType}', ${index})">Soạn</button>`; 
-            rowInner += `<button class="action-inline-btn" style="border-color:#555; color:#aaa;" onclick="clearSinglePrediction(${index}, '${label}')" title="Xoá dãy số">🗑️</button>`;
-            rowInner += `</div>`;
+            let rowDiv = document.getElementById(`predictRow_${index}`) || document.createElement('div'); rowDiv.className = 'predict-row'; rowDiv.id = `predictRow_${index}`; container.appendChild(rowDiv);
+            let rowInner = `<div class="predict-row-label">${label}</div><div id="ballsArea_${index}" style="display:flex; gap:4px; align-items:center;">`;
+            resultSet.forEach(num => { rowInner += `<div class="ball-predict" style="background-color: #006633">${num}</div>`; }); if (currentType !== 'mega') rowInner += `<div style="color:#555; font-weight:bold;">|</div><div class="ball-predict" style="background-color: #ff7300">${sNum}</div>`;
+            rowInner += `</div><div style="flex:1;"></div><div id="actionsArea_${index}" style="display:flex; gap:2px; align-items:center;">`;
+            rowInner += `<button class="action-inline-btn btn-try" onclick="tryOnMatrix('${currentType}', '${resultSet.join(',')}', ${sNum ? "'"+sNum+"'" : 'null'})">Thử</button><button class="action-inline-btn btn-del" onclick="clearTestMatrix('${currentType}')">Bỏ</button><button class="action-inline-btn btn-compose" onclick="openComposeModal('${currentType}', ${index})">Soạn</button><button class="action-inline-btn" style="border-color:#555; color:#aaa;" onclick="clearSinglePrediction(${index}, '${label}')">🗑️</button></div>`;
             rowDiv.innerHTML = rowInner;
         }
 
-        function clearSinglePrediction(index, label) {
-            activePredictions[index] = null;
-            document.getElementById(`ballsArea_${index}`).innerHTML = `<div style="font-size:0.65rem; color:#555; font-style:italic; padding-left:4px;">Đã xoá dãy số...</div>`;
-            let rows = globalOnlineData[currentType] || [];
-            let container = document.getElementById('predictContainer');
-            document.getElementById(`actionsArea_${index}`).innerHTML = `
-                <button class="action-inline-btn btn-try" style="border-color:#00ff66; color:#00ff66;" onclick="generateSingleRow(${index}, '${label}', ${JSON.stringify(rows).replace(/"/g, '&quot;')}, ${container.id})" title="Dự đoán lại dãy này">🔄 Dự đoán lại</button>
-            `;
-        }
+        function clearSinglePrediction(index, label) { activePredictions[index] = null; document.getElementById(`ballsArea_${index}`).innerHTML = `<div style="font-size:0.65rem; color:#555; font-style:italic; padding-left:4px;">Đã xoá dãy số...</div>`; let rows = globalOnlineData[currentType] || []; let container = document.getElementById('predictContainer'); document.getElementById(`actionsArea_${index}`).innerHTML = `<button class="action-inline-btn btn-try" style="border-color:#00ff66; color:#00ff66;" onclick="generateSingleRow(${index}, '${label}', ${JSON.stringify(rows).replace(/"/g, '&quot;')}, ${container.id})">🔄 Dự đoán lại</button>`; }
+        function clearCurrentData() { if (currentUserRole !== 'admin') return; if (confirm(`Đại ca xoá dữ liệu đài ${currentType.toUpperCase()}?`)) { db.ref('vietlott_matrix_data/' + currentType).remove(); alert("Đã xoá sạch thưa Đại ca!"); } }
 
-        function clearCurrentData() {
-            if (currentUserRole !== 'admin') return;
-            if (confirm(`Đại ca có chắc chắn muốn xoá dữ liệu đài ${currentType.toUpperCase()} trên Mạng tổng đám mây không? Tất cả các máy khác cũng sẽ bị xoá.`)) {
-                db.ref('vietlott_matrix_data/' + currentType).remove();
-                alert(`Đã xoá sạch dữ liệu đài ${currentType.toUpperCase()} trên Mạng tổng thành công thưa Đại ca!`);
-            }
-        }
-
-        window.onload = function() { 
-            setupPredictPanel();
-            db.ref('system_accounts').once('value', (snapshot) => {
-                if (!snapshot.exists()) {
-                    db.ref('system_accounts').set({
-                        "daica": { password: "123", role: "admin" },
-                        "member1": { password: "456", role: "member" }
-                    });
-                }
-            });
-        };
+        window.onload = function() { setupPredictPanel(); db.ref('system_accounts').once('value', (snapshot) => { if (!snapshot.exists()) { db.ref('system_accounts').set({ "daica": { password: "123", role: "admin" }, "member1": { password: "456", role: "member" } }); } }); };
     </script>
 </body>
 </html>
