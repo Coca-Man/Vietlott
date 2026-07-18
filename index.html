@@ -413,7 +413,9 @@
                 <button class="tab-btn active" onclick="switchType('lotto')">Lotto 5/35</button>
                 <button class="tab-btn" onclick="switchType('mega')">Mega 6/45</button>
                 <button class="tab-btn" onclick="switchType('power')">Power 6/55</button>
-            </div>
+            <!-- DÁN CHÈN NÚT MỚI VÀO ĐÂY -->
+    <button class="tab-btn" onclick="window.location.href='old.html'" style="background: #22222b; color: #8a8a9e; border-color: #3d3d52;">Giao diện cũ</button>
+</div>
             <div class="panel" style="padding: 4px; flex-shrink: 0;">
                 <div class="upload-container-layout">
                     <div class="file-upload-box" onclick="document.getElementById('fileInput').click()">
@@ -970,8 +972,7 @@
             let container = document.getElementById('predictContainer');
             container.innerHTML = '<div style="font-size:0.7rem; color:#8a8a9e; text-align:center; padding:5px;">Đang chạy ma trận phân tích...</div>';
             
-            // Lấy dữ liệu 60 kỳ từ bộ nhớ máy tính ra làm cơ sở
-            let rawData = localStorage.getItem('raw_data_' + currentType); //
+            let rawData = localStorage.getItem('raw_data_' + currentType); 
             let rows = rawData ? JSON.parse(rawData) : [];
             
             if (rows.length === 0) {
@@ -984,129 +985,174 @@
             setTimeout(() => {
                 container.innerHTML = '';
                 let labels = ['A', 'B', 'C', 'D', 'E'];
-                activePredictions = [];
+                activePredictions = Array(5).fill(null);
                 
-                let maxRange = currentType === 'lotto' ? 35 : (currentType === 'mega' ? 45 : 55);
-                let mainSize = currentType === 'lotto' ? 5 : 6;
-                
-                // Lấy phương pháp Đại ca chọn trên giao diện
-                let chosenAlgo = document.getElementById('algoSelect').value;
-
-                // 1. PHÂN TÍCH NỀN TẢNG DỮ LIỆU 60 KỲ
-                let freq = Array(maxRange + 1).fill(0);
-                rows.forEach(r => {
-                    r.main.forEach(num => { let n = parseInt(num); if(n <= maxRange) freq[n]++; });
-                });
-
-                // Lấy số kỳ gần nhất để né số bệt
-                let lastDraw = rows[0] ? rows[0].main.map(n => String(parseInt(n)).padStart(2, '0')) : [];
-
-                // 2. VÒNG LẶP TẠO 5 BỘ SỐ DỰ ĐOÁN
                 for (let i = 0; i < 5; i++) {
-                    let currentAlgo = chosenAlgo;
-                    if (chosenAlgo === 'random_mix') {
-                        let algos = ['hotcold', 'nobet', 'pair', 'combined'];
-                        currentAlgo = algos[Math.floor(Math.random() * algos.length)];
-                    }
-
-                    // Đọc danh sách số nuôi (số đã khóa) từ các ô nhập[cite: 1]
-                    let inputs = document.querySelectorAll('.lock-main-val'); //[cite: 1]
-                    let locked = [];
-                    inputs.forEach(input => {
-                        let v = input.value.trim();
-                        if(v !== "") {
-                            let n = parseInt(v);
-                            if(n >= 1 && n <= maxRange) locked.push(String(n).padStart(2, '0'));
-                        }
-                    });
-
-                    // Lập bể số dự phòng (Loại trừ số nuôi ra trước)
-                    let pool = [];
-                    for(let j = 1; j <= maxRange; j++) {
-                        let s = String(j).padStart(2, '0');
-                        if(!locked.includes(s)) pool.push(s);
-                    }
-
-                    // ÁP DỤNG THUẬT TOÁN ĐẠI CA CHỌN
-                    if (currentAlgo === 'hotcold') {
-                        // Sắp xếp bể số: Ưu tiên số siêu nóng (về nhiều) hoặc siêu lạnh (về cực ít) lên đầu
-                        pool.sort((a, b) => {
-                            let scoreA = freq[parseInt(a)];
-                            let scoreB = freq[parseInt(b)];
-                            return (i % 2 === 0) ? (scoreB - scoreA) : (scoreA - scoreB);
-                        });
-                    } 
-                    else if (currentAlgo === 'nobet') {
-                        // Né triệt để số vừa ra kỳ trước, đẩy chúng xuống cuối bể số
-                        pool.sort((a, b) => {
-                            let isA_Last = lastDraw.includes(a) ? 1 : 0;
-                            let isB_Last = lastDraw.includes(b) ? 1 : 0;
-                            return isA_Last - isB_Last;
-                        });
-                    }
-                    else if (currentAlgo === 'pair' || currentAlgo === 'combined') {
-                        // Thuật toán Bạc nhớ: Nếu Đại ca có khóa số nuôi, ưu tiên các số hay nổ cùng số nuôi đó trong 60 kỳ
-                        if (locked.length > 0) {
-                            let pairCounts = Array(maxRange + 1).fill(0);
-                            rows.forEach(r => {
-                                let hasLocked = locked.some(l => r.main.includes(l));
-                                if (hasLocked) {
-                                    r.main.forEach(num => pairCounts[parseInt(num)]++);
-                                }
-                            });
-                            pool.sort((a, b) => pairCounts[parseInt(b)] - pairCounts[parseInt(a)]);
-                        } else {
-                            // Nếu không khóa số nào, xáo trộn ngẫu nhiên tạo biến số
-                            pool.sort(() => Math.random() - 0.5);
-                        }
-                    }
-
-                    // Nhặt số từ bể số đã được các thuật toán tối ưu xếp hàng
-                    let resultSet = [...locked];
-                    while (resultSet.length < mainSize && pool.length > 0) {
-                        resultSet.push(pool.shift());
-                    }
-                    resultSet.sort((a, b) => parseInt(a) - parseInt(b));
-
-                    // XỬ LÝ QUẢ BÓNG ĐẶC BIỆT MÀU CAM (Lotto hoặc Power)[cite: 1]
-                    let sNum = "";
-                    if (currentType !== 'mega') { //[cite: 1]
-                        let specInput = document.querySelector('.lock-spec-val'); //[cite: 1]
-                        if (specInput && specInput.value.trim() !== "") { //[cite: 1]
-                            let val = parseInt(specInput.value.trim()); //[cite: 1]
-                            let maxSpec = currentType === 'lotto' ? 12 : 55; //[cite: 1]
-                            if (val >= 1 && val <= maxSpec) sNum = String(val).padStart(2, '0');
-                        }
-                        if (!sNum) {
-                            let maxSpec = currentType === 'lotto' ? 12 : 55; //[cite: 1]
-                            sNum = String(Math.floor(Math.random() * maxSpec) + 1).padStart(2, '0');
-                        }
-                    }
-
-                    // Lưu bộ số sạch vào bộ nhớ tạm hệ thống để chuẩn bị nút "Soạn" hoặc "Thử"[cite: 1]
-                    if (currentType === 'mega') { //[cite: 1]
-                        activePredictions.push({ main: resultSet }); //[cite: 1]
-                    } else {
-                        activePredictions.push({ main: resultSet, spec: sNum }); //[cite: 1]
-                    }
-
-                    // DỰNG GIAO DIỆN HIỂN THỊ KẾT QUẢ ĐÃ PHÂN TÍCH[cite: 1]
-                    let rowDiv = document.createElement('div'); rowDiv.className = 'predict-row'; //[cite: 1]
-                    let rowInner = `<div class="predict-row-label">${labels[i]}</div>`; //[cite: 1]
-                    resultSet.forEach(num => { rowInner += `<div class="ball-predict" style="background-color: #006633">${num}</div>`; }); //[cite: 1]
-                    
-                    if (currentType !== 'mega') { //[cite: 1]
-                        rowInner += `<div style="color:#555; font-weight:bold;">|</div><div class="ball-predict" style="background-color: #ff7300">${sNum}</div>`; //[cite: 1]
-                    }
-                    
-                    rowInner += `<div style="flex:1;"></div>`; //[cite: 1]
-                    rowInner += `<button class="action-inline-btn btn-try" onclick="tryOnMatrix('${currentType}', '${resultSet.join(',')}', ${sNum ? "'"+sNum+"'" : 'null'})">Thử</button>`; //[cite: 1]
-                    rowInner += `<button class="action-inline-btn btn-del" style="margin-left:2px;" onclick="clearTestMatrix('${currentType}')">Xoá</button>`; //[cite: 1]
-                    rowInner += `<button class="action-inline-btn btn-compose" style="margin-left:2px;" onclick="openComposeModal('${currentType}', ${i})">Soạn</button>`; //[cite: 1]
-                    rowDiv.innerHTML = rowInner; //[cite: 1]
-                    container.appendChild(rowDiv); //[cite: 1]
+                    generateSingleRow(i, labels[i], rows, container);
                 }
             }, 150);
+        }
+
+        // Hàm phụ tách riêng để tạo hoặc dự đoán lại duy nhất 1 dòng
+        function generateSingleRow(index, label, rows, container) {
+            let maxRange = currentType === 'lotto' ? 35 : (currentType === 'mega' ? 45 : 55);
+            let mainSize = currentType === 'lotto' ? 5 : 6;
+            let chosenAlgo = document.getElementById('algoSelect').value;
+
+            let freq = Array(maxRange + 1).fill(0);
+            rows.forEach(r => {
+                r.main.forEach(num => { let n = parseInt(num); if(n <= maxRange) freq[n]++; });
+            });
+
+            let lastDraw = rows[0] ? rows[0].main.map(n => String(parseInt(n)).padStart(2, '0')) : [];
+
+            let currentAlgo = chosenAlgo;
+            if (chosenAlgo === 'random_mix') {
+                let algos = ['hotcold', 'nobet', 'pair', 'combined'];
+                currentAlgo = algos[Math.floor(Math.random() * algos.length)];
+            }
+
+            let inputs = document.querySelectorAll('.lock-main-val'); 
+            let locked = [];
+            inputs.forEach(input => {
+                let v = input.value.trim();
+                if(v !== "") {
+                    let n = parseInt(v);
+                    if(n >= 1 && n <= maxRange) locked.push(String(n).padStart(2, '0'));
+                }
+            });
+
+            let resultSet = [...locked];
+
+            if (currentAlgo === 'nobet') {
+                let maxBetAllowed = Math.floor(Math.random() * 3); 
+                let currentBetCount = 0;
+
+                resultSet.forEach(num => {
+                    if (lastDraw.includes(num)) currentBetCount++;
+                });
+
+                let freshPool = [];
+                let betPool = [];
+                
+                for (let j = 1; j <= maxRange; j++) {
+                    let s = String(j).padStart(2, '0');
+                    if (!resultSet.includes(s)) {
+                        if (lastDraw.includes(s)) {
+                            betPool.push(s);
+                        } else {
+                            freshPool.push(s);
+                        }
+                    }
+                }
+
+                freshPool.sort(() => Math.random() - 0.5);
+                betPool.sort(() => Math.random() - 0.5);
+
+                while (resultSet.length < mainSize) {
+                    if (currentBetCount < maxBetAllowed && betPool.length > 0) {
+                        resultSet.push(betPool.shift());
+                        currentBetCount++;
+                    } 
+                    else if (freshPool.length > 0) {
+                        resultSet.push(freshPool.shift());
+                    } else {
+                        break;
+                    }
+                }
+            } else {
+                let pool = [];
+                for(let j = 1; j <= maxRange; j++) {
+                    let s = String(j).padStart(2, '0');
+                    if(!locked.includes(s)) pool.push(s);
+                }
+
+                if (currentAlgo === 'hotcold') {
+                    pool.sort((a, b) => {
+                        let scoreA = freq[parseInt(a)];
+                        let scoreB = freq[parseInt(b)];
+                        return (index % 2 === 0) ? (scoreB - scoreA) : (scoreA - scoreB);
+                    });
+                } 
+                else if (currentAlgo === 'pair' || currentAlgo === 'combined') {
+                    if (locked.length > 0) {
+                        let pairCounts = Array(maxRange + 1).fill(0);
+                        rows.forEach(r => {
+                            let hasLocked = locked.some(l => r.main.includes(l));
+                            if (hasLocked) {
+                                r.main.forEach(num => pairCounts[parseInt(num)]++);
+                            }
+                        });
+                        pool.sort((a, b) => pairCounts[parseInt(b)] - pairCounts[parseInt(a)]);
+                    } else {
+                        pool.sort(() => Math.random() - 0.5);
+                    }
+                }
+
+                while (resultSet.length < mainSize && pool.length > 0) {
+                    resultSet.push(pool.shift());
+                }
+            }
+
+            resultSet.sort((a, b) => parseInt(a) - parseInt(b));
+
+            let sNum = "";
+            if (currentType !== 'mega') { 
+                let specInput = document.querySelector('.lock-spec-val'); 
+                if (specInput && specInput.value.trim() !== "") { 
+                    let val = parseInt(specInput.value.trim()); 
+                    let maxSpec = currentType === 'lotto' ? 12 : 55; 
+                    if (val >= 1 && val <= maxSpec) sNum = String(val).padStart(2, '0');
+                }
+                if (!sNum) {
+                    let maxSpec = currentType === 'lotto' ? 12 : 55; 
+                    sNum = String(Math.floor(Math.random() * maxSpec) + 1).padStart(2, '0');
+                }
+            }
+
+            let predictionObj = (currentType === 'mega') ? { main: resultSet } : { main: resultSet, spec: sNum };
+            activePredictions[index] = predictionObj;
+
+            // Xử lý tạo HTML giao diện cho dòng
+            let rowDiv = document.getElementById(`predictRow_${index}`);
+            if (!rowDiv) {
+                rowDiv = document.createElement('div');
+                rowDiv.className = 'predict-row';
+                rowDiv.id = `predictRow_${index}`;
+                container.appendChild(rowDiv);
+            }
+
+            let rowInner = `<div class="predict-row-label">${label}</div>`;
+            rowInner += `<div id="ballsArea_${index}" style="display:flex; gap:4px; align-items:center;">`;
+            resultSet.forEach(num => { rowInner += `<div class="ball-predict" style="background-color: #006633">${num}</div>`; }); 
+            if (currentType !== 'mega') { 
+                rowInner += `<div style="color:#555; font-weight:bold;">|</div><div class="ball-predict" style="background-color: #ff7300">${sNum}</div>`; 
+            }
+            rowInner += `</div>`;
+            
+            rowInner += `<div style="flex:1;"></div>`; 
+            rowInner += `<div id="actionsArea_${index}" style="display:flex; gap:2px; align-items:center;">`;
+            rowInner += `<button class="action-inline-btn btn-try" onclick="tryOnMatrix('${currentType}', '${resultSet.join(',')}', ${sNum ? "'"+sNum+"'" : 'null'})">Thử</button>`; 
+            rowInner += `<button class="action-inline-btn btn-del" onclick="clearTestMatrix('${currentType}')">Bỏ</button>`; 
+            rowInner += `<button class="action-inline-btn btn-compose" onclick="openComposeModal('${currentType}', ${index})">Soạn</button>`; 
+            rowInner += `<button class="action-inline-btn" style="border-color:#555; color:#aaa;" onclick="clearSinglePrediction(${index}, '${label}')" title="Xoá dãy số">🗑️</button>`;
+            rowInner += `</div>`;
+            
+            rowDiv.innerHTML = rowInner;
+        }
+
+        // Hàm xóa hẳn dữ liệu hiển thị của 1 dòng cụ thể
+        function clearSinglePrediction(index, label) {
+            activePredictions[index] = null;
+            document.getElementById(`ballsArea_${index}`).innerHTML = `<div style="font-size:0.65rem; color:#555; font-style:italic; padding-left:4px;">Đã xoá dãy số...</div>`;
+            
+            let rawData = localStorage.getItem('raw_data_' + currentType); 
+            let rows = rawData ? JSON.parse(rawData) : [];
+            let container = document.getElementById('predictContainer');
+
+            document.getElementById(`actionsArea_${index}`).innerHTML = `
+                <button class="action-inline-btn btn-try" style="border-color:#00ff66; color:#00ff66;" onclick="generateSingleRow(${index}, '${label}', ${JSON.stringify(rows).replace(/"/g, '&quot;')}, ${container.id})" title="Dự đoán lại dãy này">🔄 Dự đoán lại</button>
+            `;
         }
 
         window.onload = function() { 
