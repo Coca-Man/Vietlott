@@ -209,31 +209,57 @@
         .section-title { font-size: 0.7rem; font-weight: 800; color: #00f2fe; text-transform: uppercase; margin-bottom: 4px; display: flex; align-items: center; gap: 4px; letter-spacing: 0.5px; }
         .panel { background: #1c1c24; border: 1px solid #2d2d3d; padding: 6px; border-radius: 6px; }
         
+        /* CSS CHO KHU VỰC 3 NÚT ĐỒNG BỘ MỚI TINH */
         .upload-container-layout {
             display: flex;
             gap: 6px;
             align-items: center;
             width: 100%;
         }
-        .file-upload-box { 
-            flex: 1.2;
+        
+        /* KHUNG TRẠNG THÁI ĐỒNG BỘ THÔNG MINH */
+        .status-sync-box { 
+            flex: 1.4;
             height: 34px;
-            border: 1px dashed #3d3d52; 
+            border: 1.5px solid #3d3d52; 
             border-radius: 5px; 
             cursor: pointer; 
             background: #16161f; 
-            transition: all 0.2s; 
+            transition: all 0.3s ease; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            gap: 4px; 
+            gap: 8px; 
             box-sizing: border-box;
+            padding: 0 4px;
+            user-select: none;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
         }
-        .file-upload-box:hover { border-color: #00f2fe; background: #1c1c28; }
-        .file-upload-box p { margin: 0; font-size: 0.65rem; color: #a0a0b0; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .status-item {
+            font-size: 0.65rem;
+            font-weight: bold;
+            color: #6c6c80;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            transition: all 0.3s;
+        }
+        .status-item span.tick {
+            font-size: 0.75rem;
+            color: #3d3d52;
+            transition: all 0.3s;
+        }
+        /* Style kích hoạt đỏ neon khi từng đài có dữ liệu */
+        .status-item.active {
+            color: #fff;
+        }
+        .status-item.active span.tick {
+            color: #ff0055;
+            text-shadow: 0 0 6px #ff0055, 0 0 12px #ff0055;
+        }
         
         .btn-quick-update {
-            flex: 1;
+            flex: 0.9;
             height: 34px;
             background: #111116;
             border: 1.5px solid #00f2fe;
@@ -250,6 +276,7 @@
             box-shadow: 0 0 6px rgba(0, 242, 254, 0.15);
             white-space: nowrap;
             box-sizing: border-box;
+            letter-spacing: 0.5px;
         }
         .btn-quick-update:hover {
             background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
@@ -476,7 +503,6 @@
         ::-webkit-scrollbar-track { background: #09090d; }
         ::-webkit-scrollbar-thumb { background: #2d2d3d; border-radius: 3px; }
 
-        /* CSS BẢNG QUẢN LÝ THÀNH VIÊN VÀ NHẬT KÝ */
         .admin-table { width: 100%; color: #fff; border-collapse: collapse; font-size: 0.65rem; margin-top: 5px; }
         .admin-table th { background: #1c1c24; color: #00f2fe; padding: 4px; border: 1px solid #2d2d3d; }
         .admin-table td { padding: 4px; border: 1px solid #2d2d3d; background: #111116; }
@@ -516,14 +542,19 @@
             </div>
             <div class="panel" style="padding: 4px; flex-shrink: 0;">
                 <div class="upload-container-layout">
-                    <div class="file-upload-box" onclick="document.getElementById('fileInput').click()">
-                        <span style="font-size: 0.85rem; line-height: 1;">📄</span>
-                        <p id="uploadStatus">Chọn File Lotto 5/35 (.txt)</p>
+                    
+                    <!-- BẢNG TRẠNG THÁI ĐỒNG BỘ THÔNG MINH MỚI THAY THẾ Ô CHỌN FILE CŨ -->
+                    <div class="status-sync-box" id="globalStatusBox" onclick="document.getElementById('fileInput').click()" title="Bấm để chọn file lẻ bổ sung">
+                        <div class="status-item" id="statusLotto"><span class="tick">✓</span>5/35</div>
+                        <div class="status-item" id="statusMega"><span class="tick">✓</span>6/45</div>
+                        <div class="status-item" id="statusPower"><span class="tick">✓</span>6/55</div>
                         <input type="file" id="fileInput" accept=".txt" style="display:none" onchange="handleFileSelect(event)">
                     </div>
-                    <!-- Nút xóa quyền lực (Sẽ ẩn nếu không phải Admin Đại ca) -->
+                    
                     <button class="btn-clear-premium" id="adminDeleteBtn" onclick="clearCurrentData()" title="Xoá dữ liệu đài này">🗑️ XOÁ</button>
-                    <button class="btn-quick-update" onclick="document.getElementById('multiFileInput').click()">CẬP NHẬT NHANH</button>
+                    
+                    <!-- SỬA CHỮ CẬP NHẬT NHANH THÀNH CẬP NHẬT -->
+                    <button class="btn-quick-update" onclick="document.getElementById('multiFileInput').click()">CẬP NHẬT</button>
                     <input type="file" id="multiFileInput" accept=".txt" multiple style="display:none" onchange="handleMultiFileSelect(event)">
                 </div>
             </div>
@@ -573,7 +604,6 @@
                     </select>
                 </div>
                 <button class="tab-btn" id="viewIframeBtn" onclick="switchView('iframe')">Trực tiếp kết quả điện toán</button>
-                <!-- Nút Tab đặc quyền mở bảng điều khiển quản trị của Đại ca -->
                 <button class="tab-btn" id="viewAdminBtn" onclick="switchView('admin')" style="display: none; background: #22111a; color: #ff0055; border-color: #551122;">🛡️ QUẢN TRỊ</button>
             </div>
             
@@ -585,7 +615,6 @@
                 <iframe id="resultIframe" src="https://www.ketquadientoan.com/"></iframe>
             </div>
 
-            <!-- GIAO DIỆN KHU VỰC THƯ MỤC ẨN QUẢN TRỊ (CHỈ ĐẠI CA THẤY) -->
             <div class="matrix-viewport" id="adminView" style="display: none; padding: 10px;">
                 <div style="display: flex; gap: 10px;">
                     <div style="flex: 1; background: #1c1c24; padding: 8px; border-radius: 6px; border: 1px solid #2d2d3d;">
@@ -640,29 +669,21 @@
         let globalOnlineData = { lotto: [], mega: [], power: [] };
         let currentUserRole = 'member'; 
         let currentUserName = '';
-        let loadedFileNames = { lotto: "Kết nối...", mega: "Kết nối...", power: "Kết nối..." };
         let testSets = { lotto: { main: [], spec: null }, mega: { main: [] }, power: { main: [], spec: null } };
         let activePredictions = [];
 
-        // --- HÀM XỬ LÝ ĐĂNG NHẬP & PHÂN QUYỀN TỐI CAO ---
         function handleSystemLogin() {
             let u = document.getElementById('loginUser').value.trim();
             let p = document.getElementById('loginPass').value.trim();
-            
             if(!u || !p) return;
 
-            // Kiểm tra danh bạ tài khoản trực tuyến trên Firebase
             db.ref('system_accounts').once('value', (snapshot) => {
                 let accounts = snapshot.val() || {};
-                
                 if (accounts[u] && accounts[u].password === p) {
                     currentUserRole = accounts[u].role;
                     currentUserName = u;
-                    
-                    // Ẩn màn hình đăng nhập
                     document.getElementById('loginOverlay').style.display = 'none';
                     
-                    // Ghi nhận nhật ký vào lịch sử hệ thống đám mây
                     let timeStr = new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
                     db.ref('login_history').push({
                         username: u,
@@ -670,7 +691,6 @@
                         time: timeStr
                     });
 
-                    // Phân quyền hiển thị tính năng xóa dữ liệu
                     if (currentUserRole === 'admin') {
                         document.getElementById('adminDeleteBtn').style.display = 'flex';
                         document.getElementById('viewAdminBtn').style.display = 'block';
@@ -681,8 +701,6 @@
                         document.getElementById('viewAdminBtn').style.display = 'none';
                         document.getElementById('headerTitle').innerText = `Thống kê Vietlott - Chào Thành viên: ${u}`;
                     }
-
-                    // Khởi động đồng bộ ma trận số
                     startSyncingDatabase();
                 } else {
                     document.getElementById('loginError').style.display = 'block';
@@ -690,9 +708,7 @@
             });
         }
 
-        // --- TẢI THÔNG TIN VÀO BẢNG ĐIỀU KHIỂN QUẢN TRỊ CỦA ĐẠI CA ---
         function loadAdminPanels() {
-            // Tải danh sách tài khoản
             db.ref('system_accounts').on('value', (snapshot) => {
                 let accounts = snapshot.val() || {};
                 let html = `<table class="admin-table"><tr><th>Tài khoản</th><th>Mật khẩu</th><th>Quyền</th><th>Hành động</th></tr>`;
@@ -710,12 +726,11 @@
                 document.getElementById('accountsListArea').innerHTML = html;
             });
 
-            // Tải bảng lịch sử ghi nhận đăng nhập
             db.ref('login_history').limitToLast(30).on('value', (snapshot) => {
                 let logs = snapshot.val() || {};
                 let html = `<table class="admin-table"><tr><th>Tên tài khoản</th><th>Vai trò</th><th>Thời gian vào web</th></tr>`;
                 let logArray = [];
-                for (let id in logs) logArray.unshift(logs[id]); // Đảo ngược danh sách để log mới nhất lên đầu
+                for (let id in logs) logArray.unshift(logs[id]);
                 logArray.forEach(log => {
                     html += `<tr>
                         <td style="color:#00f2fe; font-weight:bold;">${log.username}</td>
@@ -744,22 +759,33 @@
             }
         }
 
+        // --- CƠ CHẾ KIỂM TRA ĐỒNG BỘ VÀ ĐỔI MÀU LED NEON THEO Ý ĐẠI CA ---
         function startSyncingDatabase() {
             db.ref('vietlott_matrix_data').on('value', (snapshot) => {
-                let data = snapshot.val();
-                if (data) {
-                    globalOnlineData.lotto = data.lotto || [];
-                    globalOnlineData.mega = data.mega || [];
-                    globalOnlineData.power = data.power || [];
-                    loadedFileNames.lotto = globalOnlineData.lotto.length > 0 ? "Mạng tổng Trực tuyến (Đã đồng bộ)" : "Chưa có dữ liệu mạng tổng";
-                    loadedFileNames.mega = globalOnlineData.mega.length > 0 ? "Mạng tổng Trực tuyến (Đã đồng bộ)" : "Chưa có dữ liệu mạng tổng";
-                    loadedFileNames.power = globalOnlineData.power.length > 0 ? "Mạng tổng Trực tuyến (Đã đồng bộ)" : "Chưa có dữ liệu mạng tổng";
+                let data = snapshot.val() || {};
+                globalOnlineData.lotto = data.lotto || [];
+                globalOnlineData.mega = data.mega || [];
+                globalOnlineData.power = data.power || [];
+
+                let hasLotto = globalOnlineData.lotto.length > 0;
+                let hasMega = globalOnlineData.mega.length > 0;
+                let hasPower = globalOnlineData.power.length > 0;
+
+                // Kích hoạt tích đỏ neon cho từng đài
+                document.getElementById('statusLotto').classList.toggle('active', hasLotto);
+                document.getElementById('statusMega').classList.toggle('active', hasMega);
+                document.getElementById('statusPower').classList.toggle('active', hasPower);
+
+                // Nếu có đủ cả 3 loại dữ liệu -> Khung chuyển sang sáng xanh lá
+                let box = document.getElementById('globalStatusBox');
+                if (hasLotto && hasMega && hasPower) {
+                    box.style.borderColor = '#00ff66';
+                    box.style.boxShadow = '0 0 10px rgba(0, 255, 102, 0.4), inset 0 0 5px rgba(0, 255, 102, 0.2)';
                 } else {
-                    loadedFileNames.lotto = "Chưa có dữ liệu mạng tổng";
-                    loadedFileNames.mega = "Chưa có dữ liệu mạng tổng";
-                    loadedFileNames.power = "Chưa có dữ liệu mạng tổng";
+                    box.style.borderColor = '#3d3d52';
+                    box.style.boxShadow = 'inset 0 0 5px rgba(0,0,0,0.5)';
                 }
-                document.getElementById('uploadStatus').innerText = loadedFileNames[currentType];
+
                 reloadCurrentMatrix();
             });
         }
@@ -830,7 +856,6 @@
             document.querySelectorAll('.sidebar .tab-btn').forEach(btn => btn.classList.remove('active'));
             let idx = type === 'lotto' ? 0 : (type === 'mega' ? 1 : 2);
             document.querySelectorAll('.sidebar .tab-btn')[idx].classList.add('active');
-            document.getElementById('uploadStatus').innerText = loadedFileNames[type];
             let sideIframe = document.getElementById('sidebarResultIframe');
             if(type === 'lotto') sideIframe.src = "https://www.ketquadientoan.com/tat-ca-ky-xo-so-lotto-535.html";
             else if(type === 'mega') sideIframe.src = "https://www.ketquadientoan.com/tat-ca-ky-xo-so-mega-6-45.html";
@@ -1319,16 +1344,13 @@
             }
         }
 
-        // KHO CHỨA TÀI KHOẢN GỐC (Tự động khởi tạo lên Firebase nếu cơ sở dữ liệu trống)
         window.onload = function() { 
             setupPredictPanel();
-            
-            // Khởi tạo tài khoản Admin tối cao cho Đại ca và tài khoản mẫu ban đầu
             db.ref('system_accounts').once('value', (snapshot) => {
                 if (!snapshot.exists()) {
                     db.ref('system_accounts').set({
-                        "daica": { password: "123", role: "admin" }, // Tài khoản Admin của Đại ca
-                        "member1": { password: "456", role: "member" } // Tài khoản Hội viên mẫu 1
+                        "daica": { password: "123", role: "admin" },
+                        "member1": { password: "456", role: "member" }
                     });
                 }
             });
