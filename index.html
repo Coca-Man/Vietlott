@@ -961,36 +961,96 @@
         }
 
         function handleBoardDataPush() {
-            let text = document.getElementById('boardRawInput').value.trim();
-            if (!text) { startSyncingDatabase(); alert(`Đã làm mới dữ liệu đài ${currentType.toUpperCase()} từ Đám mây thưa Đại ca!`); return; }
-            let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0); let parsedRows = [];
-            lines.forEach(line => {
-                let parts = line.split('|').map(p => p.trim());
-                if(parts.length >= 2) {
-                    let dateStr = parts[0];
-                    let mainNums = parts[1].split(/\s+/).map(n => String(parseInt(n)).padStart(2, '0'));
-                    let specNum = parts[2] ? String(parseInt(parts[2])).padStart(2, '0') : null;
-                    parsedRows.push({ date: dateStr, main: mainNums, spec: specNum });
-                }
-            });
-            let limitedRows = parsedRows.slice(0, 60);
-            if (limitedRows.length === 0) { alert("Dữ liệu cấu trúc không đồng nhất thưa Đại ca!"); return; }
-            let sampleRow = limitedRows[0]; let autoDetectedType = currentType; let firstRowRaw = lines[0].toLowerCase();
+    let text = document.getElementById('boardRawInput').value.trim();
+    if (!text) { 
+        startSyncingDatabase(); 
+        alert(`Đã làm mới dữ liệu đài ${currentType.toUpperCase()} từ Đám mây thưa Đại ca!`); 
+        return; 
+    }
 
-            if (firstRowRaw.includes('535')) autoDetectedType = 'lotto';
-            else if (firstRowRaw.includes('645')) autoDetectedType = 'mega';
-            else if (firstRowRaw.includes('655')) autoDetectedType = 'power';
-            else {
-                if (sampleRow.main.length === 5) autoDetectedType = 'lotto';
-                else if (sampleRow.main.length === 6) {
-                    if (sampleRow.spec !== null) autoDetectedType = 'power';
-                    else autoDetectedType = sampleRow.main.some(n => parseInt(n) > 45) ? 'power' : 'mega';
+    let rawLines = text.split('\n');
+    let parsedNewRows = [];
+
+    rawLines.forEach(line => {
+        let cleanLine = line.trim();
+        if (!cleanLine) return;
+
+        let parts = cleanLine.split(/[|\t]+/).map(p => p.trim()).filter(p => p.length > 0);
+        
+        if (parts.length >= 2) {
+            let dateStr = parts[0];
+            let numMatches = parts[1].match(/\d+/g);
+            if (numMatches && numMatches.length >= 5) {
+                let mainNums = numMatches.slice(0, (numMatches.length === 5 || numMatches.length === 7) ? 5 : 6)
+                                         .map(n => String(parseInt(n)).padStart(2, '0'));
+                
+                let specNum = null;
+                if (parts[2]) {
+                    let specMatch = parts[2].match(/\d+/);
+                    if (specMatch) specNum = String(parseInt(specMatch[0])).padStart(2, '0');
+                } else if (numMatches.length > mainNums.length) {
+                    specNum = String(parseInt(numMatches[numMatches.length - 1])).padStart(2, '0');
                 }
+
+                parsedNewRows.push({ date: dateStr, main: mainNums, spec: specNum });
             }
-            db.ref('vietlott_matrix_data/' + autoDetectedType).set(limitedRows);
-            document.getElementById('boardRawInput').value = ''; 
-            alert(`Hệ thống ma trận nhận diện -> Cập nhật thành công đài: ${autoDetectedType.toUpperCase()}`);
         }
+    });
+
+    if (parsedNewRows.length === 0) { 
+        alert("Không tìm thấy bộ số hợp lệ trong văn bản dán vào thưa Đại ca!"); 
+        return; 
+    }
+
+    let sampleRow = parsedNewRows[0]; 
+    let autoDetectedType = currentType; 
+    let firstRowRaw = text.toLowerCase();
+
+    if (firstRowRaw.includes('535')) autoDetectedType = 'lotto';
+    else if (firstRowRaw.includes('645')) autoDetectedType = 'mega';
+    else if (firstRowRaw.includes('655')) autoDetectedType = 'power';
+    else {
+        if (sampleRow.main.length === 5) autoDetectedType = 'lotto';
+        else if (sampleRow.main.length === 6) {
+            if (sampleRow.spec !== null) autoDetectedType = 'power';
+            else autoDetectedType = sampleRow.main.some(n => parseInt(n) > 45) ? 'power' : 'mega';
+        }
+    }
+
+    let finalDataset = [];
+    let addedCount = 0;
+
+    if (parsedNewRows.length >= 50) {
+        finalDataset = parsedNewRows.slice(0, 60);
+        addedCount = finalDataset.length;
+    } else {
+        let existingData = globalOnlineData[autoDetectedType] || [];
+        let mergedRows = [...existingData];
+
+        for (let i = parsedNewRows.length - 1; i >= 0; i--) {
+            let newRow = parsedNewRows[i];
+            
+            // ĐÃ SỬA: Bắt buộc trùng CẢ NGÀY LẪN DÃY SỐ CHÍNH LẪN SỐ ĐB thì mới coi là trùng
+            let isExist = mergedRows.some(oldRow => {
+                let sameDate = (oldRow.date === newRow.date);
+                let sameMain = (oldRow.main.join(',') === newRow.main.join(','));
+                let sameSpec = (oldRow.spec === newRow.spec);
+                return sameDate && sameMain && sameSpec;
+            });
+
+            if (!isExist) {
+                mergedRows.unshift(newRow);
+                addedCount++;
+            }
+        }
+        finalDataset = mergedRows.slice(0, 60);
+    }
+
+    db.ref('vietlott_matrix_data/' + autoDetectedType).set(finalDataset).then(() => {
+        document.getElementById('boardRawInput').value = ''; 
+        alert(`CẬP NHẬT THÀNH CÔNG!\n- Đài: ${autoDetectedType.toUpperCase()}\n- Đã nhận diện: ${addedCount} kỳ mới\n- Tổng lưu trữ hệ thống: ${finalDataset.length} kỳ`);
+    });
+}
 
         // Đọc lưu và trích xuất trạng thái cấu hình của tab hiện tại để chống reset dữ liệu
         function saveCurrentTabState() {
