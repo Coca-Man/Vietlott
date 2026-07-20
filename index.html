@@ -1232,90 +1232,95 @@
             if(n >= 1 && n <= maxRange) locked.push(String(n).padStart(2, '0')); 
         } 
     });
-    let resultSet = [...locked];
 
-    // Xử lý riêng cho trường hợp Đại ca chọn "combined" (Kết hợp tất cả thực sự)
-    if (chosenAlgo === 'combined') {
-        // 1. Tính toán Tần suất Nóng Lạnh toàn cục
-        let freq = Array(maxRange + 1).fill(0); 
-        rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n <= maxRange) freq[n]++; }); });
-        
-        // 2. Tính toán Bạc nhớ theo số nuôi
-        let pairCounts = Array(maxRange + 1).fill(0); 
-        if (locked.length > 0) {
-            rows.forEach(r => { 
-                let hasLocked = locked.some(l => r.main.includes(l)); 
-                if (hasLocked) r.main.forEach(num => pairCounts[parseInt(num)]++); 
-            });
-        }
+    let resultSet = [];
+    let attempts = 0;
 
-        // 3. Tiến hành Chấm điểm Ma Trận tích hợp cho từng con số chưa khóa
-        let poolCandidates = [];
-        for (let j = 1; j <= maxRange; j++) {
-            let s = String(j).padStart(2, '0');
-            if (locked.includes(s)) continue;
+    do {
+        resultSet = [...locked];
 
-            let score = 0;
-            // Cộng điểm Bạc nhớ
-            score += pairCounts[j] * 2.5; 
+        if (chosenAlgo === 'combined') {
+            let freq = Array(maxRange + 1).fill(0); 
+            rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n <= maxRange) freq[n]++; }); });
             
-            // Cộng điểm Tần suất (Dòng chẵn chuộng Nóng, Dòng lẻ chuộng Lạnh)
-            if (index % 2 === 0) {
-                score += freq[j] * 1.0; 
-            } else {
-                let maxFreq = Math.max(...freq);
-                score += (maxFreq - freq[j]) * 1.0; 
+            let pairCounts = Array(maxRange + 1).fill(0); 
+            if (locked.length > 0) {
+                rows.forEach(r => { 
+                    let hasLocked = locked.some(l => r.main.includes(l)); 
+                    if (hasLocked) r.main.forEach(num => pairCounts[parseInt(num)]++); 
+                });
             }
 
-            poolCandidates.push({ numStr: s, finalScore: score });
-        }
+            let poolCandidates = [];
+            for (let j = 1; j <= maxRange; j++) {
+                let s = String(j).padStart(2, '0');
+                if (locked.includes(s)) continue;
 
-        // Sắp xếp các ứng viên có tổng điểm tích hợp từ cao xuống thấp
-        poolCandidates.sort((a, b) => b.finalScore - a.finalScore);
-
-        // 4. Áp dụng Bộ lọc Loại trừ biên độ (nobet) lên danh sách đã chấm điểm
-        let maxBetAllowed = Math.floor(Math.random() * 3); // Chỉ cho phép trùng tối đa 0-2 số kỳ trước
-        let currentBetCount = 0;
-        resultSet.forEach(num => { if (lastDraw.includes(num)) currentBetCount++; });
-
-        for (let i = 0; i < poolCandidates.length; i++) {
-            if (resultSet.length >= mainSize) break;
-            let candidate = poolCandidates[i].numStr;
-
-            if (lastDraw.includes(candidate)) {
-                if (currentBetCount < maxBetAllowed) {
-                    resultSet.push(candidate);
-                    currentBetCount++;
+                let score = 0;
+                score += pairCounts[j] * 2.5; 
+                
+                if (index % 2 === 0) {
+                    score += freq[j] * 1.0; 
+                } else {
+                    let maxFreq = Math.max(...freq);
+                    score += (maxFreq - freq[j]) * 1.0; 
                 }
+
+                // Độ lệch ngẫu nhiên mạnh hơn để xáo trộn dàn số ứng viên
+                score += (Math.random() * 5.0 - 2.5) + (attempts * 1.5);
+
+                poolCandidates.push({ numStr: s, finalScore: score });
+            }
+
+            poolCandidates.sort((a, b) => b.finalScore - a.finalScore);
+
+            let maxBetAllowed = Math.floor(Math.random() * 3); 
+            let currentBetCount = 0;
+            resultSet.forEach(num => { if (lastDraw.includes(num)) currentBetCount++; });
+
+            for (let i = 0; i < poolCandidates.length; i++) {
+                if (resultSet.length >= mainSize) break;
+                let candidate = poolCandidates[i].numStr;
+
+                if (lastDraw.includes(candidate)) {
+                    if (currentBetCount < maxBetAllowed) {
+                        resultSet.push(candidate);
+                        currentBetCount++;
+                    }
+                } else {
+                    resultSet.push(candidate);
+                }
+            }
+        } else {
+            let freq = Array(maxRange + 1).fill(0); rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n <= maxRange) freq[n]++; }); });
+            let currentAlgo = chosenAlgo === 'random_mix' ? ['hotcold', 'nobet', 'pair', 'combined'][Math.floor(Math.random() * 4)] : chosenAlgo;
+            
+            if (currentAlgo === 'nobet') {
+                let maxBetAllowed = Math.floor(Math.random() * 3); let currentBetCount = 0; resultSet.forEach(num => { if (lastDraw.includes(num)) currentBetCount++; });
+                let freshPool = []; let betPool = [];
+                for (let j = 1; j <= maxRange; j++) { let s = String(j).padStart(2, '0'); if (!resultSet.includes(s)) { if (lastDraw.includes(s)) betPool.push(s); else freshPool.push(s); } }
+                freshPool.sort(() => Math.random() - 0.5); betPool.sort(() => Math.random() - 0.5);
+                while (resultSet.length < mainSize) { if (currentBetCount < maxBetAllowed && betPool.length > 0) { resultSet.push(betPool.shift()); currentBetCount++; } else if (freshPool.length > 0) { resultSet.push(freshPool.shift()); } else break; }
             } else {
-                resultSet.push(candidate);
+                let pool = []; for(let j = 1; j <= maxRange; j++) { let s = String(j).padStart(2, '0'); if(!locked.includes(s)) pool.push(s); }
+                if (currentAlgo === 'hotcold') { pool.sort((a, b) => { let scoreA = freq[parseInt(a)]; let scoreB = freq[parseInt(b)]; return (index % 2 === 0) ? (scoreB - scoreA) : (scoreA - scoreB); }); }
+                else if (currentAlgo === 'pair') { if (locked.length > 0) { let pairCounts = Array(maxRange + 1).fill(0); rows.forEach(r => { let hasLocked = locked.some(l => r.main.includes(l)); if (hasLocked) r.main.forEach(num => pairCounts[parseInt(num)]++); }); pool.sort((a, b) => pairCounts[parseInt(b)] - pairCounts[parseInt(a)]); } else pool.sort(() => Math.random() - 0.5); }
+                let needed = mainSize - resultSet.length; if (needed > 0 && pool.length > 0) { let candidatesCount = Math.min(pool.length, needed + 5); let topCandidates = pool.slice(0, candidatesCount); topCandidates.sort(() => Math.random() - 0.5); for(let k = 0; k < needed; k++) { if(topCandidates.length > 0) resultSet.push(topCandidates.shift()); } }
             }
         }
-        
-        // Trộn nhẹ nhóm kết quả cuối để tạo tính khách quan đột biến
         resultSet.sort((a, b) => parseInt(a) - parseInt(b));
+        attempts++;
 
-    } else {
-        // GIỮ NGUYÊN LOGIC CŨ CHO CÁC CHIẾN THUẬT ĐƠN LẺ KHÁC
-        let freq = Array(maxRange + 1).fill(0); rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n <= maxRange) freq[n]++; }); });
-        let currentAlgo = chosenAlgo === 'random_mix' ? ['hotcold', 'nobet', 'pair', 'combined'][Math.floor(Math.random() * 4)] : chosenAlgo;
-        
-        if (currentAlgo === 'nobet') {
-            let maxBetAllowed = Math.floor(Math.random() * 3); let currentBetCount = 0; resultSet.forEach(num => { if (lastDraw.includes(num)) currentBetCount++; });
-            let freshPool = []; let betPool = [];
-            for (let j = 1; j <= maxRange; j++) { let s = String(j).padStart(2, '0'); if (!resultSet.includes(s)) { if (lastDraw.includes(s)) betPool.push(s); else freshPool.push(s); } }
-            freshPool.sort(() => Math.random() - 0.5); betPool.sort(() => Math.random() - 0.5);
-            while (resultSet.length < mainSize) { if (currentBetCount < maxBetAllowed && betPool.length > 0) { resultSet.push(betPool.shift()); currentBetCount++; } else if (freshPool.length > 0) { resultSet.push(freshPool.shift()); } else break; }
-        } else {
-            let pool = []; for(let j = 1; j <= maxRange; j++) { let s = String(j).padStart(2, '0'); if(!locked.includes(s)) pool.push(s); }
-            if (currentAlgo === 'hotcold') { pool.sort((a, b) => { let scoreA = freq[parseInt(a)]; let scoreB = freq[parseInt(b)]; return (index % 2 === 0) ? (scoreB - scoreA) : (scoreA - scoreB); }); }
-            else if (currentAlgo === 'pair') { if (locked.length > 0) { let pairCounts = Array(maxRange + 1).fill(0); rows.forEach(r => { let hasLocked = locked.some(l => r.main.includes(l)); if (hasLocked) r.main.forEach(num => pairCounts[parseInt(num)]++); }); pool.sort((a, b) => pairCounts[parseInt(b)] - pairCounts[parseInt(a)]); } else pool.sort(() => Math.random() - 0.5); }
-            let needed = mainSize - resultSet.length; if (needed > 0 && pool.length > 0) { let candidatesCount = Math.min(pool.length, needed + 5); let topCandidates = pool.slice(0, candidatesCount); topCandidates.sort(() => Math.random() - 0.5); for(let k = 0; k < needed; k++) { if(topCandidates.length > 0) resultSet.push(topCandidates.shift()); } }
-        }
-        resultSet.sort((a, b) => parseInt(a) - parseInt(b));
-    }
+        // GIẢI PHÁP SO SÁNH TRỰC TIẾP CHUỖI SỐ CHÍNH VỚI BỘ NHỚ TRƯỚC ĐÓ
+        var isDuplicate = activePredictions.some((p, pIdx) => {
+            if (pIdx < index && p && p.main) {
+                return p.main.join(',') === resultSet.join(',');
+            }
+            return false;
+        });
 
-    // ĐOẠN KHỞI TẠO ĐUÔI SỐ ĐB VÀ RENDER HTML GIỮ NGUYÊN VẸN 100% CỦA ĐẠI CA
+    } while (isDuplicate && attempts < 30);
+
     let sNum = ""; 
     if (currentType !== 'mega') { 
         let specInput = document.querySelector('.lock-spec-val'); 
@@ -1329,6 +1334,8 @@
             sNum = String(Math.floor(Math.random() * maxSpec) + 1).padStart(2, '0'); 
         } 
     }
+
+    // LƯU TRỰC TIẾP VÀO BỘ NHỚ NGAY TẠI DÒNG ĐANG TẠO
     activePredictions[index] = (currentType === 'mega') ? { main: resultSet } : { main: resultSet, spec: sNum };
 
     let rowDiv = document.createElement('div'); rowDiv.className = 'predict-row'; rowDiv.id = `predictRow_${index}`; ticketContainer.appendChild(rowDiv);
