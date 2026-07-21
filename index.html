@@ -1,0 +1,1834 @@
+<!DOCTYPE html><html lang="vi"><head>
+    <meta charset="UTF-8">
+    <title>Hệ thống Phân tích & Dự đoán Vietlott by CVN - FULL PREMIUM</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <style>
+        :root {
+            --bg-main: #0a0a0f;
+            --bg-panel: rgba(20, 20, 30, 0.75);
+            --bg-input: #14141f;
+            --border-glow: #00f2fe;
+            --accent-pink: #ff007f;
+            --accent-purple: #7928ca;
+            --accent-green: #00ff66;
+            --accent-orange: #ff7300;
+            --text-muted: #8a8a9e;
+            
+            --custom-main-color: #005229;
+            --custom-spec-color: #cc5c00;
+            --custom-text-color: #ffffff;
+            --custom-hover-color: rgba(0, 242, 254, 0.25);
+        }
+
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(10, 10, 15, 0.8); }
+        ::-webkit-scrollbar-thumb { background: #2a2a40; border-radius: 4px; border: 1px solid rgba(0, 242, 254, 0.2); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--border-glow); box-shadow: 0 0 8px var(--border-glow); }
+
+        html, body { 
+            height: 100vh; min-height: 100vh; max-height: 100vh; 
+            margin: 0; padding: 0; overflow: hidden; box-sizing: border-box; 
+            background-color: var(--bg-main); color: #fff; 
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body::before { content: "CVN PREMIUM SYSTEMS"; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg); font-size: 8vw; font-weight: 900; color: rgba(0, 242, 254, 0.005); z-index: -1; pointer-events: none; white-space: nowrap; letter-spacing: 15px; font-family: 'Arial Black', sans-serif; }
+        
+        /* 🌟 HIỆU ỨNG ĐÔ LA RƠI & PHÁO HOA MINI ĐĂNG NHẬP */
+        #loginOverlay { 
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+            background: rgba(5, 5, 10, 0.8); backdrop-filter: blur(6px); 
+            z-index: 9999; display: flex; align-items: center; justify-content: center; overflow: hidden;
+        }
+        
+        .falling-dollar {
+            position: absolute; top: -50px; font-size: 18px; user-select: none; pointer-events: none;
+            animation: dollarFall linear infinite; z-index: 9990; opacity: 0.85;
+        }
+        @keyframes dollarFall {
+            0% { transform: translateY(-50px) rotate(0deg); opacity: 0; }
+            20% { opacity: 0.9; }
+            100% { transform: translateY(105vh) rotate(360deg); opacity: 0; }
+        }
+
+        .firework-particle {
+            position: absolute; width: 5px; height: 5px; border-radius: 50%; pointer-events: none; z-index: 9992;
+            animation: fireworkExplode 1.2s ease-out infinite;
+        }
+        @keyframes fireworkExplode {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; }
+        }
+
+        .login-box { 
+            background: #0d0d14; 
+            border: 2px solid transparent; 
+            background-image: linear-gradient(#0d0d14, #0d0d14), linear-gradient(90deg, #ff007f, #00f2fe, #ffab00, #7928ca, #ff007f);
+            background-origin: border-box; background-clip: padding-box, border-box;
+            box-shadow: 0 0 35px rgba(0, 242, 254, 0.25), inset 0 0 15px rgba(255, 0, 127, 0.15); 
+            padding: 25px 20px; border-radius: 12px; width: 100%; max-width: 323px; text-align: center; 
+            position: relative; animation: loginStarOrbit 4s linear infinite;
+            transform: scale(0.85); transform-origin: center; z-index: 9995;
+        }
+        @keyframes loginStarOrbit {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+        .login-logo { height: 64px; width: auto; margin-bottom: 10px; opacity: 1; border-radius: 6px; display: inline-block; filter: drop-shadow(0 0 8px var(--border-glow)); }
+        .login-title { 
+            font-size: 0.95rem; font-weight: 900; color: #fff;
+            text-transform: uppercase; margin-bottom: 14px; letter-spacing: 1px; line-height: 1.4;
+            text-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
+        }
+        .login-input { width: 100%; background: var(--bg-input); border: 1px solid #32324d; color: #fff; padding: 9px 12px; border-radius: 6px; margin-bottom: 10px; font-size: 0.8rem; font-weight: bold; box-sizing: border-box; outline: none; transition: border-color 0.2s; font-family: inherit; }
+        .login-input:focus { border-color: var(--border-glow); box-shadow: 0 0 10px rgba(0, 242, 254, 0.2); }
+        .btn-login { width: 100%; padding: 10px; background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); border: none; color: #000; font-weight: 900; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; font-family: inherit; }
+        .btn-login:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(0, 242, 254, 0.4); }
+        .login-error { color: var(--accent-pink); font-size: 0.7rem; font-weight: bold; margin-bottom: 10px; display: none; }
+        .remember-layout { display: flex; align-items: center; gap: 6px; justify-content: flex-start; margin-bottom: 12px; font-size: 0.7rem; color: var(--text-muted); cursor: pointer; user-select: none; }
+
+        .header-premium { background: rgba(13, 13, 22, 0.9); padding: 6px 20px; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 242, 254, 0.15); margin-bottom: 6px; border: 1px solid #1f1f33; position: relative; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 15px; }
+        .header-premium::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent-pink), var(--accent-purple), var(--border-glow), #ffab00, var(--accent-pink)); background-size: 300% 100%; animation: premiumNeonBar 4s linear infinite; }
+        @keyframes premiumNeonBar { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }
+        .header-logo { height: 26px; width: auto; border-radius: 4px; filter: drop-shadow(0 0 6px var(--border-glow)); }
+        .title-wrapper { display: flex; align-items: center; gap: 10px; }
+        .header-premium h1 { margin: 0; font-size: 1.25rem; font-weight: 900; text-transform: uppercase; color: #fff; letter-spacing: 1.5px; text-shadow: 0 0 8px var(--border-glow), 0 0 15px var(--accent-purple); }
+        .cosmic-icon { font-size: 1.1rem; animation: cosmicBlink var(--delay, 1s) infinite alternate; display: inline-block; }
+        .icon-sun { color: #ffab00; text-shadow: 0 0 8px #ffab00; --delay: 1.4s; }
+        .icon-star { color: #fff370; text-shadow: 0 0 6px #fff370; --delay: 0.7s; }
+        .icon-moon { color: var(--border-glow); text-shadow: 0 0 8px var(--border-glow); --delay: 1.8s; }
+        @keyframes cosmicBlink { 0%, 90% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 4px currentColor); } 94%, 98% { opacity: 0.3; transform: scale(0.95); filter: none; } 100% { opacity: 1; transform: scale(1.02); filter: drop-shadow(0 0 6px currentColor); } }
+        .btn-logout-top { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: #1a080f; border: 1px solid var(--accent-pink); color: var(--accent-pink); font-size: 0.65rem; font-weight: 900; padding: 4px 10px; border-radius: 4px; cursor: pointer; display: none; z-index: 10; transition: all 0.2s; font-family: inherit; }
+        .btn-logout-top:hover { background: var(--accent-pink); color: #fff; box-shadow: 0 0 10px var(--accent-pink); }
+
+        .container { display: flex; gap: 8px; flex: 1; min-height: 0; height: calc(100vh - 50px); position: relative; }
+        .sidebar { width: 375px; background: var(--bg-panel); padding: 8px; border-radius: 10px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 4px 25px rgba(0,0,0,0.4); border: 1px solid #1f1f2e; flex-shrink: 0; overflow: hidden; height: 100%; box-sizing: border-box; backdrop-filter: blur(10px); position: relative; }
+        .main-content { flex: 1; background: var(--bg-panel); padding: 8px; border-radius: 10px; display: flex; flex-direction: column; box-shadow: 0 4px 25px rgba(0,0,0,0.4); border: 1px solid #1f1f2e; overflow: hidden; height: 100%; box-sizing: border-box; backdrop-filter: blur(10px); }
+        
+        .tabs { display: flex; gap: 4px; flex-shrink: 0; width: 100%; }
+        .tab-btn { flex: 1; height: 34px; background: #161622; border: 1px solid #2a2a3d; color: var(--text-muted); cursor: pointer; border-radius: 6px; font-weight: 800; font-size: 0.72rem; letter-spacing: 0.3px; transition: all 0.2s ease; text-transform: uppercase; white-space: nowrap; display: flex; align-items: center; justify-content: center; font-family: inherit; }
+        .tab-btn:hover { color: #fff; background: #1e1e2f; }
+        .tab-btn.active { background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color: #000; border-color: transparent; box-shadow: 0 0 12px rgba(0, 242, 254, 0.35); }
+        
+        .section-title { font-size: 0.75rem; font-weight: 800; color: var(--border-glow); text-transform: uppercase; margin-bottom: 5px; display: flex; align-items: center; gap: 5px; letter-spacing: 0.5px; }
+        .panel { background: rgba(22, 22, 34, 0.6); border: 1px solid #232338; padding: 6px; border-radius: 8px; }
+        
+        .upload-container-layout { display: flex; gap: 6px; align-items: center; width: 100%; }
+        .status-sync-box { flex: 1.2; height: 32px; border: 1.5px solid #2e2e42; border-radius: 6px; cursor: pointer; background: #0f0f17; transition: all 0.25s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; padding: 0 6px; user-select: none; box-shadow: inset 0 0 6px rgba(0,0,0,0.6); }
+        .status-sync-box:hover { border-color: #4a4a66; background: #13131f; }
+        .status-item { font-size: 0.65rem; font-weight: 800; color: #525266; display: flex; align-items: center; gap: 2px; transition: all 0.25s; }
+        .status-item span.tick { font-size: 0.75rem; color: #2e2e42; }
+        .status-item.active { color: #fff; }
+        .status-item.active span.tick { color: var(--accent-pink); text-shadow: 0 0 8px var(--accent-pink); }
+        
+        .btn-clear-premium { height: 32px; background: #140d12; color: var(--accent-pink); border: 1.5px solid var(--accent-pink); padding: 0 10px; border-radius: 6px; cursor: pointer; font-weight: 900; font-size: 0.65rem; display: flex; align-items: center; justify-content: center; gap: 2px; box-shadow: 0 0 6px rgba(255, 0, 85, 0.1); transition: all 0.2s; white-space: nowrap; font-family: inherit; }
+        .btn-clear-premium:hover { background: var(--accent-pink); color: #fff; box-shadow: 0 0 12px var(--accent-pink); }
+        .btn-export-premium { height: 32px; background: #0d151a; color: var(--border-glow); border: 1.5px solid var(--border-glow); padding: 0 10px; border-radius: 6px; cursor: pointer; font-weight: 900; font-size: 0.65rem; display: flex; align-items: center; justify-content: center; gap: 2px; box-shadow: 0 0 6px rgba(0, 242, 254, 0.1); transition: all 0.2s; white-space: nowrap; font-family: inherit; }
+        .btn-export-premium:hover { background: var(--border-glow); color: #000; box-shadow: 0 0 12px var(--border-glow); }
+
+        .color-picker-input {
+            -webkit-appearance: none; -moz-appearance: none; appearance: none;
+            width: 17px; height: 17px; border: 1px solid #36364d; border-radius: 4px; cursor: pointer; background: none; padding: 0; overflow: hidden;
+        }
+        .color-picker-input::-webkit-color-swatch-wrapper { padding: 0; }
+        .color-picker-input::-webkit-color-swatch { border: none; border-radius: 3px; }
+        .btn-color-reset {
+            background: #161622; border: 1px solid #36364d; color: var(--border-glow);
+            width: 19px; height: 19px; border-radius: 4px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; font-size: 0.75rem; transition: all 0.25s ease; padding: 0;
+        }
+        .btn-color-reset:hover { transform: rotate(180deg); background: var(--border-glow); color: #000; box-shadow: 0 0 8px var(--border-glow); }
+
+        .matrix-viewport { flex: 1; overflow: auto; border: 1px solid #222233; border-radius: 8px; background: #07070a; max-height: calc(100% - 38px); position: relative; }
+        
+        table { border-collapse: separate; border-spacing: 1px; width: 100%; font-size: 0.7rem; text-align: center; overflow: hidden; position: relative; }
+        th, td { padding: 2px 0; width: 19px; height: 19px; min-height: 19px; max-height: 19px; box-sizing: border-box; font-weight: 600; position: relative; }
+        
+        /* 🟢 ĐÓNG BĂNG 3 HÀNG ĐẦU & BẢNG NỔI FLOATING CLONE */
+        th { background: #141420; color: #9595a8; font-size: 0.65rem; position: sticky; top: 0; z-index: 1000; height: 21px; border-bottom: 1px solid #232338; }
+        
+        tr.count-row th, tr.count-row td { 
+            position: sticky !important; 
+            top: 21px !important; 
+            z-index: 990 !important; 
+            background: #13241a !important; 
+            height: 21px;
+        }
+        
+        tr.test-row th, tr.test-row td { 
+            position: sticky !important; 
+            top: 42px !important; 
+            z-index: 990 !important; 
+            background: #081524 !important; 
+            height: 21px;
+        }
+
+        th.col-fixed-idx { width: 30px !important; min-width: 30px; z-index: 1010 !important; }
+        th.col-fixed-date { width: 80px !important; min-width: 80px; z-index: 1010 !important; }
+        
+        td.cell-idx { background: #141420; color: #5f5f73; position: sticky; left: 0; z-index: 900; font-size: 0.6rem; font-weight: bold; }
+        td.cell-date { background: #0f0f17; color: #9595a8; position: sticky; left: 30px; z-index: 900; text-align: left; padding-left: 5px; font-size: 0.6rem; white-space: nowrap; border-right: 1px solid #232338; }
+
+        /* Bảng nổi clone 3 hàng đầu khi cuộn ngang bị che khuất */
+        #floatingHeaderContainer {
+            position: absolute; top: 0; left: 0; right: 0; z-index: 2000;
+            pointer-events: none; overflow: hidden; display: none; background: #07070a;
+        }
+        #floatingHeaderContainer table {
+            margin: 0; border-collapse: separate; border-spacing: 1px; width: 100%;
+        }
+
+        tr.count-row td.cell-idx, tr.count-row td.cell-date { z-index: 1050 !important; background: #13241a !important; }
+        tr.test-row td.cell-idx, tr.test-row td.cell-date { z-index: 1050 !important; background: #081524 !important; }
+        tr.header-nums th.col-fixed-idx, tr.header-nums th.col-fixed-date { z-index: 1060 !important; background: #141420 !important; }
+        
+        /* 1. Hàng tiêu đề số ngang trên cùng */
+        th:hover {
+            background-color: var(--accent-pink) !important;
+            color: #fff !important;
+            box-shadow: 0 0 10px var(--accent-pink);
+        }
+        th:hover::after {
+            content: ""; position: absolute; left: 0; top: 21px; height: 10000px; width: 100%;
+            background-color: var(--custom-hover-color); z-index: -1; pointer-events: none;
+        }
+
+        /* 2. Ô Ngày quay / Kỳ quay: ĐÃ THU NHỎ CỠ CHỮ & KHÔNG SCALE PHÓNG TO */
+        td.cell-idx:hover, td.cell-date:hover {
+            background-color: var(--accent-pink) !important;
+            color: #fff !important;
+            font-weight: 900;
+            box-shadow: 0 0 12px var(--accent-pink), inset 0 0 6px #fff !important;
+            transform: none !important;
+            z-index: 100;
+            transition: background-color 0.1s ease, color 0.1s ease;
+        }
+        td.cell-idx:hover::before, td.cell-date:hover::before {
+            content: ""; position: absolute; background-color: var(--custom-hover-color);
+            left: -5000px; right: -5000px; top: 0; height: 100%; z-index: -1; pointer-events: none;
+        }
+
+        /* 3. HIỆU ỨNG RÊ CHUỘT SÁNG CẢ HÀNG NGANG VÀ CỘT DỌC KHÔNG BỊ MẤT SÁNG */
+        td:not(.cell-idx):not(.cell-date):hover::before {
+            content: ""; position: absolute; background-color: var(--custom-hover-color);
+            left: -5000px; right: -5000px; top: 0; height: 100%; z-index: 50; pointer-events: none;
+        }
+        td:not(.cell-idx):not(.cell-date):hover::after {
+            content: ""; position: absolute; background-color: var(--custom-hover-color);
+            top: -5000px; bottom: -5000px; left: 0; width: 100%; z-index: 50; pointer-events: none;
+        }
+
+        td:not(.cell-idx):not(.cell-date):hover {
+            background-color: var(--accent-pink) !important;
+            box-shadow: 0 0 12px var(--accent-pink), inset 0 0 6px #fff !important;
+            color: #fff !important;
+            transform: none !important;
+            z-index: 100;
+            transition: background-color 0.1s ease, box-shadow 0.1s ease;
+        }
+
+        .cell-main-num { background: #0c0c12; color: #22222e; font-weight: 400; }
+        .cell-main-num.active { background: var(--custom-main-color) !important; color: var(--custom-text-color) !important; font-weight: bold; box-shadow: inset 0 0 4px rgba(255,255,255,0.3); }
+        .cell-main-num.active-spec-in-main { background: var(--custom-spec-color) !important; color: var(--custom-text-color) !important; font-weight: bold; box-shadow: inset 0 0 4px rgba(255,255,255,0.3); }
+        .cell-main-num.test-active { background: #003b73 !important; color: #00ffff !important; font-weight: bold; }
+        .cell-main-num.test-spec-active { background: #803300 !important; color: #ffcc00 !important; font-weight: bold; }
+        
+        .cell-spec-num { background: #140e0b; color: #291a13; }
+        .cell-spec-num.active-spec { background: var(--custom-spec-color) !important; color: var(--custom-text-color) !important; font-weight: bold; }
+        .cell-spec-num.test-spec-active { background: #803300 !important; color: #ffcc00 !important; font-weight: bold; }
+        
+        tr.header-nums th.main-num-head { color: #000 !important; font-weight: 900; }
+        tr.header-nums th.spec-num-head { color: #fff !important; background-color: #3b1f00; font-weight: 900; }
+        tr.test-row td { background: #081524; color: var(--border-glow); font-weight: bold; border-bottom: 1px dashed var(--border-glow); font-size: 0.65rem; }
+        tr.test-row td.cell-test-active { background: var(--accent-pink) !important; color: #fff !important; }
+        tr.test-row td.cell-test-spec-active { background: #ffcc00 !important; color: #000 !important; }
+        tr.count-row td { background: #13241a; color: var(--accent-green); font-weight: bold; font-size: 0.65rem; border-bottom: 1px solid #232338; }
+
+        .predict-box { display: flex; flex-direction: column; gap: 3px; background: #060609; border: 1px solid #232338; padding: 4px; max-height: 235px; overflow-y: auto; flex-shrink: 0; border-radius: 6px; }
+        .predict-ticket-group { border: 1px dashed var(--accent-pink); padding: 5px; border-radius: 6px; margin-bottom: 5px; background: rgba(20,15,22,0.4); }
+        .predict-ticket-title { font-size: 0.65rem; font-weight: 900; color: var(--accent-pink); margin-bottom: 4px; padding-left: 2px; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 3px; }
+        .predict-row { display: flex; align-items: center; gap: 5px; background: #12121a; padding: 3px 4px; border-radius: 5px; border: 1px solid #1c1c2b; margin-bottom: 2px; }
+        .predict-row-label { font-size: 0.75rem; font-weight: 900; color: var(--border-glow); width: 16px; text-align: center; }
+        .ball-predict { width: 19px; height: 19px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: bold; color: var(--custom-text-color) !important; }
+        .ball-main-custom { background-color: var(--custom-main-color) !important; }
+        .ball-spec-custom { background-color: var(--custom-spec-color) !important; }
+        
+        .action-inline-btn { background: #1d1d29; border: 1px solid #36364d; color: #a5a5bc; padding: 1px 4px; font-size: 0.6rem; font-weight: bold; border-radius: 3px; cursor: pointer; font-family: inherit; }
+        .action-inline-btn:hover { background: #272738; color: #fff; }
+        .btn-try { border-color: #004d99; color: #3399ff; }
+        .btn-try:hover { background: #004d99; color: #fff; }
+        .btn-del { border-color: #661414; color: #ff6666; }
+        .btn-del:hover { background: #661414; color: #fff; }
+        .count-select { background: #0f0f17; color: var(--border-glow); border: 1px solid #232338; font-size: 0.75rem; font-weight: bold; border-radius: 5px; padding: 4px 6px; cursor: pointer; outline: none; text-align: center; font-family: inherit; }
+        .count-select:hover { border-color: var(--border-glow); }
+
+        .lock-horizontal-layout { display: flex; gap: 6px; align-items: center; background: #12121a; padding: 5px; border-radius: 6px; border: 1px solid #1f1f33; margin-bottom: 3px; flex-shrink: 0; }
+        .lock-sub-section { display: flex; align-items: center; gap: 4px; }
+        .lock-sub-title { font-size: 0.65rem; font-weight: bold; color: var(--text-muted); text-transform: uppercase; white-space: nowrap; }
+        .lock-inputs { display: flex; gap: 2px; }
+        .lock-input { width: 21px; background: #09090f; border: 1px solid #36364d; color: #fff; text-align: center; border-radius: 4px; padding: 2px 0; font-size: 0.65rem; font-weight: bold; font-family: inherit; }
+        .lock-input:focus { border-color: var(--border-glow); outline: none; }
+        .lock-input.spec-lock { border-color: var(--accent-orange); color: #ff9900; }
+
+        .predict-trigger-container { display: flex; gap: 4px; margin-bottom: 4px; flex-shrink: 0; width: 100%; align-items: center; }
+        .btn-predict-trigger { flex: 1.6; padding: 7px 4px; background: linear-gradient(135deg, var(--accent-pink) 0%, var(--accent-purple) 100%); border: none; color: #fff; font-weight: 900; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-size: 0.65rem; letter-spacing: 0.5px; box-shadow: 0 2px 8px rgba(255, 0, 127, 0.2); transition: all 0.2s; white-space: nowrap; font-family: inherit; }
+        .btn-predict-trigger:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255, 0, 127, 0.4); }
+        .predict-size-select { width: 55px; height: 28px; background: #141420; color: var(--accent-pink); border: 1px solid var(--accent-pink); font-size: 0.7rem; font-weight: 900; border-radius: 5px; padding: 0; cursor: pointer; outline: none; text-align: center; box-sizing: border-box; font-family: inherit; }
+        .btn-master-compose { flex: 1; padding: 7px 4px; background: linear-gradient(135deg, #7c00e6 0%, #b366ff 100%); border: none; color: #fff; font-weight: 900; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-size: 0.65rem; letter-spacing: 0.5px; box-shadow: 0 2px 8px rgba(124, 0, 230, 0.2); transition: all 0.2s; white-space: nowrap; font-family: inherit; }
+        .btn-master-compose:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(124, 0, 230, 0.4); }
+
+        #adminUpdateBoard { display: flex; gap: 6px; background: rgba(20, 20, 30, 0.8); border: 1px solid #27273d; border-radius: 8px; padding: 4px; box-sizing: border-box; width: 100%; margin-top: 2px; }
+        .board-left-panel { flex: 1; min-width: 0; display: flex; }
+        .raw-data-textarea { width: 100%; height: 58px; background: var(--bg-input); border: 1px solid #36364d; color: #ffab00; font-family: 'Consolas', monospace; font-size: 0.52rem; padding: 3px 4px; border-radius: 5px; box-sizing: border-box; resize: none; outline: none; line-height: 1.35; overflow-y: auto; white-space: pre; }
+        .board-right-panel { width: 95px; display: flex; flex-direction: column; gap: 4px; justify-content: space-between; flex-shrink: 0; }
+        .btn-gemini-link { background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); color: #fff; border: none; padding: 4px 2px; font-size: 0.6rem; font-weight: 800; border-radius: 4px; cursor: pointer; text-transform: uppercase; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 2px; white-space: nowrap; width: 100%; box-sizing: border-box; height: 28px; font-family: inherit; }
+        .btn-board-push { width: 100%; height: 28px; padding: 2px; background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color: #000; font-weight: 900; font-size: 0.6rem; border: none; border-radius: 4px; cursor: pointer; text-transform: uppercase; white-space: nowrap; box-sizing: border-box; font-family: inherit; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 9000; }
+        .modal-box { background: rgba(18, 18, 28, 0.95); border: 2px solid var(--border-glow); box-shadow: 0 0 30px rgba(0, 242, 254, 0.35); border-radius: 12px; width: 92%; max-width: 580px; padding: 16px; box-sizing: border-box; animation: modalFadeIn 0.2s ease-out; }
+        @keyframes modalFadeIn { from { transform: scale(0.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-title { font-size: 0.9rem; font-weight: 900; color: var(--border-glow); text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+        .modal-close { color: var(--text-muted); font-size: 1.2rem; cursor: pointer; border: none; background: none; }
+        .modal-content-area { background: #050508; border: 1px solid #232338; border-radius: 8px; padding: 12px; font-family: monospace; font-size: 0.8rem; max-height: 420px; overflow-y: auto; margin-bottom: 12px; line-height: 1.4; }
+        
+        .history-chunk-box { background: rgba(14, 14, 24, 0.7); border: 1px solid #222238; border-radius: 6px; padding: 8px; margin-bottom: 10px; text-align: left; display: flex; flex-direction: column; gap: 6px; }
+        .history-chunk-title { font-size: 0.7rem; font-weight: bold; color: var(--accent-green); padding-bottom: 4px; border-bottom: 1px dashed #23233c; white-space: nowrap; display: block; width: 100%; box-sizing: border-box; }
+        .history-chunk-body-layout { display: flex; gap: 8px; align-items: center; width: 100%; }
+        .history-chunk-left-lines { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+        .history-ticket-line { display: flex; align-items: center; justify-content: space-between; background: #0a0a0f; padding: 4px 8px; border-radius: 4px; border: 1px solid #171726; font-size: 0.7rem; }
+        .history-line-data { color: #00ff66; font-family: monospace; font-weight: bold; }
+        .history-rebuy-checkbox { cursor: pointer; accent-color: var(--accent-pink); width: 14px; height: 14px; margin-left: 10px; vertical-align: middle; }
+        
+        .history-chunk-right-action { width: 90px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border-left: 1px solid #23233c; padding-left: 8px; }
+        .btn-chunk-master-rebuy { background: linear-gradient(135deg, var(--accent-pink) 0%, #b30059 100%); color: #fff; border: none; font-size: 0.65rem; font-weight: 900; width: 100%; padding: 12px 4px; border-radius: 6px; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 8px rgba(255,0,127,0.3); text-align: center; line-height: 1.3; font-family: inherit; }
+        .btn-chunk-master-rebuy:hover { box-shadow: 0 0 12px var(--accent-pink); transform: translateY(-1px); }
+
+        .sms-block { background: #0e0e16; border: 1px solid #1f1f33; padding: 8px; border-radius: 6px; margin-bottom: 8px; position: relative; }
+        .sms-header { font-size: 0.65rem; color: var(--border-glow); font-weight: 800; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .sms-text { color: #ffab00; user-select: all; word-break: break-all; font-weight: 700; background: #050508; padding: 5px; border-radius: 4px; border: 1px solid #141420; }
+        .btn-copy-sms { background: #141420; border: 1px solid var(--border-glow); color: var(--border-glow); font-size: 0.55rem; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-weight: 900; font-family: inherit; }
+        .modal-btn-cancel { padding: 6px 14px; font-size: 0.75rem; font-weight: bold; border-radius: 5px; cursor: pointer; background: #1f1f2e; border: 1px solid #36364d; color: var(--text-muted); font-family: inherit; }
+
+        .admin-dashboard-layout { display: grid; grid-template-columns: 1fr 1.3fr; gap: 10px; }
+        .admin-section-box { background: rgba(24, 24, 38, 0.5); padding: 10px; border-radius: 8px; border: 1px solid #23233c; }
+
+        .sidebar-iframe-container { flex: 1; min-height: 0; border: 1px solid #232338; border-radius: 8px; overflow: hidden; background: #0f0f17; height: 100%; position: relative; transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); z-index: 10; }
+        .sidebar-iframe-container.zoomed-state { position: absolute; bottom: 4px; left: 4px; right: 4px; height: calc(100% - 15px); z-index: 850; box-shadow: 0 -15px 35px rgba(0,0,0,0.9), 0 0 20px rgba(0,242,254,0.3); border-color: var(--border-glow); }
+        .sidebar-iframe-container iframe { width: 100%; height: 100%; border: none; display: block; position: absolute; top:0; left:0; }
+        
+        .btn-floating-zoom-control { position: absolute; bottom: 12px; right: 12px; z-index: 950; background: linear-gradient(135deg, var(--accent-pink) 0%, #b30059 100%); color: #fff; border: 1px solid rgba(255, 255, 255, 0.2); width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(255, 0, 127, 0.5), 0 0 8px rgba(0, 242, 254, 0.2); transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1); outline: none; }
+        .btn-floating-zoom-control:hover { transform: scale(1.1) rotate(5deg); box-shadow: 0 6px 20px rgba(255, 0, 127, 0.7); }
+
+        .iframe-container { flex: 1; border-radius: 8px; overflow: hidden; border: 1px solid #232338; background: #0f0f17; position: relative; height: 100%; }
+        .iframe-container iframe { width: 100%; height: 100%; border: none; display: block; position: absolute; top:0; left:0; }
+
+        .admin-table { width: 100%; color: #fff; border-collapse: collapse; font-size: 0.65rem; margin-top: 5px; }
+        .admin-table th { background: #1c1c24; color: #00f2fe; padding: 5px 4px; border: 1px solid #2d2d3d; }
+        .admin-table td { padding: 5px 4px; border: 1px solid #2d2d3d; background: #111116; text-align: center; vertical-align: middle; }
+        .admin-input { background: #16161f; border: 1px solid #3d3d52; color: #fff; font-size: 0.65rem; padding: 2px 4px; border-radius: 3px; width: 75px; text-align: center; font-weight: bold; font-family: inherit; }
+        .admin-input-user { background: #0c0c14; border: 1px solid #2d2d47; color: var(--border-glow); }
+        .admin-select-role { background: #16161f; border: 1px solid #3d3d52; color: #fff; font-size: 0.65rem; padding: 1px 2px; border-radius: 3px; font-weight: bold; outline: none; cursor: pointer; font-family: inherit; }
+        
+        .admin-actions-flex-cell { display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; height: 100%; }
+        .btn-table-action { border: none; padding: 3px 6px; font-size: 0.55rem; font-weight: bold; border-radius: 3px; cursor: pointer; color: #fff; display: inline-block; white-space: nowrap; font-family: inherit; }
+
+        .member-profile-input { width: 100%; background: var(--bg-input); border: 1px solid #32324d; color: #fff; padding: 6px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; box-sizing: border-box; outline: none; font-family: inherit; }
+        .member-profile-input:focus { border-color: var(--border-glow); }
+        .pwd-change-box { background: rgba(30, 20, 35, 0.6); padding: 10px; border-radius: 8px; border: 1px solid #4a1535; margin-bottom: 12px; text-align: left; }
+        .pwd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px; }
+    </style></head><body>
+
+    <div id="loginOverlay">
+        <!-- Các yếu tố đô la rơi & pháo hoa mini -->
+        <div id="dollarRainContainer"></div>
+        <div id="fireworkLeftContainer"></div>
+        <div id="fireworkRightContainer"></div>
+
+        <div class="login-box" onkeydown="if(event.key === 'Enter') handleSystemLogin()">
+            <img class="login-logo" src="logo.png" alt="CVN Logo">
+            <div class="login-title">HỆ THỐNG PHÂN TÍCH &amp; DỰ ĐOÁN VIETLOTT</div>
+            <div class="login-error" id="loginError">Mật khẩu xác thực không đúng thưa Đại ca!</div>
+            <input type="text" id="loginUser" class="login-input" placeholder="Tên đăng nhập">
+            <input type="password" id="loginPass" class="login-input" placeholder="Mật khẩu">
+            <label class="remember-layout">
+                <input type="checkbox" id="loginRemember"> Ghi nhớ trạng thái đăng nhập
+            </label>
+            <button class="btn-login" onclick="handleSystemLogin()">ĐĂNG NHẬP</button>
+        </div>
+    </div>
+
+    <div class="header-premium">
+        <img class="header-logo" src="logo.png" alt="CVN Logo">
+        <div class="title-wrapper">
+            <span class="cosmic-icon icon-sun">☀️</span>
+            <span class="cosmic-icon icon-star">⭐</span>
+            <h1 id="headerTitle">Hệ thống Phân tích Vietlott by CVN</h1>
+            <span class="cosmic-icon icon-star">⭐</span>
+            <span class="cosmic-icon icon-moon">🌙</span>
+        </div>
+        <button class="btn-logout-top" id="systemLogoutBtn" onclick="handleSystemLogout()">ĐĂNG XUẤT</button>
+    </div>
+    <div class="container">
+        <div class="sidebar">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchType('lotto')">Lotto 5/35</button>
+                <button class="tab-btn" onclick="switchType('mega')">Mega 6/45</button>
+                <button class="tab-btn" onclick="switchType('power')">Power 6/55</button>
+                <button class="tab-btn" onclick="window.location.href='old.html'" style="background: #1f141a; color: #a85f7e; border-color: #3d2331;">Giao diện cũ</button>
+            </div>
+            
+            <div class="panel" style="padding: 4px; flex-shrink: 0; display: flex; flex-direction: column; gap: 4px;">
+                <div class="upload-container-layout">
+                    <div class="status-sync-box" id="globalStatusBox" onclick="document.getElementById('multiFileInput').click()" title="Bấm để nạp nhanh tệp kết quả trực tiếp (.txt)">
+                        <div class="status-item" id="statusLotto"><span class="tick">✓</span>5/35</div>
+                        <div class="status-item" id="statusMega"><span class="tick">✓</span>6/45</div>
+                        <div class="status-item" id="statusPower"><span class="tick">✓</span>6/55</div>
+                        <input type="file" id="multiFileInput" accept=".txt" multiple style="display:none" onchange="handleMultiFileSelect(event)">
+                    </div>
+                    <button class="btn-export-premium" onclick="exportAllCloudData()" title="Xuất toàn bộ cơ sở dữ liệu nền đám mây">💾 XUẤT</button>
+                    <button class="btn-clear-premium" id="adminDeleteBtn" onclick="clearCurrentData()" title="Xoá dữ liệu phân nhánh đài hiện tại">🗑️ XOÁ</button>
+                </div>
+
+                <div class="inline-update-board" id="adminUpdateBoard" style="display: none;">
+                    <div class="board-left-panel">
+                        <textarea class="raw-data-textarea" id="boardRawInput" placeholder="Nhập dữ liệu. Ví dụ:&#10;T2, 20/07/2026 | 03 12 17 27 35 | 07 (5/35)&#10;T6, 20/07/2026 | 05 12 24 31 38 42 (6/45)&#10;CN, 19/07/2026 | 02 11 25 33 41 52 | 15 (6/55)"></textarea>
+                    </div>
+                    <div class="board-right-panel">
+                        <a class="btn-gemini-link" href="https://gemini.google.com/app/44cfac50974dfc1c?hl=vi" target="_blank">🚀 Mở Gemini</a>
+                        <button class="btn-board-push" onclick="handleBoardDataPush()">Cập nhật</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel" style="display: flex; flex-direction: column; flex: 1; min-height: 0; padding: 4px; height: 100%; position: relative;">
+                <div class="section-title" style="margin-bottom: 2px; flex-shrink: 0; display:flex; justify-content:space-between; align-items:center;">
+                    <span>🔮 Khóa số nuôi &amp; Chiến thuật</span>
+                    <div style="display:flex; gap:3px; align-items:center;">
+                        <input type="color" id="pickerMainColor" class="color-picker-input" value="#005229" onchange="updateThemeColors()" title="Màu nền số chính">
+                        <input type="color" id="pickerSpecColor" class="color-picker-input" value="#cc5c00" onchange="updateThemeColors()" title="Màu nền số Đặc biệt">
+                        <input type="color" id="pickerTextColor" class="color-picker-input" value="#ffffff" onchange="updateThemeColors()" title="Màu chữ ô số">
+                        <input type="color" id="pickerHoverColor" class="color-picker-input" value="#00f2fe" onchange="updateThemeColors()" title="Màu ánh sáng soi chiếu khi rê chuột">
+                        <button class="btn-color-reset" onclick="resetThemeColorsDefault()" title="Đặt lại màu mặc định ban đầu">🔄</button>
+                    </div>
+                </div>
+                <div class="lock-horizontal-layout">
+                    <div class="lock-sub-section">
+                        <span class="lock-sub-title">Số chính:</span>
+                        <div class="lock-inputs" id="mainLockGroup"></div>
+                    </div>
+                    <div class="lock-sub-section" id="specLockSection">
+                        <span class="lock-sub-title" id="specLockLabel" style="color: #ff9900;">ĐB:</span>
+                        <div class="lock-inputs" id="specLockGroup"></div>
+                    </div>
+                </div>
+				<div style="display: flex; align-items: center; gap: 4px; margin-bottom: 4px; background: #12121a; padding: 4px; border-radius: 5px; border: 1px solid #1f1f33;">
+                    <span style="font-size: 0.65rem; font-weight: bold; color: var(--text-muted); white-space: nowrap;">Chiến thuật:</span>
+                    <select class="count-select" id="algoSelect" onchange="saveCurrentTabState()" style="flex: 1; font-size: 0.65rem; padding: 2px; height: 22px;">
+                        <option value="combined" selected>⚡ Kết hợp bộ lọc ma trận</option>
+                        <option value="hotcold">🔥 Phân tích tần suất Nóng Lạnh</option>
+                        <option value="nobet">❌ Loại trừ trùng lặp biên độ</option>
+                        <option value="pair">🔗 Thuật toán Bạc nhớ cặp số</option>
+                        <option value="random_mix">🎲 Xáo trộn động ngẫu nhiên</option>
+                    </select>
+                </div>
+                <div class="predict-trigger-container">
+                    <button class="btn-predict-trigger" onclick="generatePredictions()">Dự đoán dãy số</button>
+                    <select class="predict-size-select" id="predictSizeSelect" onchange="saveCurrentTabState()" title="Chọn số lượng vé dự đoán (Mỗi vé gồm 6 dãy từ A-F)">
+                        <option value="1" selected>1 vé</option>
+                        <option value="2">2 vé</option>
+                        <option value="3">3 vé</option>
+                        <option value="4">4 vé</option>
+                        <option value="5">5 vé</option>
+                        <option value="6">6 vé</option>
+                    </select>
+                    <button class="btn-master-compose" onclick="openComposeModal()">💬 Soạn tin</button>
+                </div>
+                <div class="predict-box" id="predictContainer"></div>
+                
+                <div class="section-title" style="margin-top: 4px; margin-bottom: 2px; flex-shrink: 0; color: var(--accent-pink);">
+                    <span>📋 Nhật ký kết quả hệ thống</span>
+                </div>
+                <div class="sidebar-iframe-container" id="sidebarResultIframeContainer">
+                    <iframe id="sidebarResultIframe" src="https://www.ketquadientoan.com/tat-ca-ky-xo-so-lotto-535.html"></iframe>
+                </div>
+                
+                <button class="btn-floating-zoom-control" id="iframeZoomTriggerBtn" onclick="toggleIframeZoomState()" title="Bấm để trượt mở rộng hoặc thu nhỏ nhanh khung kết quả">⛶</button>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="tabs" style="margin-bottom: 6px; align-items: center;">
+                <button class="tab-btn active" id="viewMatrixBtn" onclick="switchView('matrix')">Ma trận xu hướng dòng tiền</button>
+                <div style="display: flex; align-items: center; gap: 4px; padding: 0 4px;">
+                    <span style="font-size: 0.65rem; font-weight: bold; color: var(--text-muted); white-space: nowrap;">Thống kê biên:</span>
+                    <select class="count-select" id="countLimitSelect" onchange="reloadCurrentMatrix()" style="height: 24px; padding: 0 4px;">
+                        <option value="5" selected>5 kỳ</option>
+                        <option value="10">10 kỳ</option>
+                        <option value="20">20 kỳ</option>
+                        <option value="30">30 kỳ</option>
+                        <option value="40">40 kỳ</option>
+                        <option value="50">50 kỳ</option>
+                        <option value="60">60 kỳ</option>
+                    </select>
+                </div>
+                <button class="tab-btn" id="viewIframeBtn" onclick="switchView('iframe')">Trực tiếp cổng điện toán</button>
+                <button class="tab-btn" id="viewAdminBtn" onclick="switchView('admin')" style="display: none; background: #260d18; color: var(--accent-pink); border-color: #591632;">🛡️ QUẢN TRỊ CAO CẤP</button>
+            </div>
+            
+            <div class="matrix-viewport" id="matrixView" onscroll="syncFloatingHeaderScroll(this)">
+                <!-- Bảng nổi clone 3 hàng đầu bám ngang khi cuộn -->
+                <div id="floatingHeaderContainer"><table id="floatingHeaderTable"></table></div>
+                <table id="matrixTable"></table>
+            </div>
+            
+            <div class="iframe-container" id="iframeView" style="display: none;">
+                <iframe id="resultIframe" src="https://www.ketquadientoan.com/"></iframe>
+            </div>
+
+            <div class="matrix-viewport" id="adminView" style="display: none; padding: 10px;">
+                <div id="adminLayoutWrapper" class="admin-dashboard-layout">
+                    <div class="admin-section-box">
+                        <div class="section-title">👥 ỦY QUYỀN THÀNH VIÊN MỚI</div>
+                        <div style="display:flex; gap:5px; margin-bottom:12px; align-items: center;">
+                            <input type="text" id="newAccUser" class="admin-input" placeholder="Tên tài khoản" style="flex:1.2; text-align: left;">
+                            <input type="text" id="newAccPass" class="admin-input" placeholder="Mật khẩu" style="flex:1.2; text-align: left;">
+                            <select id="newAccRole" class="admin-select-role" style="height: 24px; padding: 0 4px;">
+                                <option value="member" selected>Thành viên</option>
+                                <option value="admin">Admin thường</option>
+                            </select>
+                            <button onclick="addNewAccountOnline()" style="background:var(--accent-green); color:#000; border:none; padding: 0 12px; height: 24px; font-weight:900; border-radius:4px; font-size:0.65rem; cursor:pointer; white-space: nowrap; font-family:inherit;">+ CẤP</button>
+                        </div>
+                        <div class="section-title">Danh sách tài khoản trực tuyến</div>
+                        <div id="accountsListArea" style="max-height: 580px; overflow-y: auto;"></div>
+                    </div>
+                    <div class="admin-section-box">
+                        <div class="section-title" style="color:#ffab00;">📜 NHẬT KÝ XÁC THỰC TRUY CẬP (THỜI GIAN THỰC)</div>
+                        <div id="logsListArea" style="max-height: 580px; overflow-y: auto;"></div>
+                    </div>
+                </div>
+                
+                <div id="memberLayoutWrapper" class="admin-dashboard-layout" style="display:none;">
+                    <div class="admin-section-box">
+                        <div class="pwd-change-box">
+                            <div class="section-title" style="color:var(--accent-pink);">🔐 Thay đổi thông tin tài khoản</div>
+                            <div class="pwd-grid" style="margin-bottom: 6px;">
+                                <div>
+                                    <div style="font-size:0.6rem; color:var(--text-muted); margin-bottom:2px;">Xác nhận Tài khoản cũ:</div>
+                                    <input type="text" id="pwdConfirmUser" class="member-profile-input" placeholder="Tên tài khoản cũ">
+                                </div>
+                                <div>
+                                    <div style="font-size:0.6rem; color:var(--text-muted); margin-bottom:2px;">Mật khẩu hiện tại:</div>
+                                    <input type="password" id="pwdOldPass" class="member-profile-input" placeholder="Mật khẩu hiện tại">
+                                </div>
+                            </div>
+                            <div class="pwd-grid" style="margin-bottom: 8px;">
+                                <div>
+                                    <div style="font-size:0.6rem; color:var(--accent-green); margin-bottom:2px;">Tên tài khoản MỚI:</div>
+                                    <input type="text" id="pwdNewUser" class="member-profile-input" placeholder="Bỏ trống nếu giữ nguyên">
+                                </div>
+                                <div>
+                                    <div style="font-size:0.6rem; color:var(--accent-green); margin-bottom:2px;">Mật khẩu MỚI:</div>
+                                    <input type="password" id="pwdNewPass" class="member-profile-input" placeholder="Bỏ trống nếu giữ nguyên">
+                                </div>
+                            </div>
+                            <div style="display:flex; justify-content: flex-end;">
+                                <button onclick="executeSelfProfileMutation()" style="background:linear-gradient(135deg, #7c00e6 0%, #b366ff 100%); color:#fff; border:none; padding:6px 14px; font-weight:900; border-radius:6px; font-size:0.65rem; cursor:pointer; white-space:nowrap; width: 100%; font-family:inherit;">CẬP NHẬT THÔNG TIN</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="admin-section-box">
+                        <div class="section-title" style="color:var(--border-glow);">📋 LỊCH SỬ ĐĂNG NHẬP &amp; TRA CỨU CỦA BẠN</div>
+                        <div id="memberSelfLogsArea" style="max-height: 520px; overflow-y: auto;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="composeModal">
+        <div class="modal-box">
+            <div class="modal-title">
+                <span id="modalTitleText">Cấu trúc tin nhắn mua vé Vietlott SMS</span>
+                <button class="modal-close" onclick="closeComposeModal()">✕</button>
+            </div>
+            <div class="modal-content-area" id="modalTextContent"></div>
+            <div class="modal-actions">
+                <button class="modal-btn-cancel" onclick="closeComposeModal()">Đóng hộp thoại</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCPAYMe0TMPGsBHHocO4FaEH9KONB_KV3Q",
+            authDomain: "vietlott-cvn.firebaseapp.com",
+            databaseURL: "https://vietlott-cvn-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "vietlott-cvn",
+            storageBucket: "vietlott-cvn.firebasestorage.app",
+            messagingSenderId: "851092496389",
+            appId: "1:851092496389:web:f8859cf96a742f545a3c6c"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let currentType = 'lotto';
+        let currentView = 'matrix';
+        let globalOnlineData = { lotto: [], mega: [], power: [] };
+        let currentUserRole = 'member'; 
+        let currentUserName = '';
+        let currentLogSessionKey = null; 
+        let currentPredictionCount = 0; 
+        let cachedLogSnapshotText = ""; 
+        let testSets = { lotto: { main: [], spec: null }, mega: { main: [] }, power: { main: [], spec: null } };
+        let activePredictions = [];
+        let isIframeZoomed = false;
+
+        let tabStatesStorage = {
+            lotto: { mainLock: [], specLock: '', algo: 'combined', size: '1', html: '', activePreds: [] },
+            mega: { mainLock: [], specLock: '', algo: 'combined', size: '1', html: '', activePreds: [] },
+            power: { mainLock: [], specLock: '', algo: 'combined', size: '1', html: '', activePreds: [] }
+        };
+
+        function initLoginVisualEffects() {
+            // Đô la rơi
+            let dollarContainer = document.getElementById('dollarRainContainer');
+            if (dollarContainer && dollarContainer.innerHTML === "") {
+                for (let i = 0; i < 15; i++) {
+                    let d = document.createElement('div');
+                    d.className = 'falling-dollar';
+                    d.innerText = '💵';
+                    d.style.left = Math.random() * 100 + '%';
+                    d.style.animationDuration = (3 + Math.random() * 4) + 's';
+                    d.style.animationDelay = (Math.random() * 5) + 's';
+                    dollarContainer.appendChild(d);
+                }
+            }
+
+            // Pháo hoa mini 2 góc dưới
+            createMiniFireworks('fireworkLeftContainer', 15, 85);
+            createMiniFireworks('fireworkRightContainer', 85, 85);
+        }
+
+        function createMiniFireworks(containerId, posXPercent, posYPercent) {
+            let container = document.getElementById(containerId);
+            if (!container || container.innerHTML !== "") return;
+            container.style.position = 'absolute';
+            container.style.left = posXPercent + '%';
+            container.style.top = posYPercent + '%';
+
+            setInterval(() => {
+                if (document.getElementById('loginOverlay').style.display === 'none') return;
+                for (let i = 0; i < 8; i++) {
+                    let p = document.createElement('div');
+                    p.className = 'firework-particle';
+                    let angle = Math.random() * Math.PI * 2;
+                    let distance = 20 + Math.random() * 45;
+                    p.style.setProperty('--dx', Math.cos(angle) * distance + 'px');
+                    p.style.setProperty('--dy', Math.sin(angle) * distance + 'px');
+                    p.style.background = ['#ff007f', '#00f2fe', '#ffab00', '#00ff66'][Math.floor(Math.random() * 4)];
+                    container.appendChild(p);
+                    setTimeout(() => p.remove(), 1200);
+                }
+            }, 1800);
+        }
+
+        function updateThemeColors() {
+            let mColor = document.getElementById('pickerMainColor').value;
+            let sColor = document.getElementById('pickerSpecColor').value;
+            let tColor = document.getElementById('pickerTextColor').value;
+            let hColor = document.getElementById('pickerHoverColor').value;
+            
+            document.documentElement.style.setProperty('--custom-main-color', mColor);
+            document.documentElement.style.setProperty('--custom-spec-color', sColor);
+            document.documentElement.style.setProperty('--custom-text-color', tColor);
+            
+            let r = parseInt(hColor.substr(1,2),16);
+            let g = parseInt(hColor.substr(3,2),16);
+            let b = parseInt(hColor.substr(5,2),16);
+            document.documentElement.style.setProperty('--custom-hover-color', `rgba(${r}, ${g}, ${b}, 0.25)`);
+        }
+
+        function resetThemeColorsDefault() {
+            document.getElementById('pickerMainColor').value = "#005229";
+            document.getElementById('pickerSpecColor').value = "#cc5c00";
+            document.getElementById('pickerTextColor').value = "#ffffff";
+            document.getElementById('pickerHoverColor').value = "#00f2fe";
+            updateThemeColors();
+        }
+
+        function handleSystemLogin() {
+            let u = document.getElementById('loginUser').value.trim().toLowerCase();
+            let p = document.getElementById('loginPass').value.trim();
+            let rem = document.getElementById('loginRemember').checked;
+            
+            if(!u || !p) {
+                let errBox = document.getElementById('loginError');
+                errBox.innerText = "Vui lòng nhập đầy đủ Tên đăng nhập và Mật khẩu!";
+                errBox.style.display = 'block';
+                return;
+            }
+
+            if ((u === 'daica' && p === '123') || (u === 'admin' && p === '123')) {
+                executeLoginSuccess(u, 'admin', rem);
+                return;
+            }
+
+            db.ref('system_accounts').once('value', (snapshot) => {
+                let accounts = snapshot.val() || {};
+                if (accounts[u] && accounts[u].password === p) {
+                    executeLoginSuccess(u, accounts[u].role || 'member', rem);
+                } else {
+                    let errBox = document.getElementById('loginError');
+                    errBox.innerText = "Mật khẩu hoặc tên đăng nhập không đúng thưa Đại ca!";
+                    errBox.style.display = 'block';
+                }
+            }).catch(() => {
+                if (u === 'daica' || u === 'admin') {
+                    executeLoginSuccess(u, 'admin', rem);
+                } else {
+                    executeLoginSuccess(u, 'member', rem);
+                }
+            });
+        }
+
+        function executeLoginSuccess(username, role, rem) {
+            currentUserRole = role;
+            currentUserName = username;
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('systemLogoutBtn').style.display = 'block';
+
+            if(rem) {
+                localStorage.setItem('cvn_remember_user', username);
+                localStorage.setItem('cvn_remember_role', role);
+            }
+
+            let timeStr = new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
+            let initialSnapshot = "Chưa kích hoạt dự đoán";
+            let pushRef = db.ref('login_history').push({ 
+                username: username, 
+                role: username === 'daica' ? 'Đại ca tối cao' : (role === 'admin' ? 'Admin thường' : 'Thành viên'), 
+                time: timeStr, 
+                snapshot: initialSnapshot 
+            });
+            currentLogSessionKey = pushRef.key;
+            currentPredictionCount = 0; 
+            cachedLogSnapshotText = initialSnapshot;
+
+            document.getElementById('viewAdminBtn').style.display = 'block';
+
+            if (currentUserName === 'daica' || currentUserRole === 'admin') {
+                document.getElementById('adminDeleteBtn').style.display = 'flex';
+                document.getElementById('adminUpdateBoard').style.display = 'flex'; 
+                document.getElementById('viewAdminBtn').innerText = "🛡️ QUẢN TRỊ CAO CẤP";
+                document.getElementById('adminLayoutWrapper').style.display = 'grid';
+                document.getElementById('memberLayoutWrapper').style.display = 'none';
+                
+                if (currentUserName === 'daica') {
+                    document.getElementById('headerTitle').innerText = "HỆ THỐNG VIETLOTT - XIN CHÀO ĐẠI CA TỐI CAO!";
+                } else {
+                    document.getElementById('headerTitle').innerText = `Hệ thống Vietlott - Admin: ${username}`;
+                }
+                loadAdminPanels();
+            } else {
+                document.getElementById('adminDeleteBtn').style.display = 'none';
+                document.getElementById('adminUpdateBoard').style.display = 'none'; 
+                document.getElementById('viewAdminBtn').innerText = "📋 LỊCH SỬ & ĐỔI MK";
+                document.getElementById('adminLayoutWrapper').style.display = 'none';
+                document.getElementById('memberLayoutWrapper').style.display = 'grid';
+                document.getElementById('headerTitle').innerText = `Hệ thống Vietlott - Thành viên: ${username}`;
+                loadMemberPanelLogs();
+            }
+            startSyncingDatabase();
+        }
+
+        function pushCurrentPredictionsToSessionLog(triggerContextName) {
+            if (!currentLogSessionKey) return;
+            let validPreds = activePredictions.filter(x => x !== null);
+            if (validPreds.length === 0) return;
+
+            currentPredictionCount++;
+            let currentLocalTime = new Date().toLocaleTimeString('vi-VN');
+
+            let formattedList = validPreds.map((p, idx) => {
+                let rowLabel = String.fromCharCode(65 + (idx % 6)); 
+                let ticketNum = Math.floor(idx / 6) + 1;
+                let dataStr = p.spec ? `${p.main.join(' ')} | ĐB: ${p.spec}` : p.main.join(' ');
+                return `   + Tuyến ${ticketNum}-${rowLabel}: [ ${dataStr} ]`;
+            });
+
+            let chunkLogHeader = `[Lần ${currentPredictionCount} - Lúc ${currentLocalTime} từ Hành động: ${triggerContextName}] (Đài: ${currentType.toUpperCase()})`;
+            let newLogBlockSegment = chunkLogHeader + `\n` + formattedList.join('\n');
+
+            db.ref(`login_history/${currentLogSessionKey}/snapshot`).once('value', (snapshot) => {
+                let existingDataText = snapshot.val() || "";
+                let updatedCumulativeLogText = "";
+                if (existingDataText === "Chưa kích hoạt dự đoán" || existingDataText === "") {
+                    updatedCumulativeLogText = newLogBlockSegment;
+                } else {
+                    updatedCumulativeLogText = existingDataText + `\n\n` + newLogBlockSegment;
+                }
+                cachedLogSnapshotText = updatedCumulativeLogText; 
+                db.ref(`login_history/${currentLogSessionKey}/snapshot`).set(updatedCumulativeLogText);
+            });
+        }
+
+        function handleSystemLogout() {
+            localStorage.removeItem('cvn_remember_user');
+            localStorage.removeItem('cvn_remember_role');
+            location.reload();
+        }
+
+        function toggleIframeZoomState() {
+            let container = document.getElementById('sidebarResultIframeContainer');
+            let btn = document.getElementById('iframeZoomTriggerBtn');
+            isIframeZoomed = !isIframeZoomed;
+            
+            if (isIframeZoomed) {
+                container.classList.add('zoomed-state');
+                btn.innerHTML = '✕';
+                btn.style.background = 'linear-gradient(135deg, #2a2a3d 0%, #161622 100%)';
+                btn.style.borderColor = 'var(--accent-pink)';
+            } else {
+                container.classList.remove('zoomed-state');
+                btn.innerHTML = '⛶';
+                btn.style.background = 'linear-gradient(135deg, var(--accent-pink) 0%, #b30059 100%)';
+                btn.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+            }
+        }
+
+        function loadAdminPanels() {
+            db.ref('system_accounts').on('value', (snapshot) => {
+                let accounts = snapshot.val() || {};
+                let html = `<table class="admin-table"><tr><th>Tài khoản</th><th>Mật khẩu</th><th>Vai trò</th><th>Hành động</th></tr>`;
+                for (let acc in accounts) {
+                    if (acc === 'daica' && currentUserName !== 'daica') {
+                        continue; 
+                    }
+
+                    let currentRole = accounts[acc].role || 'member';
+                    let isTargetDaica = (acc === 'daica');
+
+                    html += `<tr>
+                        <td><input type="text" id="userInput_${acc}" class="admin-input admin-input-user" value="${acc}"></td>
+                        <td><input type="text" id="passInput_${acc}" class="admin-input" value="${accounts[acc].password}"></td>
+                        <td>
+                            <select id="roleInput_${acc}" class="admin-select-role" ${isTargetDaica ? 'disabled' : ''}>
+                                <option value="member" ${currentRole==='member'?'selected':''}>Thành viên</option>
+                                <option value="admin" ${currentRole==='admin'?'selected':''}>Admin thường</option>
+                                ${isTargetDaica ? '<option value="admin" selected>Đại ca tối cao</option>' : ''}
+                            </select>
+                        </td>
+                        <td>
+                            <div class="admin-actions-flex-cell">
+                                <button class="btn-table-action" style="background:#007bff;" onclick="modifyAccountOnline('${acc}')">Thay đổi</button>
+                                ${isTargetDaica ? '-' : `<button class="btn-table-action" style="background:var(--accent-pink);" onclick="deleteAccountOnline('${acc}')">Thu hồi</button>`}
+                            </div>
+                        </td>
+                    </tr>`;
+                }
+                html += `</table>`;
+                document.getElementById('accountsListArea').innerHTML = html;
+            });
+
+            db.ref('login_history').limitToLast(50).on('value', (snapshot) => {
+                let logs = snapshot.val() || {};
+                let html = `<table class="admin-table"><tr><th>Tên định danh</th><th>Vai trò cấp</th><th>Mốc thời gian</th><th>Dữ liệu</th></tr>`;
+                let logArray = [];
+                for (let id in logs) { let item = logs[id]; item.id = id; logArray.unshift(item); }
+                logArray.forEach(log => { 
+                    if (currentUserName !== 'daica') {
+                        if (log.username === 'daica' || (log.role && log.role.includes('Đại ca'))) {
+                            return;
+                        }
+                    }
+
+                    let snapEscaped = log.snapshot ? encodeURIComponent(log.snapshot) : "Trống";
+                    html += `<tr>
+                        <td style="color:var(--border-glow); font-weight:bold;">${log.username}</td>
+                        <td>${log.role}</td>
+                        <td style="color:#ffab00;">${log.time}</td>
+                        <td><a href="#" style="color:var(--accent-green); font-weight:bold; text-decoration:none;" onclick="viewLogSnapshot('${snapEscaped}')">Lịch sử</a></td>
+                    </tr>`; 
+                });
+                html += `</table>`;
+                document.getElementById('logsListArea').innerHTML = html;
+            });
+        }
+
+        function loadMemberPanelLogs() {
+            db.ref('login_history').on('value', (snapshot) => {
+                let logs = snapshot.val() || {};
+                let html = `<table class="admin-table"><tr><th>Mốc thời gian đăng nhập</th><th>Bộ số phân tích trong phiên</th></tr>`;
+                let matchedLogArray = [];
+                for (let id in logs) {
+                    if (logs[id].username === currentUserName) {
+                        let item = logs[id]; item.id = id; matchedLogArray.unshift(item);
+                    }
+                }
+                matchedLogArray.forEach(log => {
+                    let snapEscaped = log.snapshot ? encodeURIComponent(log.snapshot) : "Trống";
+                    html += `<tr>
+                        <td style="color:#ffab00; font-weight:bold; padding:8px 4px;">${log.time}</td>
+                        <td><a href="#" style="color:var(--border-glow); font-weight:bold; text-decoration:none;" onclick="viewLogSnapshot('${snapEscaped}')">Xem lại bộ số đã lưu</a></td>
+                    </tr>`;
+                });
+                html += `</table>`;
+                document.getElementById('memberSelfLogsArea').innerHTML = html;
+            });
+        }
+
+        function executeSelfProfileMutation() {
+            let userCheck = document.getElementById('pwdConfirmUser').value.trim().toLowerCase();
+            let oldPass = document.getElementById('pwdOldPass').value.trim();
+            let newUser = document.getElementById('pwdNewUser').value.trim().toLowerCase();
+            let newPass = document.getElementById('pwdNewPass').value.trim();
+
+            if (!userCheck || !oldPass) { alert("Vui lòng nhập Tên đăng nhập cũ và Mật khẩu hiện tại để xác thực!"); return; }
+            if (userCheck !== currentUserName) { alert("Tên đăng nhập cũ xác nhận không khớp!"); return; }
+            if (!newUser && !newPass) { alert("Vui lòng nhập ít nhất Tên mới hoặc Mật khẩu mới cần đổi!"); return; }
+
+            if (currentUserName !== 'daica' && newUser === 'daica') {
+                alert("Hành vi bất hợp pháp! Quyền trượng tối cao không thể bị chiếm đoạt.");
+                return;
+            }
+
+            db.ref(`system_accounts/${currentUserName}`).once('value', (snapshot) => {
+                let data = snapshot.val() || {};
+                if (!snapshot.exists() || data.password !== oldPass) { alert("Mật khẩu hiện tại không chính xác!"); return; }
+                
+                let updatedRole = data.role || 'member';
+                let targetUserKey = newUser ? newUser : currentUserName;
+                let targetPassword = newPass ? newPass : oldPass;
+
+                let proceedMutation = () => {
+                    db.ref(`system_accounts/${targetUserKey}`).set({
+                        password: targetPassword,
+                        role: updatedRole
+                    }).then(() => {
+                        if (newUser && newUser !== currentUserName) {
+                            db.ref(`system_accounts/${currentUserName}`).remove();
+                            localStorage.setItem('cvn_remember_user', targetUserKey);
+                            currentUserName = targetUserKey;
+                        }
+                        alert("Đã cập nhật thông tin thành công!");
+                        document.getElementById('pwdConfirmUser').value = '';
+                        document.getElementById('pwdOldPass').value = '';
+                        document.getElementById('pwdNewUser').value = '';
+                        document.getElementById('pwdNewPass').value = '';
+                        
+                        if (currentUserName !== 'daica' && currentUserRole !== 'admin') {
+                            document.getElementById('headerTitle').innerText = `Hệ thống Vietlott - Thành viên: ${targetUserKey}`;
+                        }
+                    });
+                };
+
+                if (newUser && newUser !== currentUserName) {
+                    db.ref(`system_accounts/${newUser}`).once('value', (checkSnap) => {
+                        if (checkSnap.exists()) { alert("Tên tài khoản mới này đã có người sử dụng!"); } else { proceedMutation(); }
+                    });
+                } else {
+                    proceedMutation();
+                }
+            });
+        }
+
+        function viewLogSnapshot(snapTextEncoded) {
+            let text = decodeURIComponent(snapTextEncoded);
+            if ((text === "Chưa kích hoạt dự đoán" || !text.trim()) && cachedLogSnapshotText && cachedLogSnapshotText !== "Chưa kích hoạt dự đoán") {
+                text = cachedLogSnapshotText;
+            }
+            cachedLogSnapshotText = text;
+
+            document.getElementById('modalTitleText').innerText = "Nhật ký lưu trữ các lần dự đoán của phiên";
+            
+            if (text === "Chưa kích hoạt dự đoán" || !text.trim()) {
+                document.getElementById('modalTextContent').innerHTML = `<div style="color:var(--text-muted); text-align:center; padding:20px;">Chưa kích hoạt lượt dự đoán nào trong phiên này!</div>`;
+                document.getElementById('composeModal').style.display = 'flex';
+                return;
+            }
+
+            let htmlContainerContent = "";
+            let chunkBlocks = text.split(/\n(?=\[Lần)/g); 
+
+            chunkBlocks.forEach((block, blockIndex) => {
+                if (!block.trim()) return;
+                let lines = block.split('\n');
+                let blockHeaderTitle = lines[0] || "Lượt nhật ký";
+                
+                let targetBroadcastingPlatform = "LOTTO"; 
+                if (blockHeaderTitle.toUpperCase().includes("MEGA")) targetBroadcastingPlatform = "MEGA";
+                else if (blockHeaderTitle.toUpperCase().includes("POWER")) targetBroadcastingPlatform = "POWER";
+
+                htmlContainerContent += `<div class="history-chunk-box">`;
+                htmlContainerContent += `<div class="history-chunk-title">${blockHeaderTitle}</div>`;
+                htmlContainerContent += `<div class="history-chunk-body-layout">`;
+                htmlContainerContent += `<div class="history-chunk-left-lines">`;
+                
+                let checkboxLineCounter = 0;
+                for (let idx = 1; idx < lines.length; idx++) {
+                    let currentLineRaw = lines[idx].trim();
+                    if (!currentLineRaw.startsWith('+')) continue;
+                    
+                    let dataCoreSegment = currentLineRaw.substring(currentLineRaw.indexOf(':') + 1).replace('[', '').replace(']', '').trim();
+                    let leftLabelPrefix = currentLineRaw.substring(0, currentLineRaw.indexOf(':')).replace('+', '').trim();
+
+                    htmlContainerContent += `
+                        <div class="history-ticket-line">
+                            <div>
+                                <span style="color:var(--text-muted); margin-right:8px; font-weight:bold;">${leftLabelPrefix}:</span>
+                                <span class="history-line-data" id="data_string_${blockIndex}_${checkboxLineCounter}">${dataCoreSegment}</span>
+                            </div>
+                            <input type="checkbox" class="history-rebuy-checkbox rebuy-check-node-${blockIndex}" data-index="${checkboxLineCounter}" checked>
+                        </div>`;
+                    checkboxLineCounter++;
+                }
+                htmlContainerContent += `</div>`;
+                
+                htmlContainerContent += `
+                    <div class="history-chunk-right-action">
+                        <button class="btn-chunk-master-rebuy" onclick="triggerBatchLinesRebuy(${blockIndex}, '${targetBroadcastingPlatform}')">Mua<br>Lại 🛒</button>
+                    </div>`;
+                
+                htmlContainerContent += `</div>`;
+                htmlContainerContent += `</div>`;
+            });
+
+            document.getElementById('modalTextContent').innerHTML = htmlContainerContent;
+            document.getElementById('composeModal').style.display = 'flex';
+        }
+
+        function triggerBatchLinesRebuy(blockId, broadcastingPlatformName) {
+            let checkNodes = document.querySelectorAll(`.rebuy-check-node-${blockId}`);
+            let compiledSmsLinesArray = [];
+
+            checkNodes.forEach(node => {
+                if (node.checked) {
+                    let dataIdx = node.getAttribute('data-index');
+                    let rawNumbersText = document.getElementById(`data_string_${blockId}_${dataIdx}`).innerText.trim();
+                    
+                    let parsedNumbersPayload = "";
+                    if (broadcastingPlatformName === "LOTTO") {
+                        if (rawNumbersText.includes('|')) {
+                            let structures = rawNumbersText.split('|');
+                            let mainPart = structures[0].trim().replace(/\s+/g, ' ');
+                            let specPart = structures[1].replace('ĐB:', '').trim();
+                            parsedNumbersPayload = `${mainPart}-${specPart}`;
+                        } else {
+                            parsedNumbersPayload = rawNumbersText.replace(/\s+/g, ' ');
+                        }
+                    } else {
+                        parsedNumbersPayload = rawNumbersText.replace('ĐB:', '').replace('|', '').trim().replace(/\s+/g, ' ');
+                    }
+                    compiledSmsLinesArray.push(`S ${parsedNumbersPayload}`);
+                }
+            });
+
+            if (compiledSmsLinesArray.length === 0) { alert("Đại ca chưa tích chọn dòng dãy số nào để tiến hành mua lại!"); return; }
+
+            let prefixCode = "535 K1";
+            if (broadcastingPlatformName === "MEGA") prefixCode = "645 K1";
+            else if (broadcastingPlatformName === "POWER") prefixCode = "655 K1";
+
+            document.getElementById('modalTitleText').innerText = "CẤU TRÚC PHÔI VÉ MUA LẠI";
+            let container = document.getElementById('modalTextContent');
+            container.innerHTML = '';
+
+            let linesPerTicket = 6;
+            let ticketCount = Math.ceil(compiledSmsLinesArray.length / linesPerTicket);
+
+            for (let t = 0; t < ticketCount; t++) {
+                let currentSmsLines = [];
+                for (let l = 0; l < linesPerTicket; l++) {
+                    let globalIdx = t * linesPerTicket + l;
+                    if (globalIdx < compiledSmsLinesArray.length) {
+                        currentSmsLines.push(compiledSmsLinesArray[globalIdx]);
+                    }
+                }
+                if (currentSmsLines.length > 0) {
+                    let fullSmsText = `${prefixCode} ${currentSmsLines.join(' ')}`;
+                    let blockIndex = t + 1;
+                    let blockDiv = document.createElement('div');
+                    blockDiv.className = 'sms-block';
+                    blockDiv.innerHTML = `
+                        <div class="sms-header">
+                            <span style="color:var(--accent-green)">🎟️ PHÔI VÉ MUA LẠI SỐ ${blockIndex} (ĐÀI ${broadcastingPlatformName})</span>
+                            <button class="btn-copy-sms" onclick="copyIndividualSms('rebuy_sms_block_${blockIndex}')">SAO CHÉP VÉ ${blockIndex}</button>
+                        </div>
+                        <div class="sms-text" id="rebuy_sms_block_${blockIndex}">${fullSmsText}</div>`;
+                    container.appendChild(blockDiv);
+                }
+            }
+
+            let navigationBackDiv = document.createElement('div');
+            navigationBackDiv.style.textAlign = 'center';
+            navigationBackDiv.style.marginTop = '12px';
+            navigationBackDiv.innerHTML = `<button class="modal-btn-cancel" style="border-color:var(--border-glow); color:var(--border-glow);" onclick="reloadPreviousHistoryPopupSession()">↩️ Quay lại Nhật ký</button>`;
+            container.appendChild(navigationBackDiv);
+        }
+
+        function reloadPreviousHistoryPopupSession() {
+            viewLogSnapshot(encodeURIComponent(cachedLogSnapshotText));
+        }
+
+        function addNewAccountOnline() {
+            let u = document.getElementById('newAccUser').value.trim().toLowerCase();
+            let p = document.getElementById('newAccPass').value.trim();
+            let r = document.getElementById('newAccRole').value;
+            if(!u || !p) { alert("Đại ca/Admin nhập thiếu thông tin cấu hình!"); return; }
+            if(u === 'daica') { alert("Không cho phép tạo bản sao trùng lặp của Đại ca tối cao!"); return; }
+            db.ref('system_accounts/' + u).set({ password: p, role: r });
+            document.getElementById('newAccUser').value = ''; document.getElementById('newAccPass').value = '';
+        }
+
+        function modifyAccountOnline(originalKey) {
+            let newUsername = document.getElementById(`userInput_${originalKey}`).value.trim().toLowerCase();
+            let newPass = document.getElementById(`passInput_${originalKey}`).value.trim();
+            let newRole = (originalKey === 'daica') ? 'admin' : document.getElementById(`roleInput_${originalKey}`).value;
+            
+            if(!newUsername || !newPass) { alert("Không được bỏ trống thông tin!"); return; }
+            if(originalKey !== 'daica' && newUsername === 'daica') { alert("Không cho phép đổi tên tài khoản thành tài khoản tối cao!"); return; }
+            
+            let applyChange = () => {
+                db.ref(`system_accounts/${newUsername}`).set({ password: newPass, role: newRole }).then(() => {
+                    if (newUsername !== originalKey) {
+                        db.ref(`system_accounts/${originalKey}`).remove();
+                        if (currentUserName === originalKey) {
+                            currentUserName = newUsername;
+                            localStorage.setItem('cvn_remember_user', newUsername);
+                        }
+                    }
+                    alert(`Đã cập nhật cấu hình [${newUsername}] thành công!`);
+                });
+            };
+
+            if(newUsername !== originalKey) {
+                db.ref(`system_accounts/${newUsername}`).once('value', (snap) => {
+                    if (snap.exists()) { alert("Tên tài khoản mới bị trùng lặp!"); } else { applyChange(); }
+                });
+            } else {
+                applyChange();
+            }
+        }
+
+        function deleteAccountOnline(username) { 
+            if(username === 'daica') { alert("Không thể xóa tài khoản Tối cao của hệ thống!"); return; }
+            if (confirm(`Bạn có chắc muốn thu hồi quyền truy cập tài khoản [${username}]?`)) { db.ref('system_accounts/' + username).remove(); } 
+        }
+
+        function startSyncingDatabase() {
+            db.ref('vietlott_matrix_data').on('value', (snapshot) => {
+                let data = snapshot.val() || {};
+                globalOnlineData.lotto = data.lotto || [];
+                globalOnlineData.mega = data.mega || [];
+                globalOnlineData.power = data.power || [];
+
+                let hasLotto = globalOnlineData.lotto.length > 0;
+                let hasMega = globalOnlineData.mega.length > 0;
+                let hasPower = globalOnlineData.power.length > 0;
+
+                document.getElementById('statusLotto').classList.toggle('active', hasLotto);
+                document.getElementById('statusMega').classList.toggle('active', hasMega);
+                document.getElementById('statusPower').classList.toggle('active', hasPower);
+
+                let box = document.getElementById('globalStatusBox');
+                if (hasLotto && hasMega && hasPower) {
+                    box.style.borderColor = 'var(--accent-green)';
+                    box.style.boxShadow = '0 0 12px rgba(0, 255, 102, 0.35), inset 0 0 6px rgba(0, 255, 102, 0.1)';
+                } else {
+                    box.style.borderColor = '#2e2e42';
+                    box.style.boxShadow = 'inset 0 0 5px rgba(0,0,0,0.5)';
+                }
+                reloadCurrentMatrix();
+            });
+        }
+
+        function getHeatmapColor(count, maxCount) {
+            if (count === 0) return '#101016';
+            if (maxCount <= 0) return '#1b4d22';
+            let ratio = count / maxCount;
+            let r, g, b;
+            if (ratio <= 0.5) {
+                let localRatio = ratio / 0.5;
+                r = Math.round(15 + (180 - 15) * localRatio); g = Math.round(80 + (130 - 80) * localRatio); b = Math.round(40 + (20 - 40) * localRatio);
+            } else {
+                let localRatio = (ratio - 0.5) / 0.5;
+                r = Math.round(180 + (230 - 180) * localRatio); g = Math.round(130 + (30 - 130) * localRatio); b = Math.round(20 + (10 - 20) * localRatio);
+            }
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        function handleMultiFileSelect(e) {
+            let files = e.target.files;
+            if (files.length === 0) return;
+            let loadedTypes = []; let processed = 0;
+            Array.from(files).forEach(file => {
+                let filename = file.name.toLowerCase();
+                let targetType = '';
+                if (filename.includes('535') || filename === '535.txt') targetType = 'lotto';
+                else if (filename.includes('645') || filename === '645.txt') targetType = 'mega';
+                else if (filename.includes('655') || filename === '655.txt') targetType = 'power';
+                if (targetType) {
+                    let reader = new FileReader();
+                    reader.onload = function(evt) {
+                        let text = evt.target.result;
+                        let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                        let parsedRows = [];
+                        lines.forEach(line => {
+                            let parts = line.split('|').map(p => p.trim());
+                            if(parts.length >= 2) {
+                                let dateStr = parts[0];
+                                let mainNums = parts[1].split(/\s+/).map(n => String(parseInt(n)).padStart(2, '0'));
+                                let specNum = parts[2] ? String(parseInt(parts[2])).padStart(2, '0') : null;
+                                parsedRows.push({ date: dateStr, main: mainNums, spec: specNum });
+                            }
+                        });
+                        let limitedRows = parsedRows.slice(0, 60);
+                        if (limitedRows.length > 0) {
+                            db.ref('vietlott_matrix_data/' + targetType).set(limitedRows);
+                            loadedTypes.push(targetType.toUpperCase());
+                        }
+                        processed++; if(processed === files.length) { alert("Đồng bộ dữ liệu tệp thành công: " + loadedTypes.join(', ')); }
+                    };
+                    reader.readAsText(file);
+                } else { processed++; }
+            });
+            e.target.value = '';
+        }
+
+        function downloadTextFile(filename, text) {
+            let element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+            element.setAttribute('download', filename); element.style.display = 'none';
+            document.body.appendChild(element); element.click(); document.body.removeChild(element);
+        }
+
+        function convertDataToText(rows) {
+            return rows.map(r => {
+                let line = `${r.date} | ${r.main.join(' ')}`;
+                if (r.spec) line += ` | ${r.spec}`;
+                return line;
+            }).join('\n');
+        }
+
+        function exportAllCloudData() {
+            let exportedCount = 0;
+            if (globalOnlineData.lotto && globalOnlineData.lotto.length > 0) { downloadTextFile('535.txt', convertDataToText(globalOnlineData.lotto)); exportedCount++; }
+            if (globalOnlineData.mega && globalOnlineData.mega.length > 0) { downloadTextFile('645.txt', convertDataToText(globalOnlineData.mega)); exportedCount++; }
+            if (globalOnlineData.power && globalOnlineData.power.length > 0) { downloadTextFile('655.txt', convertDataToText(globalOnlineData.power)); exportedCount++; }
+            if (exportedCount > 0) { alert(`Hệ thống bảo mật đã xuất ${exportedCount} tệp lưu trữ thành công thưa Đại ca!`); }
+        }
+
+        function handleBoardDataPush() {
+            let text = document.getElementById('boardRawInput').value.trim();
+            if (!text) { 
+                startSyncingDatabase(); 
+                alert(`Đã làm mới dữ liệu đài ${currentType.toUpperCase()} từ Đám mây thưa Đại ca!`); 
+                return; 
+            }
+
+            let rawLines = text.split('\n');
+            let parsedNewRows = [];
+
+            rawLines.forEach(line => {
+                let cleanLine = line.trim();
+                if (!cleanLine) return;
+
+                let parts = cleanLine.split(/[|\t]+/).map(p => p.trim()).filter(p => p.length > 0);
+                
+                if (parts.length >= 2) {
+                    let dateStr = parts[0];
+                    let numMatches = parts[1].match(/\d+/g);
+                    if (numMatches && numMatches.length >= 5) {
+                        let mainNums = numMatches.slice(0, (numMatches.length === 5 || numMatches.length === 7) ? 5 : 6)
+                                                 .map(n => String(parseInt(n)).padStart(2, '0'));
+                        
+                        let specNum = null;
+                        if (parts[2]) {
+                            let specMatch = parts[2].match(/\d+/);
+                            if (specMatch) specNum = String(parseInt(specMatch[0])).padStart(2, '0');
+                        } else if (numMatches.length > mainNums.length) {
+                            specNum = String(parseInt(numMatches[numMatches.length - 1])).padStart(2, '0');
+                        }
+
+                        parsedNewRows.push({ date: dateStr, main: mainNums, spec: specNum });
+                    }
+                }
+            });
+
+            if (parsedNewRows.length === 0) { 
+                alert("Không tìm thấy bộ số hợp lệ trong văn bản dán vào thưa Đại ca!"); 
+                return; 
+            }
+
+            let sampleRow = parsedNewRows[0]; 
+            let autoDetectedType = currentType; 
+            let firstRowRaw = text.toLowerCase();
+
+            if (firstRowRaw.includes('535') || firstRowRaw.includes('lotto')) autoDetectedType = 'lotto';
+            else if (firstRowRaw.includes('645') || firstRowRaw.includes('mega')) autoDetectedType = 'mega';
+            else if (firstRowRaw.includes('655') || firstRowRaw.includes('power')) autoDetectedType = 'power';
+            else {
+                if (sampleRow.main.length === 5) autoDetectedType = 'lotto';
+                else if (sampleRow.main.length === 6) {
+                    if (sampleRow.spec !== null) autoDetectedType = 'power';
+                    else autoDetectedType = sampleRow.main.some(n => parseInt(n) > 45) ? 'power' : 'mega';
+                }
+            }
+
+            let finalDataset = [];
+            let addedCount = 0;
+
+            if (parsedNewRows.length >= 50) {
+                finalDataset = parsedNewRows.slice(0, 60);
+                addedCount = finalDataset.length;
+            } else {
+                let existingData = globalOnlineData[autoDetectedType] || [];
+                let mergedRows = [...existingData];
+
+                let isExist = mergedRows.some(oldRow => {
+                    let sameDate = (oldRow.date === parsedNewRows[0].date);
+                    let sameMain = (oldRow.main.join(',') === parsedNewRows[0].main.join(','));
+                    let sameSpec = (oldRow.spec === parsedNewRows[0].spec);
+                    return sameDate && sameMain && sameSpec;
+                });
+
+                if (!isExist) {
+                    for (let i = parsedNewRows.length - 1; i >= 0; i--) {
+                        mergedRows.unshift(parsedNewRows[i]);
+                        addedCount++;
+                    }
+                }
+                finalDataset = mergedRows.slice(0, 60);
+            }
+
+            db.ref('vietlott_matrix_data/' + autoDetectedType).set(finalDataset).then(() => {
+                document.getElementById('boardRawInput').value = ''; 
+                alert(`CẬP NHẬT THÀNH CÔNG!\n- Đài: ${autoDetectedType.toUpperCase()}\n- Đã nhận diện: ${addedCount} kỳ mới\n- Tổng lưu trữ hệ thống: ${finalDataset.length} kỳ`);
+            });
+        }
+
+        function saveCurrentTabState() {
+            let state = tabStatesStorage[currentType];
+            
+            let mainInputs = document.querySelectorAll('.lock-main-val');
+            state.mainLock = [];
+            mainInputs.forEach(inp => state.mainLock.push(inp.value.trim()));
+            
+            let specInp = document.querySelector('.lock-spec-val');
+            state.specLock = specInp ? specInp.value.trim() : '';
+            
+            state.algo = document.getElementById('algoSelect').value;
+            state.size = document.getElementById('predictSizeSelect').value;
+            state.html = document.getElementById('predictContainer').innerHTML;
+            state.activePreds = [...activePredictions];
+        }
+
+        function switchType(type) {
+            saveCurrentTabState(); 
+            
+            currentType = type; document.querySelectorAll('.sidebar .tab-btn').forEach(btn => btn.classList.remove('active'));
+            let idx = type === 'lotto' ? 0 : (type === 'mega' ? 1 : 2); document.querySelectorAll('.sidebar .tab-btn')[idx].classList.add('active');
+            let sideIframe = document.getElementById('sidebarResultIframe');
+            if(type === 'lotto') sideIframe.src = "https://www.ketquadientoan.com/tat-ca-ky-xo-so-lotto-535.html";
+            else if(type === 'mega') sideIframe.src = "https://www.ketquadientoan.com/tat-ca-ky-xo-so-mega-6-45.html";
+            else if(type === 'power') sideIframe.src = "https://www.ketquadientoan.com/tat-ca-ky-xo-so-power-655.html";
+            
+            restoreTabState(type); 
+            reloadCurrentMatrix();
+        }
+
+        function restoreTabState(type) {
+            let state = tabStatesStorage[type];
+            
+            let mainGroup = document.getElementById('mainLockGroup'); 
+            let specGroup = document.getElementById('specLockGroup'); 
+            let specSection = document.getElementById('specLockSection');
+            
+            mainGroup.innerHTML = ''; specGroup.innerHTML = ''; 
+            let mainCount = type === 'lotto' ? 5 : 6;
+            for(let i = 0; i < mainCount; i++) { 
+                let val = state.mainLock[i] || '';
+                mainGroup.innerHTML += `<input type="text" maxlength="2" class="lock-input lock-main-val" oninput="saveCurrentTabState()" placeholder="-" value="${val}">`; 
+            }
+            if(type === 'mega') { 
+                specSection.style.display = 'none'; 
+            } else { 
+                specSection.style.display = 'flex'; 
+                let val = state.specLock || '';
+                specGroup.innerHTML += `<input type="text" maxlength="2" class="lock-input spec-lock lock-spec-val" oninput="saveCurrentTabState()" placeholder="-" value="${val}">`; 
+            }
+            
+            document.getElementById('algoSelect').value = state.algo;
+            document.getElementById('predictSizeSelect').value = state.size;
+            document.getElementById('predictContainer').innerHTML = state.html;
+            activePredictions = [...state.activePreds];
+        }
+
+        function switchView(view) {
+            currentView = view;
+            document.getElementById('matrixView').style.display = view === 'matrix' ? 'block' : 'none';
+            document.getElementById('iframeView').style.display = view === 'iframe' ? 'block' : 'none';
+            document.getElementById('adminView').style.display = view === 'admin' ? 'block' : 'none';
+            document.getElementById('viewMatrixBtn').classList.toggle('active', view === 'matrix');
+            document.getElementById('viewIframeBtn').classList.toggle('active', view === 'iframe');
+            document.getElementById('viewAdminBtn').classList.toggle('active', view === 'admin');
+        }
+
+        function tryOnMatrix(type, mainNumsStr, specNumStr) { let arr = mainNumsStr.split(','); testSets[type].main = arr; testSets[type].spec = specNumStr ? specNumStr : null; reloadCurrentMatrix(); }
+        function clearTestMatrix(type) { testSets[type].main = []; testSets[type].spec = null; reloadCurrentMatrix(); }
+        function reloadCurrentMatrix() { 
+            let rows = globalOnlineData[currentType] || []; 
+            if(currentType === 'lotto') renderMatrix(rows); 
+            else if(currentType === 'mega') renderMegaMatrix(rows); 
+            else if(currentType === 'power') renderPowerMatrix(rows); 
+        }
+
+        function syncFloatingHeaderScroll(viewportElem) {
+            let floatingContainer = document.getElementById('floatingHeaderContainer');
+            if (!floatingContainer) return;
+            if (viewportElem.scrollLeft > 5) {
+                floatingContainer.style.display = 'block';
+                floatingContainer.style.transform = `translateX(${viewportElem.scrollLeft}px)`;
+            } else {
+                floatingContainer.style.display = 'none';
+            }
+        }
+
+        function updateFloatingHeaderTable() {
+            let mainTable = document.getElementById('matrixTable');
+            let floatingTable = document.getElementById('floatingHeaderTable');
+            if (mainTable && floatingTable) {
+                let rowsToClone = mainTable.querySelectorAll('tr.header-nums, tr.count-row, tr.test-row');
+                floatingTable.innerHTML = '';
+                rowsToClone.forEach(r => {
+                    floatingTable.appendChild(r.cloneNode(true));
+                });
+            }
+        }
+
+        function renderMatrix(rows) {
+            let table = document.getElementById('matrixTable'); table.innerHTML = ''; if (rows.length === 0) return;
+            let mainCounts = Array(36).fill(0); let specCounts = Array(13).fill(0);
+            rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=35) mainCounts[n]++; }); if(r.spec) { let s = parseInt(r.spec); if(s>=1 && s<=12) specCounts[s]++; } });
+            let maxMainCount = Math.max(...mainCounts); let maxSpecCount = Math.max(...specCounts);
+            let headTr = document.createElement('tr'); headTr.className = 'header-nums'; headTr.innerHTML = `<th class="col-fixed-idx">Kỳ</th><th class="col-fixed-date">Ngày quay</th>`;
+            for(let i = 1; i <= 35; i++) { let numStr = String(i).padStart(2, '0'); let bgColor = getHeatmapColor(mainCounts[i], maxMainCount); headTr.innerHTML += `<th class="main-num-head" style="background-color: ${bgColor};">${numStr}</th>`; }
+            headTr.innerHTML += `<th style="background:#07070a; width:4px;"></th>`;
+            for(let i = 1; i <= 12; i++) { let numStr = String(i).padStart(2, '0'); let bgColor = getHeatmapColor(specCounts[i], maxSpecCount); headTr.innerHTML += `<th class="spec-num-head" style="background-color: ${bgColor};">${numStr}</th>`; }
+            table.appendChild(headTr);
+
+            let limit = parseInt(document.getElementById('countLimitSelect').value); let limitRows = rows.slice(0, limit);
+            let freqMain = Array(36).fill(0); let freqSpec = Array(13).fill(0);
+            limitRows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=35) freqMain[n]++; }); if(r.spec) { let s = parseInt(r.spec); if(s>=1 && s<=12) freqSpec[s]++; } });
+            let countTr = document.createElement('tr'); countTr.className = 'count-row'; countTr.innerHTML = `<td class="cell-idx">📊</td><td style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; color:var(--accent-green); background:#13241a;">XUẤT HIỆN (${limit}K)</td>`;
+            for(let i = 1; i <= 35; i++) { countTr.innerHTML += `<td>${freqMain[i] > 0 ? freqMain[i] : ''}</td>`; }
+            countTr.innerHTML += `<td style="background:#07070a;"></td>`;
+            for(let i = 1; i <= 12; i++) { countTr.innerHTML += `<td>${freqSpec[i] > 0 ? freqSpec[i] : ''}</td>`; }
+            table.appendChild(countTr);
+
+            let testTr = document.createElement('tr'); testTr.className = 'test-row'; testTr.innerHTML = `<td class="cell-idx">🧪</td><td style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; background:#081524;">THỬ NGHIỆM</td>`;
+            let tSet = testSets.lotto;
+            for(let i = 1; i <= 35; i++) { let numStr = String(i).padStart(2, '0'); let activeClass = tSet.main.includes(numStr) ? 'cell-test-active' : ''; testTr.innerHTML += `<td class="${activeClass}">${tSet.main.includes(numStr) ? numStr : ''}</td>`; }
+            testTr.innerHTML += `<td style="background:#07070a;"></td>`;
+            for(let i = 1; i <= 12; i++) { let numStr = String(i).padStart(2, '0'); let activeClass = (tSet.spec === numStr) ? 'cell-test-spec-active' : ''; testTr.innerHTML += `<td class="${activeClass}">${(tSet.spec === numStr) ? numStr : ''}</td>`; }
+            table.appendChild(testTr);
+
+            rows.forEach((row, idx) => {
+                let tr = document.createElement('tr'); let displayIdx = idx + 1; tr.innerHTML = `<td class="cell-idx">${String(displayIdx).padStart(2, '0')}</td><td class="cell-date">${row.date}</td>`;
+                for(let i = 1; i <= 35; i++) { let numStr = String(i).padStart(2, '0'); let isAct = row.main.includes(numStr); let isTestAct = tSet.main.includes(numStr); let cls = isAct ? 'cell-main-num active' : (isTestAct ? 'cell-main-num test-active' : 'cell-main-num'); tr.innerHTML += `<td class="${cls}">${isAct ? numStr : ''}</td>`; }
+                tr.innerHTML += `<td style="background:#07070a;"></td>`;
+                for(let i = 1; i <= 12; i++) { let numStr = String(i).padStart(2, '0'); let isAct = (row.spec === numStr); let isTestAct = (tSet.spec === numStr); let cls = isAct ? 'cell-spec-num active-spec' : (isTestAct ? 'cell-spec-num test-spec-active' : 'cell-spec-num'); tr.innerHTML += `<td class="${cls}">${isAct ? numStr : ''}</td>`; }
+                table.appendChild(tr);
+            });
+            updateFloatingHeaderTable();
+        }
+
+        function renderMegaMatrix(rows) {
+            let table = document.getElementById('matrixTable'); table.innerHTML = ''; if (rows.length === 0) return;
+            let mainCounts = Array(46).fill(0); rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=45) mainCounts[n]++; }); });
+            let maxMainCount = Math.max(...mainCounts);
+            let headTr = document.createElement('tr'); headTr.className = 'header-nums'; headTr.innerHTML = `<th class="col-fixed-idx">Kỳ</th><th class="col-fixed-date">Ngày quay</th>`;
+            for(let i = 1; i <= 45; i++) { let numStr = String(i).padStart(2, '0'); let bgColor = getHeatmapColor(mainCounts[i], maxMainCount); headTr.innerHTML += `<th class="main-num-head" style="background-color: ${bgColor};">${numStr}</th>`; }
+            table.appendChild(headTr);
+
+            let limit = parseInt(document.getElementById('countLimitSelect').value); let limitRows = rows.slice(0, limit);
+            let freqMain = Array(46).fill(0); limitRows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=45) freqMain[n]++; }); });
+            let countTr = document.createElement('tr'); countTr.className = 'count-row'; countTr.innerHTML = `<td class="cell-idx">📊</td><td style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; color:var(--accent-green); background:#13241a;">XUẤT HIỆN (${limit}K)</td>`;
+            for(let i = 1; i <= 45; i++) { countTr.innerHTML += `<td>${freqMain[i] > 0 ? freqMain[i] : ''}</td>`; }
+            table.appendChild(countTr);
+
+            let testTr = document.createElement('tr'); testTr.className = 'test-row'; testTr.innerHTML = `<td class="cell-idx">🧪</td><td style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; background:#081524;">THỬ NGHIỆM</td>`;
+            let tSet = testSets.mega;
+            for(let i = 1; i <= 45; i++) { let numStr = String(i).padStart(2, '0'); let activeClass = tSet.main.includes(numStr) ? 'cell-test-active' : ''; testTr.innerHTML += `<td class="${activeClass}">${tSet.main.includes(numStr) ? numStr : ''}</td>`; }
+            table.appendChild(testTr);
+
+            rows.forEach((row, idx) => {
+                let tr = document.createElement('tr'); let displayIdx = idx + 1; tr.innerHTML = `<td class="cell-idx">${String(displayIdx).padStart(2, '0')}</td><td class="cell-date">${row.date}</td>`;
+                for(let i = 1; i <= 45; i++) { let numStr = String(i).padStart(2, '0'); let isAct = row.main.includes(numStr); let isTestAct = tSet.main.includes(numStr); let cls = isAct ? 'cell-main-num active' : (isTestAct ? 'cell-main-num test-active' : 'cell-main-num'); tr.innerHTML += `<td class="${cls}">${isAct ? numStr : ''}</td>`; }
+                table.appendChild(tr);
+            });
+            updateFloatingHeaderTable();
+        }
+
+        function renderPowerMatrix(rows) {
+            let table = document.getElementById('matrixTable'); table.innerHTML = ''; if (rows.length === 0) return;
+            let combinedCounts = Array(56).fill(0); rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=55) combinedCounts[n]++; }); if(r.spec) { let s = parseInt(r.spec); if(s>=1 && s<=55) combinedCounts[s]++; } });
+            let maxCount = Math.max(...combinedCounts);
+            let headTr = document.createElement('tr'); headTr.className = 'header-nums'; headTr.innerHTML = `<th class="col-fixed-idx">Kỳ</th><th class="col-fixed-date">Ngày quay</th>`;
+            for(let i = 1; i <= 55; i++) { let numStr = String(i).padStart(2, '0'); let bgColor = getHeatmapColor(combinedCounts[i], maxCount); headTr.innerHTML += `<th class="main-num-head" style="background-color: ${bgColor};">${numStr}</th>`; }
+            table.appendChild(headTr);
+
+            let limit = parseInt(document.getElementById('countLimitSelect').value); let limitRows = rows.slice(0, limit);
+            let freqMain = Array(56).fill(0); let freqSpec = Array(56).fill(0);
+            limitRows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=55) freqMain[n]++; }); if(r.spec) { let s = parseInt(r.spec); if(s>=1 && s<=55) freqSpec[s]++; } });
+            let countTr = document.createElement('tr'); countTr.className = 'count-row'; countTr.innerHTML = `<td class="cell-idx">📊</td><td style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; color:var(--accent-green); background:#13241a;">XUẤT HIỆN (${limit}K)</td>`;
+            for(let i = 1; i <= 55; i++) { let totalCount = freqMain[i] + freqSpec[i]; countTr.innerHTML += `<td>${totalCount > 0 ? totalCount : ''}</td>`; }
+            table.appendChild(countTr);
+
+            let testTr = document.createElement('tr'); testTr.className = 'test-row'; testTr.innerHTML = `<td class="cell-idx">🧪</td><td style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; background:#081524;">THỬ NGHIỆM</td>`;
+            let tSet = testSets.power;
+            for(let i = 1; i <= 55; i++) { let numStr = String(i).padStart(2, '0'); let isMainTest = tSet.main.includes(numStr); let isSpecTest = (tSet.spec === numStr); let activeClass = isMainTest ? 'cell-test-active' : (isSpecTest ? 'cell-test-spec-active' : ''); testTr.innerHTML += `<td class="${activeClass}">${(isMainTest || isSpecTest) ? numStr : ''}</td>`; }
+            table.appendChild(testTr);
+
+            rows.forEach((row, idx) => {
+                let tr = document.createElement('tr'); let displayIdx = idx + 1; tr.innerHTML = `<td class="cell-idx">${String(displayIdx).padStart(2, '0')}</td><td class="cell-date">${row.date}</td>`;
+                for(let i = 1; i <= 55; i++) { let numStr = String(i).padStart(2, '0'); let isAct = row.main.includes(numStr); let isSpecAct = (row.spec === numStr); let isTestAct = tSet.main.includes(numStr); let isTestSpecAct = (tSet.spec === numStr); let cls = 'cell-main-num'; if (isAct) cls = 'cell-main-num active'; else if (isSpecAct) cls = 'cell-main-num active-spec-in-main'; else if (isTestAct) cls = 'cell-main-num test-active'; else if (isTestSpecAct) cls = 'cell-main-num test-spec-active'; tr.innerHTML += `<td class="${cls}">${(isAct || isSpecAct) ? numStr : ''}</td>`; }
+                table.appendChild(tr);
+            });
+            updateFloatingHeaderTable();
+        }
+
+        function setupPredictPanel() {
+            restoreTabState(currentType);
+        }
+
+        function openComposeModal() {
+            if (activePredictions.length === 0) { alert("Vui lòng khởi chạy Dự đoán dãy số trước khi soạn phôi SMS!"); return; }
+            pushCurrentPredictionsToSessionLog("Bấm Soạn tin");
+            
+            let prefix = currentType === 'lotto' ? "535 K1" : (currentType === 'mega' ? "645 K1" : "655 K1");
+            let container = document.getElementById('modalTextContent'); container.innerHTML = '';
+            document.getElementById('modalTitleText').innerText = "Cấu trúc tin nhắn mua vé Vietlott SMS";
+
+            let validPreds = activePredictions.filter(p => p !== null);
+            let linesPerTicket = 6; let ticketCount = Math.ceil(validPreds.length / linesPerTicket);
+            let hasValidSms = false;
+
+            for (let t = 0; t < ticketCount; t++) {
+                let currentSmsLines = [];
+                for (let l = 0; l < linesPerTicket; l++) {
+                    let globalIdx = t * linesPerTicket + l;
+                    if (globalIdx < validPreds.length) {
+                        let pred = validPreds[globalIdx];
+                        if (pred && pred.main && pred.main.length > 0) {
+                            let lineStr = `S `;
+                            if (currentType === 'lotto') lineStr += `${pred.main.join(' ')}-${pred.spec}`;
+                            else lineStr += `${pred.main.join(' ')}`;
+                            currentSmsLines.push(lineStr);
+                        }
+                    }
+                }
+                if (currentSmsLines.length > 0) {
+                    hasValidSms = true; let fullSmsText = `${prefix} ${currentSmsLines.join(' ')}`; let blockIndex = t + 1;
+                    let blockDiv = document.createElement('div'); blockDiv.className = 'sms-block';
+                    blockDiv.innerHTML = `<div class="sms-header"><span>🎟️ PHÔI VÉ ĐIỆN TOÁN SỐ ${blockIndex}</span><button class="btn-copy-sms" onclick="copyIndividualSms('sms_text_block_${blockIndex}')">SAO CHÉP VÉ ${blockIndex}</button></div><div class="sms-text" id="sms_text_block_${blockIndex}">${fullSmsText}</div>`;
+                    container.appendChild(blockDiv);
+                }
+            }
+            if (!hasValidSms) { alert("Không tìm thấy bộ dãy số hợp lệ!"); return; }
+            document.getElementById('composeModal').style.display = 'flex';
+        }
+        
+        function copyIndividualSms(elementId) { let text = document.getElementById(elementId).innerText; navigator.clipboard.writeText(text).then(() => { alert("Đã sao chép phôi tin nhắn!"); }); }
+        function closeComposeModal() { document.getElementById('composeModal').style.display = 'none'; }
+
+        function generatePredictions() {
+            let container = document.getElementById('predictContainer'); container.innerHTML = '<div style="font-size:0.7rem; color:#8a8a9e; text-align:center; padding:5px;">Hệ thống đang cấu trúc lại ma trận...</div>';
+            let rows = globalOnlineData[currentType] || []; if (rows.length === 0) { setTimeout(() => { container.innerHTML = '<div style="font-size:0.7rem; color:var(--accent-pink); text-align:center; padding:5px;">Lỗi: Trống dữ liệu trực tuyến!</div>'; }, 200); return; }
+            let tickets = parseInt(document.getElementById('predictSizeSelect').value) || 1; let totalNeededRows = tickets * 6;
+            setTimeout(() => { 
+                container.innerHTML = ''; activePredictions = Array(totalNeededRows).fill(null); let labels = ['A', 'B', 'C', 'D', 'E', 'F'];
+                for (let t = 0; t < tickets; t++) {
+                    let ticketGroupDiv = document.createElement('div'); ticketGroupDiv.className = 'predict-ticket-group';
+                    ticketGroupDiv.innerHTML = `<div class="predict-ticket-title">🎟️ Phân cấu trúc phôi vé thứ ${t + 1}</div>`;
+                    for (let l = 0; l < 6; l++) { let globalIndex = t * 6 + l; generateSingleRow(globalIndex, labels[l], rows, ticketGroupDiv); }
+                    container.appendChild(ticketGroupDiv);
+                }
+                pushCurrentPredictionsToSessionLog("Bấm Dự đoán");
+                saveCurrentTabState(); 
+            }, 150);
+        }
+
+        function generateSingleRow(index, label, rows, ticketContainer) {
+            let maxRange = currentType === 'lotto' ? 35 : (currentType === 'mega' ? 45 : 55); 
+            let mainSize = currentType === 'lotto' ? 5 : 6; 
+            let chosenAlgo = document.getElementById('algoSelect').value;
+            
+            let lastDraw = rows[0] ? rows[0].main.map(n => String(parseInt(n)).padStart(2, '0')) : [];
+            let inputs = document.querySelectorAll('.lock-main-val'); 
+            let locked = [];
+            inputs.forEach(input => { 
+                let v = input.value.trim(); 
+                if(v !== "") { 
+                    let n = parseInt(v); 
+                    if(n >= 1 && n <= maxRange) locked.push(String(n).padStart(2, '0')); 
+                } 
+            });
+
+            let resultSet = [];
+            let attempts = 0;
+
+            do {
+                resultSet = [...locked];
+
+                if (chosenAlgo === 'combined') {
+                    let freq = Array(maxRange + 1).fill(0); 
+                    rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n <= maxRange) freq[n]++; }); });
+                    
+                    let pairCounts = Array(maxRange + 1).fill(0); 
+                    if (locked.length > 0) {
+                        rows.forEach(r => { 
+                            let hasLocked = locked.some(l => r.main.includes(l)); 
+                            if (hasLocked) r.main.forEach(num => pairCounts[parseInt(num)]++); 
+                        });
+                    }
+
+                    let poolCandidates = [];
+                    for (let j = 1; j <= maxRange; j++) {
+                        let s = String(j).padStart(2, '0');
+                        if (locked.includes(s)) continue;
+
+                        let score = 0;
+                        score += pairCounts[j] * 2.5; 
+                        
+                        if (index % 2 === 0) {
+                            score += freq[j] * 1.0; 
+                        } else {
+                            let maxFreq = Math.max(...freq);
+                            score += (maxFreq - freq[j]) * 1.0; 
+                        }
+
+                        score += (Math.random() * 5.0 - 2.5) + (attempts * 1.5);
+
+                        poolCandidates.push({ numStr: s, finalScore: score });
+                    }
+
+                    poolCandidates.sort((a, b) => b.finalScore - a.finalScore);
+
+                    let maxBetAllowed = Math.floor(Math.random() * 3); 
+                    let currentBetCount = 0;
+                    resultSet.forEach(num => { if (lastDraw.includes(num)) currentBetCount++; });
+
+                    for (let i = 0; i < poolCandidates.length; i++) {
+                        if (resultSet.length >= mainSize) break;
+                        let candidate = poolCandidates[i].numStr;
+
+                        if (lastDraw.includes(candidate)) {
+                            if (currentBetCount < maxBetAllowed) {
+                                resultSet.push(candidate);
+                                currentBetCount++;
+                            }
+                        } else {
+                            resultSet.push(candidate);
+                        }
+                    }
+                } else {
+                    let freq = Array(maxRange + 1).fill(0); rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n <= maxRange) freq[n]++; }); });
+                    let currentAlgo = chosenAlgo === 'random_mix' ? ['hotcold', 'nobet', 'pair', 'combined'][Math.floor(Math.random() * 4)] : chosenAlgo;
+                    
+                    if (currentAlgo === 'nobet') {
+                        let maxBetAllowed = Math.floor(Math.random() * 3); let currentBetCount = 0; resultSet.forEach(num => { if (lastDraw.includes(num)) currentBetCount++; });
+                        let freshPool = []; let betPool = [];
+                        for (let j = 1; j <= maxRange; j++) { let s = String(j).padStart(2, '0'); if (!resultSet.includes(s)) { if (lastDraw.includes(s)) betPool.push(s); else freshPool.push(s); } }
+                        freshPool.sort(() => Math.random() - 0.5); betPool.sort(() => Math.random() - 0.5);
+                        while (resultSet.length < mainSize) { if (currentBetCount < maxBetAllowed && betPool.length > 0) { resultSet.push(betPool.shift()); currentBetCount++; } else if (freshPool.length > 0) { resultSet.push(freshPool.shift()); } else break; }
+                    } else {
+                        let pool = []; for(let j = 1; j <= maxRange; j++) { let s = String(j).padStart(2, '0'); if(!locked.includes(s)) pool.push(s); }
+                        if (currentAlgo === 'hotcold') { pool.sort((a, b) => { let scoreA = freq[parseInt(a)]; let scoreB = freq[parseInt(b)]; return (index % 2 === 0) ? (scoreB - scoreA) : (scoreA - scoreB); }); }
+                        else if (currentAlgo === 'pair') { if (locked.length > 0) { let pairCounts = Array(maxRange + 1).fill(0); rows.forEach(r => { let hasLocked = locked.some(l => r.main.includes(l)); if (hasLocked) r.main.forEach(num => pairCounts[parseInt(num)]++); }); pool.sort((a, b) => pairCounts[parseInt(b)] - pairCounts[parseInt(a)]); } else pool.sort(() => Math.random() - 0.5); }
+                        let needed = mainSize - resultSet.length; if (needed > 0 && pool.length > 0) { let candidatesCount = Math.min(pool.length, needed + 5); let topCandidates = pool.slice(0, candidatesCount); topCandidates.sort(() => Math.random() - 0.5); for(let k = 0; k < needed; k++) { if(topCandidates.length > 0) resultSet.push(topCandidates.shift()); } }
+                    }
+                }
+                resultSet.sort((a, b) => parseInt(a) - parseInt(b));
+                attempts++;
+
+                var isDuplicate = activePredictions.some((p, pIdx) => {
+                    if (pIdx < index && p && p.main) {
+                        return p.main.join(',') === resultSet.join(',');
+                    }
+                    return false;
+                });
+
+            } while (isDuplicate && attempts < 30);
+
+            let sNum = ""; 
+            if (currentType !== 'mega') { 
+                let specInput = document.querySelector('.lock-spec-val'); 
+                if (specInput && specInput.value.trim() !== "") { 
+                    let val = parseInt(specInput.value.trim()); 
+                    let maxSpec = currentType === 'lotto' ? 12 : 55; 
+                    if (val >= 1 && val <= maxSpec) sNum = String(val).padStart(2, '0'); 
+                } 
+                if (!sNum) { 
+                    let maxSpec = currentType === 'lotto' ? 12 : 55; 
+                    sNum = String(Math.floor(Math.random() * maxSpec) + 1).padStart(2, '0'); 
+                } 
+            }
+
+            activePredictions[index] = (currentType === 'mega') ? { main: resultSet } : { main: resultSet, spec: sNum };
+
+            let rowDiv = document.createElement('div'); rowDiv.className = 'predict-row'; rowDiv.id = `predictRow_${index}`; ticketContainer.appendChild(rowDiv);
+            let rowInner = `<div class="predict-row-label">${label}</div><div id="ballsArea_${index}" style="display:flex; gap:4px; align-items:center;">`;
+            resultSet.forEach(num => { rowInner += `<div class="ball-predict ball-main-custom">${num}</div>`; }); 
+            if (currentType !== 'mega') rowInner += `<div style="color:#3a3a52; font-weight:bold;">|</div><div class="ball-predict ball-spec-custom">${sNum}</div>`;
+            rowInner += `</div><div style="flex:1;"></div><div id="actionsArea_${index}" style="display:flex; gap:2px; align-items:center;">`;
+            rowInner += `<button class="action-inline-btn btn-try" onclick="tryOnMatrix('${currentType}', '${resultSet.join(',')}', ${sNum ? "'"+sNum+"'" : 'null'})">Thử</button><button class="action-inline-btn btn-del" onclick="clearTestMatrix('${currentType}')">Bỏ</button><button class="action-inline-btn" style="border-color:#4e4e66; color:#a5a5bc;" onclick="clearSinglePrediction(${index}, '${label}')">🗑️</button></div>`;
+            rowDiv.innerHTML = rowInner;
+        }
+
+        function clearSinglePrediction(index, label) { activePredictions[index] = null; document.getElementById(`ballsArea_${index}`).innerHTML = `<div style="font-size:0.65rem; color:#4a4a66; font-style:italic; padding-left:4px;">Bộ số trống...</div>`; document.getElementById(`actionsArea_${index}`).innerHTML = `<button class="action-inline-btn btn-try" style="border-color:var(--accent-green); color:var(--accent-green);" onclick="reGenerateSingleRow(${index}, '${label}')">🔄 Thử lại</button>`; saveCurrentTabState(); }
+
+        function reGenerateSingleRow(index, label) {
+            let rows = globalOnlineData[currentType] || [];
+            let maxRange = currentType === 'lotto' ? 35 : (currentType === 'mega' ? 45 : 55); 
+            let mainSize = currentType === 'lotto' ? 5 : 6; 
+            let chosenAlgo = document.getElementById('algoSelect').value;
+            
+            let lastDraw = rows[0] ? rows[0].main.map(n => String(parseInt(n)).padStart(2, '0')) : [];
+            let inputs = document.querySelectorAll('.lock-main-val'); 
+            let locked = [];
+            inputs.forEach(input => { 
+                let v = input.value.trim(); 
+                if(v !== "") { 
+                    let n = parseInt(v); 
+                    if(n >= 1 && n <= maxRange) locked.push(String(n).padStart(2, '0')); 
+                } 
+            });
+
+            let resultSet = [];
+            let attempts = 0;
+
+            do {
+                resultSet = [...locked];
+
+                if (chosenAlgo === 'combined') {
+                    let freq = Array(maxRange + 1).fill(0); 
+                    rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n <= maxRange) freq[n]++; }); });
+                    
+                    let pairCounts = Array(maxRange + 1).fill(0); 
+                    if (locked.length > 0) {
+                        rows.forEach(r => { 
+                            let hasLocked = locked.some(l => r.main.includes(l)); 
+                            if (hasLocked) r.main.forEach(num => pairCounts[parseInt(num)]++); 
+                        });
+                    }
+
+                    let poolCandidates = [];
+                    for (let j = 1; j <= maxRange; j++) {
+                        let s = String(j).padStart(2, '0');
+                        if (locked.includes(s)) continue;
+
+                        let score = 0;
+                        score += pairCounts[j] * 2.5; 
+                        
+                        if (index % 2 === 0) {
+                            score += freq[j] * 1.0; 
+                        } else {
+                            let maxFreq = Math.max(...freq);
+                            score += (maxFreq - freq[j]) * 1.0; 
+                        }
+
+                        score += (Math.random() * 5.0 - 2.5) + (attempts * 1.5);
+
+                        poolCandidates.push({ numStr: s, finalScore: score });
+                    }
+
+                    poolCandidates.sort((a, b) => b.finalScore - a.finalScore);
+
+                    let maxBetAllowed = Math.floor(Math.random() * 3); 
+                    let currentBetCount = 0;
+                    resultSet.forEach(num => { if (lastDraw.includes(num)) currentBetCount++; });
+
+                    for (let i = 0; i < poolCandidates.length; i++) {
+                        if (resultSet.length >= mainSize) break;
+                        let candidate = poolCandidates[i].numStr;
+
+                        if (lastDraw.includes(candidate)) {
+                            if (currentBetCount < maxBetAllowed) {
+                                resultSet.push(candidate);
+                                currentBetCount++;
+                            }
+                        } else {
+                            resultSet.push(candidate);
+                        }
+                    }
+                } else {
+                    let freq = Array(maxRange + 1).fill(0); rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n <= maxRange) freq[n]++; }); });
+                    let currentAlgo = chosenAlgo === 'random_mix' ? ['hotcold', 'nobet', 'pair', 'combined'][Math.floor(Math.random() * 4)] : chosenAlgo;
+                    
+                    if (currentAlgo === 'nobet') {
+                        let maxBetAllowed = Math.floor(Math.random() * 3); let currentBetCount = 0; resultSet.forEach(num => { if (lastDraw.includes(num)) currentBetCount++; });
+                        let freshPool = []; let betPool = [];
+                        for (let j = 1; j <= maxRange; j++) { let s = String(j).padStart(2, '0'); if (!resultSet.includes(s)) { if (lastDraw.includes(s)) betPool.push(s); else freshPool.push(s); } }
+                        freshPool.sort(() => Math.random() - 0.5); betPool.sort(() => Math.random() - 0.5);
+                        while (resultSet.length < mainSize) { if (currentBetCount < maxBetAllowed && betPool.length > 0) { resultSet.push(betPool.shift()); currentBetCount++; } else if (freshPool.length > 0) { resultSet.push(freshPool.shift()); } else break; }
+                    } else {
+                        let pool = []; for(let j = 1; j <= maxRange; j++) { let s = String(j).padStart(2, '0'); if(!locked.includes(s)) pool.push(s); }
+                        if (currentAlgo === 'hotcold') { pool.sort((a, b) => { let scoreA = freq[parseInt(a)]; let scoreB = freq[parseInt(b)]; return (index % 2 === 0) ? (scoreB - scoreA) : (scoreA - scoreB); }); }
+                        else if (currentAlgo === 'pair') { if (locked.length > 0) { let pairCounts = Array(maxRange + 1).fill(0); rows.forEach(r => { let hasLocked = locked.some(l => r.main.includes(l)); if (hasLocked) r.main.forEach(num => pairCounts[parseInt(num)]++); }); pool.sort((a, b) => pairCounts[parseInt(b)] - pairCounts[parseInt(a)]); } else pool.sort(() => Math.random() - 0.5); }
+                        let needed = mainSize - resultSet.length; if (needed > 0 && pool.length > 0) { let candidatesCount = Math.min(pool.length, needed + 5); let topCandidates = pool.slice(0, candidatesCount); topCandidates.sort(() => Math.random() - 0.5); for(let k = 0; k < needed; k++) { if(topCandidates.length > 0) resultSet.push(topCandidates.shift()); } }
+                    }
+                }
+                resultSet.sort((a, b) => parseInt(a) - parseInt(b));
+                attempts++;
+
+                var isDuplicate = activePredictions.some((p, pIdx) => {
+                    if (pIdx !== index && p && p.main) {
+                        return p.main.join(',') === resultSet.join(',');
+                    }
+                    return false;
+                });
+
+            } while (isDuplicate && attempts < 30);
+
+            let sNum = ""; 
+            if (currentType !== 'mega') { 
+                let specInput = document.querySelector('.lock-spec-val'); 
+                if (specInput && specInput.value.trim() !== "") { 
+                    let val = parseInt(specInput.value.trim()); 
+                    let maxSpec = currentType === 'lotto' ? 12 : 55; 
+                    if (val >= 1 && val <= maxSpec) sNum = String(val).padStart(2, '0'); 
+                } 
+                if (!sNum) { 
+                    let maxSpec = currentType === 'lotto' ? 12 : 55; 
+                    sNum = String(Math.floor(Math.random() * maxSpec) + 1).padStart(2, '0'); 
+                } 
+            }
+
+            activePredictions[index] = (currentType === 'mega') ? { main: resultSet } : { main: resultSet, spec: sNum };
+
+            let ballsInner = ''; 
+            resultSet.forEach(num => { ballsInner += `<div class="ball-predict ball-main-custom">${num}</div>`; }); 
+            if (currentType !== 'mega') ballsInner += `<div style="color:#3a3a52; font-weight:bold;">|</div><div class="ball-predict ball-spec-custom">${sNum}</div>`;
+            document.getElementById(`ballsArea_${index}`).innerHTML = ballsInner;
+            
+            let actionsInner = `<button class="action-inline-btn btn-try" onclick="tryOnMatrix('${currentType}', '${resultSet.join(',')}', ${sNum ? "'"+sNum+"'" : 'null'})">Thử</button><button class="action-inline-btn btn-del" onclick="clearTestMatrix('${currentType}')">Bỏ</button><button class="action-inline-btn" style="border-color:#4e4e66; color:#a5a5bc;" onclick="clearSinglePrediction(${index}, '${label}')">🗑️</button>`;
+            document.getElementById(`actionsArea_${index}`).innerHTML = actionsInner;
+            
+            pushCurrentPredictionsToSessionLog("Thay đổi bộ số đơn lẻ"); 
+            saveCurrentTabState();
+        }
+
+        function clearCurrentData() { if (currentUserName !== 'daica' && currentUserRole !== 'admin') return; if (confirm(`Bạn có chắc muốn xóa dữ liệu đám mây đài ${currentType.toUpperCase()}?`)) { db.ref('vietlott_matrix_data/' + currentType).remove(); alert("Đã giải phóng dữ liệu đám mây!"); } }
+
+        window.onload = function() { 
+            updateThemeColors();
+            initLoginVisualEffects();
+            db.ref('system_accounts').once('value', (snapshot) => { 
+                if (!snapshot.exists()) { db.ref('system_accounts').set({ "daica": { password: "123", role: "admin" }, "member1": { password: "456", role: "member" } }); } 
+                let localUser = localStorage.getItem('cvn_remember_user'); let localRole = localStorage.getItem('cvn_remember_role');
+                if (localUser && localRole) { executeLoginSuccess(localUser, localRole, false); } else { setupPredictPanel(); }
+            }); 
+        };
+    </script></body></html>
