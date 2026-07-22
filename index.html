@@ -36,7 +36,6 @@
 
         body::before { content: "CVN PREMIUM SYSTEMS"; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg); font-size: 8vw; font-weight: 900; color: rgba(0, 242, 254, 0.005); z-index: -1; pointer-events: none; white-space: nowrap; letter-spacing: 15px; font-family: 'Arial Black', sans-serif; }
         
-        /* 🌟 HIỆU ỨNG ĐÔ LA RƠI & PHÁO HOA MINI ĐĂNG NHẬP */
         #loginOverlay { 
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
             background: rgba(5, 5, 10, 0.8); backdrop-filter: blur(6px); 
@@ -146,56 +145,67 @@
         table { border-collapse: separate; border-spacing: 1px; width: 100%; font-size: 0.7rem; text-align: center; overflow: hidden; position: relative; }
         th, td { padding: 2px 0; width: 19px; height: 19px; min-height: 19px; max-height: 19px; box-sizing: border-box; font-weight: 600; position: relative; }
         
-        /* 🟢 ĐÓNG BĂNG 3 HÀNG ĐẦU & BẢNG NỔI FLOATING CLONE */
-        th { background: #141420; color: #9595a8; font-size: 0.65rem; position: sticky; top: 0; z-index: 1000; height: 21px; border-bottom: 1px solid #232338; }
-        
-        tr.count-row th, tr.count-row td { 
-            position: sticky !important; 
-            top: 21px !important; 
-            z-index: 990 !important; 
-            background: #13241a !important; 
-            height: 21px;
+        th { background: #141420; color: #9595a8; font-size: 0.65rem; height: 21px; border-bottom: 1px solid #232338; }
+        tr.count-row td { background: #13241a !important; height: 21px; }
+        tr.test-row td { background: #081524 !important; height: 21px; }
+
+        /* BẢNG NỔI FLOATING HEADER - ĐỒNG BỘ HOÀN HẢO */
+        #floatingHeaderTable {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2000;
+            display: none;
+            background: #07070a;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.85);
+            pointer-events: none;
         }
-        
-        tr.test-row th, tr.test-row td { 
-            position: sticky !important; 
-            top: 42px !important; 
-            z-index: 990 !important; 
-            background: #081524 !important; 
-            height: 21px;
+        #floatingHeaderTable th, #floatingHeaderTable tr.count-row td {
+            pointer-events: auto;
         }
 
-        th.col-fixed-idx { width: 30px !important; min-width: 30px; z-index: 1010 !important; }
-        th.col-fixed-date { width: 80px !important; min-width: 80px; z-index: 1010 !important; }
+        th.col-fixed-idx { width: 30px !important; min-width: 30px; }
+        th.col-fixed-date { width: 80px !important; min-width: 80px; }
         
         td.cell-idx { background: #141420; color: #5f5f73; position: sticky; left: 0; z-index: 900; font-size: 0.6rem; font-weight: bold; }
         td.cell-date { background: #0f0f17; color: #9595a8; position: sticky; left: 30px; z-index: 900; text-align: left; padding-left: 5px; font-size: 0.6rem; white-space: nowrap; border-right: 1px solid #232338; }
-
-        /* Bảng nổi clone 3 hàng đầu khi cuộn ngang bị che khuất */
-        #floatingHeaderContainer {
-            position: absolute; top: 0; left: 0; right: 0; z-index: 2000;
-            pointer-events: none; overflow: hidden; display: none; background: #07070a;
-        }
-        #floatingHeaderContainer table {
-            margin: 0; border-collapse: separate; border-spacing: 1px; width: 100%;
-        }
-
-        tr.count-row td.cell-idx, tr.count-row td.cell-date { z-index: 1050 !important; background: #13241a !important; }
-        tr.test-row td.cell-idx, tr.test-row td.cell-date { z-index: 1050 !important; background: #081524 !important; }
-        tr.header-nums th.col-fixed-idx, tr.header-nums th.col-fixed-date { z-index: 1060 !important; background: #141420 !important; }
         
-        /* 1. Hàng tiêu đề số ngang trên cùng */
-        th:hover {
+        /* 1. HIỆU ỨNG RÊ CHUỘT SIÊU MƯỢT VÀO THƯỚC TIÊU ĐỀ SỐ ĐẦU */
+        th, #floatingHeaderTable th {
+            transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+        }
+        th:hover, #floatingHeaderTable th:hover {
             background-color: var(--accent-pink) !important;
             color: #fff !important;
             box-shadow: 0 0 10px var(--accent-pink);
         }
-        th:hover::after {
-            content: ""; position: absolute; left: 0; top: 21px; height: 10000px; width: 100%;
+        th:hover::after, #floatingHeaderTable th:hover::after {
+            content: ""; position: absolute; left: 0; top: 0; height: 15000px; width: 100%;
             background-color: var(--custom-hover-color); z-index: -1; pointer-events: none;
+            transition: background-color 0.15s ease;
         }
 
-        /* 2. Ô Ngày quay / Kỳ quay: ĐÃ THU NHỎ CỠ CHỮ & KHÔNG SCALE PHÓNG TO */
+        /* 2. HIỆU ỨNG RÊ CHUỘT VÀO HÀNG THỐNG KÊ (XUẤT HIỆN) SÁNG RỰC DỌC NGUYÊN BẢNG VÀ CẢ BẢNG NỔI */
+        tr.count-row td, #floatingHeaderTable tr.count-row td {
+            transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+        }
+        tr.count-row td:hover, #floatingHeaderTable tr.count-row td:hover {
+            background-color: var(--accent-pink) !important;
+            color: #fff !important;
+            font-weight: 900;
+            box-shadow: 0 0 12px var(--accent-pink), inset 0 0 6px #fff !important;
+            z-index: 100;
+        }
+        tr.count-row td:not(.cell-idx):not(.cell-date):hover::after,
+        #floatingHeaderTable tr.count-row td:not(.cell-idx):not(.cell-date):hover::after {
+            content: ""; position: absolute; background-color: var(--custom-hover-color);
+            top: 0; bottom: -15000px; left: 0; width: 100%; z-index: -1; pointer-events: none;
+        }
+
+        /* 3. HIỆU ỨNG CHIẾU SÁNG RỌI THẤU NGUYÊN BẢNG VÀ BẢNG NỔI MƯỢT MÀ */
+        td, td.cell-idx, td.cell-date {
+            transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+        }
         td.cell-idx:hover, td.cell-date:hover {
             background-color: var(--accent-pink) !important;
             color: #fff !important;
@@ -203,14 +213,12 @@
             box-shadow: 0 0 12px var(--accent-pink), inset 0 0 6px #fff !important;
             transform: none !important;
             z-index: 100;
-            transition: background-color 0.1s ease, color 0.1s ease;
         }
         td.cell-idx:hover::before, td.cell-date:hover::before {
             content: ""; position: absolute; background-color: var(--custom-hover-color);
             left: -5000px; right: -5000px; top: 0; height: 100%; z-index: -1; pointer-events: none;
         }
 
-        /* 3. HIỆU ỨNG RÊ CHUỘT SÁNG CẢ HÀNG NGANG VÀ CỘT DỌC KHÔNG BỊ MẤT SÁNG */
         td:not(.cell-idx):not(.cell-date):hover::before {
             content: ""; position: absolute; background-color: var(--custom-hover-color);
             left: -5000px; right: -5000px; top: 0; height: 100%; z-index: 50; pointer-events: none;
@@ -226,7 +234,6 @@
             color: #fff !important;
             transform: none !important;
             z-index: 100;
-            transition: background-color 0.1s ease, box-shadow 0.1s ease;
         }
 
         .cell-main-num { background: #0c0c12; color: #22222e; font-weight: 400; }
@@ -324,6 +331,9 @@
         .iframe-container { flex: 1; border-radius: 8px; overflow: hidden; border: 1px solid #232338; background: #0f0f17; position: relative; height: 100%; }
         .iframe-container iframe { width: 100%; height: 100%; border: none; display: block; position: absolute; top:0; left:0; }
 
+        #adminView td:hover, #adminView th:hover { background-color: initial !important; box-shadow: none !important; color: inherit !important; }
+        #adminView td:hover::before, #adminView td:hover::after, #adminView th:hover::after { display: none !important; }
+
         .admin-table { width: 100%; color: #fff; border-collapse: collapse; font-size: 0.65rem; margin-top: 5px; }
         .admin-table th { background: #1c1c24; color: #00f2fe; padding: 5px 4px; border: 1px solid #2d2d3d; }
         .admin-table td { padding: 5px 4px; border: 1px solid #2d2d3d; background: #111116; text-align: center; vertical-align: middle; }
@@ -332,7 +342,11 @@
         .admin-select-role { background: #16161f; border: 1px solid #3d3d52; color: #fff; font-size: 0.65rem; padding: 1px 2px; border-radius: 3px; font-weight: bold; outline: none; cursor: pointer; font-family: inherit; }
         
         .admin-actions-flex-cell { display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; height: 100%; }
-        .btn-table-action { border: none; padding: 3px 6px; font-size: 0.55rem; font-weight: bold; border-radius: 3px; cursor: pointer; color: #fff; display: inline-block; white-space: nowrap; font-family: inherit; }
+        .btn-table-action { border: none; padding: 3px 6px; font-size: 0.55rem; font-weight: bold; border-radius: 3px; cursor: pointer; color: #fff; display: inline-block; white-space: nowrap; font-family: inherit; transition: all 0.2s ease; }
+        .btn-table-action:hover { transform: translateY(-1px); filter: brightness(1.25); box-shadow: 0 0 10px currentColor; }
+        
+        .btn-grant-action { background: var(--accent-green); color: #000; border: none; padding: 0 12px; height: 24px; font-weight: 900; border-radius: 4px; font-size: 0.65rem; cursor: pointer; white-space: nowrap; font-family: inherit; transition: all 0.2s ease; }
+        .btn-grant-action:hover { transform: translateY(-1px); filter: brightness(1.2); box-shadow: 0 0 12px var(--accent-green); }
 
         .member-profile-input { width: 100%; background: var(--bg-input); border: 1px solid #32324d; color: #fff; padding: 6px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; box-sizing: border-box; outline: none; font-family: inherit; }
         .member-profile-input:focus { border-color: var(--border-glow); }
@@ -341,7 +355,6 @@
     </style></head><body>
 
     <div id="loginOverlay">
-        <!-- Các yếu tố đô la rơi & pháo hoa mini -->
         <div id="dollarRainContainer"></div>
         <div id="fireworkLeftContainer"></div>
         <div id="fireworkRightContainer"></div>
@@ -459,7 +472,7 @@
         </div>
         <div class="main-content">
             <div class="tabs" style="margin-bottom: 6px; align-items: center;">
-                <button class="tab-btn active" id="viewMatrixBtn" onclick="switchView('matrix')">Ma trận xu hướng dòng tiền</button>
+                <button class="tab-btn active" id="viewMatrixBtn" onclick="switchView('matrix')">Biểu đồ xu hướng</button>
                 <div style="display: flex; align-items: center; gap: 4px; padding: 0 4px;">
                     <span style="font-size: 0.65rem; font-weight: bold; color: var(--text-muted); white-space: nowrap;">Thống kê biên:</span>
                     <select class="count-select" id="countLimitSelect" onchange="reloadCurrentMatrix()" style="height: 24px; padding: 0 4px;">
@@ -473,12 +486,12 @@
                     </select>
                 </div>
                 <button class="tab-btn" id="viewIframeBtn" onclick="switchView('iframe')">Trực tiếp cổng điện toán</button>
-                <button class="tab-btn" id="viewAdminBtn" onclick="switchView('admin')" style="display: none; background: #260d18; color: var(--accent-pink); border-color: #591632;">🛡️ QUẢN TRỊ CAO CẤP</button>
+                <button class="tab-btn" id="viewAdminBtn" onclick="switchView('admin')" style="display: none; background: #260d18; color: var(--accent-pink); border-color: #591632;">🛡️ QUẢN TRỊ</button>
             </div>
             
-            <div class="matrix-viewport" id="matrixView" onscroll="syncFloatingHeaderScroll(this)">
-                <!-- Bảng nổi clone 3 hàng đầu bám ngang khi cuộn -->
-                <div id="floatingHeaderContainer"><table id="floatingHeaderTable"></table></div>
+            <div class="matrix-viewport" id="matrixView" onscroll="handleMatrixViewportScroll(this)">
+                <!-- BẢNG NỔI FLOATING ĐÃ ĐƯỢC ĐỒNG BỘ HOÀN HẢO -->
+                <table id="floatingHeaderTable"></table>
                 <table id="matrixTable"></table>
             </div>
             
@@ -497,7 +510,7 @@
                                 <option value="member" selected>Thành viên</option>
                                 <option value="admin">Admin thường</option>
                             </select>
-                            <button onclick="addNewAccountOnline()" style="background:var(--accent-green); color:#000; border:none; padding: 0 12px; height: 24px; font-weight:900; border-radius:4px; font-size:0.65rem; cursor:pointer; white-space: nowrap; font-family:inherit;">+ CẤP</button>
+                            <button class="btn-grant-action" onclick="addNewAccountOnline()">+ CẤP</button>
                         </div>
                         <div class="section-title">Danh sách tài khoản trực tuyến</div>
                         <div id="accountsListArea" style="max-height: 580px; overflow-y: auto;"></div>
@@ -591,7 +604,6 @@
         };
 
         function initLoginVisualEffects() {
-            // Đô la rơi
             let dollarContainer = document.getElementById('dollarRainContainer');
             if (dollarContainer && dollarContainer.innerHTML === "") {
                 for (let i = 0; i < 15; i++) {
@@ -605,7 +617,6 @@
                 }
             }
 
-            // Pháo hoa mini 2 góc dưới
             createMiniFireworks('fireworkLeftContainer', 15, 85);
             createMiniFireworks('fireworkRightContainer', 85, 85);
         }
@@ -720,7 +731,7 @@
             if (currentUserName === 'daica' || currentUserRole === 'admin') {
                 document.getElementById('adminDeleteBtn').style.display = 'flex';
                 document.getElementById('adminUpdateBoard').style.display = 'flex'; 
-                document.getElementById('viewAdminBtn').innerText = "🛡️ QUẢN TRỊ CAO CẤP";
+                document.getElementById('viewAdminBtn').innerText = "🛡️ QUẢN TRỊ";
                 document.getElementById('adminLayoutWrapper').style.display = 'grid';
                 document.getElementById('memberLayoutWrapper').style.display = 'none';
                 
@@ -1384,26 +1395,28 @@
             else if(currentType === 'power') renderPowerMatrix(rows); 
         }
 
-        function syncFloatingHeaderScroll(viewportElem) {
-            let floatingContainer = document.getElementById('floatingHeaderContainer');
-            if (!floatingContainer) return;
-            if (viewportElem.scrollLeft > 5) {
-                floatingContainer.style.display = 'block';
-                floatingContainer.style.transform = `translateX(${viewportElem.scrollLeft}px)`;
-            } else {
-                floatingContainer.style.display = 'none';
-            }
+        function updateFloatingHeaderContent() {
+            let mainTable = document.getElementById('matrixTable');
+            let floatTable = document.getElementById('floatingHeaderTable');
+            if (!mainTable || mainTable.rows.length < 3) return;
+
+            let headRowHTML = mainTable.rows[0].outerHTML;
+            let countRowHTML = mainTable.rows[1].outerHTML;
+            let testRowHTML = mainTable.rows[2].outerHTML;
+
+            floatTable.innerHTML = headRowHTML + countRowHTML + testRowHTML;
         }
 
-        function updateFloatingHeaderTable() {
-            let mainTable = document.getElementById('matrixTable');
-            let floatingTable = document.getElementById('floatingHeaderTable');
-            if (mainTable && floatingTable) {
-                let rowsToClone = mainTable.querySelectorAll('tr.header-nums, tr.count-row, tr.test-row');
-                floatingTable.innerHTML = '';
-                rowsToClone.forEach(r => {
-                    floatingTable.appendChild(r.cloneNode(true));
-                });
+        function handleMatrixViewportScroll(viewport) {
+            let floatTable = document.getElementById('floatingHeaderTable');
+            if (!floatTable) return;
+
+            if (viewport.scrollTop > 10) {
+                floatTable.style.display = 'table';
+                floatTable.style.top = viewport.scrollTop + 'px';
+                floatTable.style.transform = `translateX(-${viewport.scrollLeft}px)`;
+            } else {
+                floatTable.style.display = 'none';
             }
         }
 
@@ -1421,13 +1434,13 @@
             let limit = parseInt(document.getElementById('countLimitSelect').value); let limitRows = rows.slice(0, limit);
             let freqMain = Array(36).fill(0); let freqSpec = Array(13).fill(0);
             limitRows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=35) freqMain[n]++; }); if(r.spec) { let s = parseInt(r.spec); if(s>=1 && s<=12) freqSpec[s]++; } });
-            let countTr = document.createElement('tr'); countTr.className = 'count-row'; countTr.innerHTML = `<td class="cell-idx">📊</td><td style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; color:var(--accent-green); background:#13241a;">XUẤT HIỆN (${limit}K)</td>`;
+            let countTr = document.createElement('tr'); countTr.className = 'count-row'; countTr.innerHTML = `<td class="cell-idx">📊</td><td class="cell-date" style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; color:var(--accent-green); background:#13241a;">XUẤT HIỆN (${limit}K)</td>`;
             for(let i = 1; i <= 35; i++) { countTr.innerHTML += `<td>${freqMain[i] > 0 ? freqMain[i] : ''}</td>`; }
             countTr.innerHTML += `<td style="background:#07070a;"></td>`;
             for(let i = 1; i <= 12; i++) { countTr.innerHTML += `<td>${freqSpec[i] > 0 ? freqSpec[i] : ''}</td>`; }
             table.appendChild(countTr);
 
-            let testTr = document.createElement('tr'); testTr.className = 'test-row'; testTr.innerHTML = `<td class="cell-idx">🧪</td><td style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; background:#081524;">THỬ NGHIỆM</td>`;
+            let testTr = document.createElement('tr'); testTr.className = 'test-row'; testTr.innerHTML = `<td class="cell-idx">🧪</td><td class="cell-date" style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; background:#081524;">THỬ NGHIỆM</td>`;
             let tSet = testSets.lotto;
             for(let i = 1; i <= 35; i++) { let numStr = String(i).padStart(2, '0'); let activeClass = tSet.main.includes(numStr) ? 'cell-test-active' : ''; testTr.innerHTML += `<td class="${activeClass}">${tSet.main.includes(numStr) ? numStr : ''}</td>`; }
             testTr.innerHTML += `<td style="background:#07070a;"></td>`;
@@ -1441,7 +1454,8 @@
                 for(let i = 1; i <= 12; i++) { let numStr = String(i).padStart(2, '0'); let isAct = (row.spec === numStr); let isTestAct = (tSet.spec === numStr); let cls = isAct ? 'cell-spec-num active-spec' : (isTestAct ? 'cell-spec-num test-spec-active' : 'cell-spec-num'); tr.innerHTML += `<td class="${cls}">${isAct ? numStr : ''}</td>`; }
                 table.appendChild(tr);
             });
-            updateFloatingHeaderTable();
+
+            updateFloatingHeaderContent();
         }
 
         function renderMegaMatrix(rows) {
@@ -1454,11 +1468,11 @@
 
             let limit = parseInt(document.getElementById('countLimitSelect').value); let limitRows = rows.slice(0, limit);
             let freqMain = Array(46).fill(0); limitRows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=45) freqMain[n]++; }); });
-            let countTr = document.createElement('tr'); countTr.className = 'count-row'; countTr.innerHTML = `<td class="cell-idx">📊</td><td style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; color:var(--accent-green); background:#13241a;">XUẤT HIỆN (${limit}K)</td>`;
+            let countTr = document.createElement('tr'); countTr.className = 'count-row'; countTr.innerHTML = `<td class="cell-idx">📊</td><td class="cell-date" style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; color:var(--accent-green); background:#13241a;">XUẤT HIỆN (${limit}K)</td>`;
             for(let i = 1; i <= 45; i++) { countTr.innerHTML += `<td>${freqMain[i] > 0 ? freqMain[i] : ''}</td>`; }
             table.appendChild(countTr);
 
-            let testTr = document.createElement('tr'); testTr.className = 'test-row'; testTr.innerHTML = `<td class="cell-idx">🧪</td><td style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; background:#081524;">THỬ NGHIỆM</td>`;
+            let testTr = document.createElement('tr'); testTr.className = 'test-row'; testTr.innerHTML = `<td class="cell-idx">🧪</td><td class="cell-date" style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; background:#081524;">THỬ NGHIỆM</td>`;
             let tSet = testSets.mega;
             for(let i = 1; i <= 45; i++) { let numStr = String(i).padStart(2, '0'); let activeClass = tSet.main.includes(numStr) ? 'cell-test-active' : ''; testTr.innerHTML += `<td class="${activeClass}">${tSet.main.includes(numStr) ? numStr : ''}</td>`; }
             table.appendChild(testTr);
@@ -1468,7 +1482,8 @@
                 for(let i = 1; i <= 45; i++) { let numStr = String(i).padStart(2, '0'); let isAct = row.main.includes(numStr); let isTestAct = tSet.main.includes(numStr); let cls = isAct ? 'cell-main-num active' : (isTestAct ? 'cell-main-num test-active' : 'cell-main-num'); tr.innerHTML += `<td class="${cls}">${isAct ? numStr : ''}</td>`; }
                 table.appendChild(tr);
             });
-            updateFloatingHeaderTable();
+
+            updateFloatingHeaderContent();
         }
 
         function renderPowerMatrix(rows) {
@@ -1482,13 +1497,13 @@
             let limit = parseInt(document.getElementById('countLimitSelect').value); let limitRows = rows.slice(0, limit);
             let freqMain = Array(56).fill(0); let freqSpec = Array(56).fill(0);
             limitRows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=55) freqMain[n]++; }); if(r.spec) { let s = parseInt(r.spec); if(s>=1 && s<=55) freqSpec[s]++; } });
-            let countTr = document.createElement('tr'); countTr.className = 'count-row'; countTr.innerHTML = `<td class="cell-idx">📊</td><td style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; color:var(--accent-green); background:#13241a;">XUẤT HIỆN (${limit}K)</td>`;
+            let countTr = document.createElement('tr'); countTr.className = 'count-row'; countTr.innerHTML = `<td class="cell-idx">📊</td><td class="cell-date" style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; color:var(--accent-green); background:#13241a;">XUẤT HIỆN (${limit}K)</td>`;
             for(let i = 1; i <= 55; i++) { let totalCount = freqMain[i] + freqSpec[i]; countTr.innerHTML += `<td>${totalCount > 0 ? totalCount : ''}</td>`; }
             table.appendChild(countTr);
 
-            let testTr = document.createElement('tr'); testTr.className = 'test-row'; testTr.innerHTML = `<td class="cell-idx">🧪</td><td style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; background:#081524;">THỬ NGHIỆM</td>`;
+            let testTr = document.createElement('tr'); testTr.className = 'test-row'; testTr.innerHTML = `<td class="cell-idx">🧪</td><td class="cell-date" style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; background:#081524;">THỬ NGHIỆM</td>`;
             let tSet = testSets.power;
-            for(let i = 1; i <= 55; i++) { let numStr = String(i).padStart(2, '0'); let isMainTest = tSet.main.includes(numStr); let isSpecTest = (tSet.spec === numStr); let activeClass = isMainTest ? 'cell-test-active' : (isSpecTest ? 'cell-test-spec-active' : ''); testTr.innerHTML += `<td class="${activeClass}">${(isMainTest || isSpecTest) ? numStr : ''}</td>`; }
+            for(let i = 1; i <= 55; i++) { let numStr = String(i).padStart(2, '0'); let activeClass = tSet.main.includes(numStr) ? 'cell-test-active' : ''; testTr.innerHTML += `<td class="${activeClass}">${tSet.main.includes(numStr) ? numStr : ''}</td>`; }
             table.appendChild(testTr);
 
             rows.forEach((row, idx) => {
@@ -1496,7 +1511,8 @@
                 for(let i = 1; i <= 55; i++) { let numStr = String(i).padStart(2, '0'); let isAct = row.main.includes(numStr); let isSpecAct = (row.spec === numStr); let isTestAct = tSet.main.includes(numStr); let isTestSpecAct = (tSet.spec === numStr); let cls = 'cell-main-num'; if (isAct) cls = 'cell-main-num active'; else if (isSpecAct) cls = 'cell-main-num active-spec-in-main'; else if (isTestAct) cls = 'cell-main-num test-active'; else if (isTestSpecAct) cls = 'cell-main-num test-spec-active'; tr.innerHTML += `<td class="${cls}">${(isAct || isSpecAct) ? numStr : ''}</td>`; }
                 table.appendChild(tr);
             });
-            updateFloatingHeaderTable();
+
+            updateFloatingHeaderContent();
         }
 
         function setupPredictPanel() {
@@ -1594,61 +1610,35 @@
                         });
                     }
 
+                    // Thuật toán tối ưu hóa trọng số thông minh
                     let poolCandidates = [];
                     for (let j = 1; j <= maxRange; j++) {
                         let s = String(j).padStart(2, '0');
                         if (locked.includes(s)) continue;
 
                         let score = 0;
-                        score += pairCounts[j] * 2.5; 
-                        
-                        if (index % 2 === 0) {
-                            score += freq[j] * 1.0; 
-                        } else {
-                            let maxFreq = Math.max(...freq);
-                            score += (maxFreq - freq[j]) * 1.0; 
-                        }
+                        score += pairCounts[j] * 3.0; // Tăng trọng số bạc nhớ cặp số
+                        score += freq[j] * 1.5; // Tăng trọng số tần suất xuất hiện
 
-                        score += (Math.random() * 5.0 - 2.5) + (attempts * 1.5);
+                        // Tạo độ nhiễu động phân phối đều qua từng dòng dự đoán
+                        score += (Math.random() * 15.0 - 7.5) + (index * 1.5);
 
                         poolCandidates.push({ numStr: s, finalScore: score });
                     }
 
                     poolCandidates.sort((a, b) => b.finalScore - a.finalScore);
 
-                    let maxBetAllowed = Math.floor(Math.random() * 3); 
-                    let currentBetCount = 0;
-                    resultSet.forEach(num => { if (lastDraw.includes(num)) currentBetCount++; });
-
                     for (let i = 0; i < poolCandidates.length; i++) {
                         if (resultSet.length >= mainSize) break;
                         let candidate = poolCandidates[i].numStr;
-
-                        if (lastDraw.includes(candidate)) {
-                            if (currentBetCount < maxBetAllowed) {
-                                resultSet.push(candidate);
-                                currentBetCount++;
-                            }
-                        } else {
+                        if (!resultSet.includes(candidate)) {
                             resultSet.push(candidate);
                         }
                     }
                 } else {
-                    let freq = Array(maxRange + 1).fill(0); rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n <= maxRange) freq[n]++; }); });
-                    let currentAlgo = chosenAlgo === 'random_mix' ? ['hotcold', 'nobet', 'pair', 'combined'][Math.floor(Math.random() * 4)] : chosenAlgo;
-                    
-                    if (currentAlgo === 'nobet') {
-                        let maxBetAllowed = Math.floor(Math.random() * 3); let currentBetCount = 0; resultSet.forEach(num => { if (lastDraw.includes(num)) currentBetCount++; });
-                        let freshPool = []; let betPool = [];
-                        for (let j = 1; j <= maxRange; j++) { let s = String(j).padStart(2, '0'); if (!resultSet.includes(s)) { if (lastDraw.includes(s)) betPool.push(s); else freshPool.push(s); } }
-                        freshPool.sort(() => Math.random() - 0.5); betPool.sort(() => Math.random() - 0.5);
-                        while (resultSet.length < mainSize) { if (currentBetCount < maxBetAllowed && betPool.length > 0) { resultSet.push(betPool.shift()); currentBetCount++; } else if (freshPool.length > 0) { resultSet.push(freshPool.shift()); } else break; }
-                    } else {
-                        let pool = []; for(let j = 1; j <= maxRange; j++) { let s = String(j).padStart(2, '0'); if(!locked.includes(s)) pool.push(s); }
-                        if (currentAlgo === 'hotcold') { pool.sort((a, b) => { let scoreA = freq[parseInt(a)]; let scoreB = freq[parseInt(b)]; return (index % 2 === 0) ? (scoreB - scoreA) : (scoreA - scoreB); }); }
-                        else if (currentAlgo === 'pair') { if (locked.length > 0) { let pairCounts = Array(maxRange + 1).fill(0); rows.forEach(r => { let hasLocked = locked.some(l => r.main.includes(l)); if (hasLocked) r.main.forEach(num => pairCounts[parseInt(num)]++); }); pool.sort((a, b) => pairCounts[parseInt(b)] - pairCounts[parseInt(a)]); } else pool.sort(() => Math.random() - 0.5); }
-                        let needed = mainSize - resultSet.length; if (needed > 0 && pool.length > 0) { let candidatesCount = Math.min(pool.length, needed + 5); let topCandidates = pool.slice(0, candidatesCount); topCandidates.sort(() => Math.random() - 0.5); for(let k = 0; k < needed; k++) { if(topCandidates.length > 0) resultSet.push(topCandidates.shift()); } }
-                    }
+                    let pool = []; for(let j = 1; j <= maxRange; j++) { let s = String(j).padStart(2, '0'); if(!locked.includes(s)) pool.push(s); }
+                    pool.sort(() => Math.random() - 0.5);
+                    let needed = mainSize - resultSet.length; if (needed > 0 && pool.length > 0) { for(let k = 0; k < needed; k++) { if(pool.length > 0) resultSet.push(pool.shift()); } }
                 }
                 resultSet.sort((a, b) => parseInt(a) - parseInt(b));
                 attempts++;
@@ -1660,7 +1650,7 @@
                     return false;
                 });
 
-            } while (isDuplicate && attempts < 30);
+            } while (isDuplicate && attempts < 50);
 
             let sNum = ""; 
             if (currentType !== 'mega') { 
@@ -1730,55 +1720,26 @@
                         if (locked.includes(s)) continue;
 
                         let score = 0;
-                        score += pairCounts[j] * 2.5; 
-                        
-                        if (index % 2 === 0) {
-                            score += freq[j] * 1.0; 
-                        } else {
-                            let maxFreq = Math.max(...freq);
-                            score += (maxFreq - freq[j]) * 1.0; 
-                        }
-
-                        score += (Math.random() * 5.0 - 2.5) + (attempts * 1.5);
+                        score += pairCounts[j] * 3.0; 
+                        score += freq[j] * 1.5; 
+                        score += (Math.random() * 15.0 - 7.5) + (index * 1.5);
 
                         poolCandidates.push({ numStr: s, finalScore: score });
                     }
 
                     poolCandidates.sort((a, b) => b.finalScore - a.finalScore);
 
-                    let maxBetAllowed = Math.floor(Math.random() * 3); 
-                    let currentBetCount = 0;
-                    resultSet.forEach(num => { if (lastDraw.includes(num)) currentBetCount++; });
-
                     for (let i = 0; i < poolCandidates.length; i++) {
                         if (resultSet.length >= mainSize) break;
                         let candidate = poolCandidates[i].numStr;
-
-                        if (lastDraw.includes(candidate)) {
-                            if (currentBetCount < maxBetAllowed) {
-                                resultSet.push(candidate);
-                                currentBetCount++;
-                            }
-                        } else {
+                        if (!resultSet.includes(candidate)) {
                             resultSet.push(candidate);
                         }
                     }
                 } else {
-                    let freq = Array(maxRange + 1).fill(0); rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n <= maxRange) freq[n]++; }); });
-                    let currentAlgo = chosenAlgo === 'random_mix' ? ['hotcold', 'nobet', 'pair', 'combined'][Math.floor(Math.random() * 4)] : chosenAlgo;
-                    
-                    if (currentAlgo === 'nobet') {
-                        let maxBetAllowed = Math.floor(Math.random() * 3); let currentBetCount = 0; resultSet.forEach(num => { if (lastDraw.includes(num)) currentBetCount++; });
-                        let freshPool = []; let betPool = [];
-                        for (let j = 1; j <= maxRange; j++) { let s = String(j).padStart(2, '0'); if (!resultSet.includes(s)) { if (lastDraw.includes(s)) betPool.push(s); else freshPool.push(s); } }
-                        freshPool.sort(() => Math.random() - 0.5); betPool.sort(() => Math.random() - 0.5);
-                        while (resultSet.length < mainSize) { if (currentBetCount < maxBetAllowed && betPool.length > 0) { resultSet.push(betPool.shift()); currentBetCount++; } else if (freshPool.length > 0) { resultSet.push(freshPool.shift()); } else break; }
-                    } else {
-                        let pool = []; for(let j = 1; j <= maxRange; j++) { let s = String(j).padStart(2, '0'); if(!locked.includes(s)) pool.push(s); }
-                        if (currentAlgo === 'hotcold') { pool.sort((a, b) => { let scoreA = freq[parseInt(a)]; let scoreB = freq[parseInt(b)]; return (index % 2 === 0) ? (scoreB - scoreA) : (scoreA - scoreB); }); }
-                        else if (currentAlgo === 'pair') { if (locked.length > 0) { let pairCounts = Array(maxRange + 1).fill(0); rows.forEach(r => { let hasLocked = locked.some(l => r.main.includes(l)); if (hasLocked) r.main.forEach(num => pairCounts[parseInt(num)]++); }); pool.sort((a, b) => pairCounts[parseInt(b)] - pairCounts[parseInt(a)]); } else pool.sort(() => Math.random() - 0.5); }
-                        let needed = mainSize - resultSet.length; if (needed > 0 && pool.length > 0) { let candidatesCount = Math.min(pool.length, needed + 5); let topCandidates = pool.slice(0, candidatesCount); topCandidates.sort(() => Math.random() - 0.5); for(let k = 0; k < needed; k++) { if(topCandidates.length > 0) resultSet.push(topCandidates.shift()); } }
-                    }
+                    let pool = []; for(let j = 1; j <= maxRange; j++) { let s = String(j).padStart(2, '0'); if(!locked.includes(s)) pool.push(s); }
+                    pool.sort(() => Math.random() - 0.5);
+                    let needed = mainSize - resultSet.length; if (needed > 0 && pool.length > 0) { for(let k = 0; k < needed; k++) { if(pool.length > 0) resultSet.push(pool.shift()); } }
                 }
                 resultSet.sort((a, b) => parseInt(a) - parseInt(b));
                 attempts++;
@@ -1790,7 +1751,7 @@
                     return false;
                 });
 
-            } while (isDuplicate && attempts < 30);
+            } while (isDuplicate && attempts < 50);
 
             let sNum = ""; 
             if (currentType !== 'mega') { 
