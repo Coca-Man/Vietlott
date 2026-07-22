@@ -36,28 +36,29 @@
 
         body::before { content: "CVN PREMIUM SYSTEMS"; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg); font-size: 8vw; font-weight: 900; color: rgba(0, 242, 254, 0.005); z-index: -1; pointer-events: none; white-space: nowrap; letter-spacing: 15px; font-family: 'Arial Black', sans-serif; }
         
-        #loginOverlay { 
+        #loginOverlay, #lockOverlay { 
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
-            background: rgba(5, 5, 10, 0.8); backdrop-filter: blur(6px); 
+            background: rgba(5, 5, 10, 0.88); backdrop-filter: blur(8px); 
             z-index: 9999; display: flex; align-items: center; justify-content: center; overflow: hidden;
         }
+        #lockOverlay { display: none; }
         
         .falling-dollar {
-            position: absolute; top: -50px; font-size: 18px; user-select: none; pointer-events: none;
-            animation: dollarFall linear infinite; z-index: 9990; opacity: 0.85;
+            position: absolute; top: -50px; font-size: 20px; user-select: none; pointer-events: none;
+            animation: dollarFall linear infinite; z-index: 9990; opacity: 0.9;
         }
         @keyframes dollarFall {
             0% { transform: translateY(-50px) rotate(0deg); opacity: 0; }
-            20% { opacity: 0.9; }
+            15% { opacity: 0.95; }
             100% { transform: translateY(105vh) rotate(360deg); opacity: 0; }
         }
 
         .firework-particle {
-            position: absolute; width: 5px; height: 5px; border-radius: 50%; pointer-events: none; z-index: 9992;
-            animation: fireworkExplode 1.2s ease-out infinite;
+            position: absolute; width: 6px; height: 6px; border-radius: 50%; pointer-events: none; z-index: 9992;
+            animation: fireworkExplode 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
         }
         @keyframes fireworkExplode {
-            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            0% { transform: translate(0, 0) scale(1.2); opacity: 1; }
             100% { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; }
         }
 
@@ -67,18 +68,18 @@
             background-image: linear-gradient(#0d0d14, #0d0d14), linear-gradient(90deg, #ff007f, #00f2fe, #ffab00, #7928ca, #ff007f);
             background-origin: border-box; background-clip: padding-box, border-box;
             box-shadow: 0 0 35px rgba(0, 242, 254, 0.25), inset 0 0 15px rgba(255, 0, 127, 0.15); 
-            padding: 25px 20px; border-radius: 12px; width: 100%; max-width: 323px; text-align: center; 
+            padding: 22px 20px; border-radius: 12px; width: 100%; max-width: 323px; text-align: center; 
             position: relative; animation: loginStarOrbit 4s linear infinite;
-            transform: scale(0.85); transform-origin: center; z-index: 9995;
+            transform: scale(0.88); transform-origin: center; z-index: 9995;
         }
         @keyframes loginStarOrbit {
             0% { filter: hue-rotate(0deg); }
             100% { filter: hue-rotate(360deg); }
         }
-        .login-logo { height: 64px; width: auto; margin-bottom: 10px; opacity: 1; border-radius: 6px; display: inline-block; filter: drop-shadow(0 0 8px var(--border-glow)); }
+        .login-logo { height: 60px; width: auto; margin-bottom: 8px; opacity: 1; border-radius: 6px; display: inline-block; filter: drop-shadow(0 0 8px var(--border-glow)); }
         .login-title { 
-            font-size: 0.95rem; font-weight: 900; color: #fff;
-            text-transform: uppercase; margin-bottom: 14px; letter-spacing: 1px; line-height: 1.4;
+            font-size: 0.9rem; font-weight: 900; color: #fff;
+            text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px; line-height: 1.4;
             text-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
         }
         .login-input { width: 100%; background: var(--bg-input); border: 1px solid #32324d; color: #fff; padding: 9px 12px; border-radius: 6px; margin-bottom: 10px; font-size: 0.8rem; font-weight: bold; box-sizing: border-box; outline: none; transition: border-color 0.2s; font-family: inherit; }
@@ -87,6 +88,13 @@
         .btn-login:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(0, 242, 254, 0.4); }
         .login-error { color: var(--accent-pink); font-size: 0.7rem; font-weight: bold; margin-bottom: 10px; display: none; }
         .remember-layout { display: flex; align-items: center; gap: 6px; justify-content: flex-start; margin-bottom: 12px; font-size: 0.7rem; color: var(--text-muted); cursor: pointer; user-select: none; }
+
+        .lock-clock-display {
+            background: #08080f; border: 1px solid var(--border-glow); border-radius: 6px;
+            padding: 6px; margin-bottom: 12px; box-shadow: inset 0 0 10px rgba(0,242,254,0.15);
+        }
+        .lock-clock-time { font-family: 'Consolas', monospace; font-size: 1.3rem; font-weight: 900; color: var(--accent-green); text-shadow: 0 0 10px rgba(0,255,102,0.4); }
+        .lock-clock-date { font-size: 0.65rem; font-weight: bold; color: var(--text-muted); text-transform: uppercase; margin-top: 2px; }
 
         .header-premium { background: rgba(13, 13, 22, 0.9); padding: 6px 20px; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 242, 254, 0.15); margin-bottom: 6px; border: 1px solid #1f1f33; position: relative; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 15px; }
         .header-premium::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent-pink), var(--accent-purple), var(--border-glow), #ffab00, var(--accent-pink)); background-size: 300% 100%; animation: premiumNeonBar 4s linear infinite; }
@@ -99,8 +107,12 @@
         .icon-star { color: #fff370; text-shadow: 0 0 6px #fff370; --delay: 0.7s; }
         .icon-moon { color: var(--border-glow); text-shadow: 0 0 8px var(--border-glow); --delay: 1.8s; }
         @keyframes cosmicBlink { 0%, 90% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 4px currentColor); } 94%, 98% { opacity: 0.3; transform: scale(0.95); filter: none; } 100% { opacity: 1; transform: scale(1.02); filter: drop-shadow(0 0 6px currentColor); } }
-        .btn-logout-top { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: #1a080f; border: 1px solid var(--accent-pink); color: var(--accent-pink); font-size: 0.65rem; font-weight: 900; padding: 4px 10px; border-radius: 4px; cursor: pointer; display: none; z-index: 10; transition: all 0.2s; font-family: inherit; }
-        .btn-logout-top:hover { background: var(--accent-pink); color: #fff; box-shadow: 0 0 10px var(--accent-pink); }
+        
+        .header-buttons-group { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); display: flex; gap: 6px; align-items: center; z-index: 10; display: none; }
+        .btn-top-action { background: #1a080f; border: 1px solid var(--accent-pink); color: var(--accent-pink); font-size: 0.65rem; font-weight: 900; padding: 4px 10px; border-radius: 4px; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+        .btn-top-action:hover { background: var(--accent-pink); color: #fff; box-shadow: 0 0 10px var(--accent-pink); }
+        .btn-top-lock { border-color: var(--border-glow); color: var(--border-glow); background: #08151a; }
+        .btn-top-lock:hover { background: var(--border-glow); color: #000; box-shadow: 0 0 10px var(--border-glow); }
 
         .container { display: flex; gap: 8px; flex: 1; min-height: 0; height: calc(100vh - 50px); position: relative; }
         .sidebar { width: 375px; background: var(--bg-panel); padding: 8px; border-radius: 10px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 4px 25px rgba(0,0,0,0.4); border: 1px solid #1f1f2e; flex-shrink: 0; overflow: hidden; height: 100%; box-sizing: border-box; backdrop-filter: blur(10px); position: relative; }
@@ -147,22 +159,20 @@
         
         th { background: #141420; color: #9595a8; font-size: 0.65rem; height: 21px; border-bottom: 1px solid #232338; }
         tr.count-row td { background: #13241a !important; height: 21px; }
-        tr.test-row td { background: #081524 !important; height: 21px; }
+        
+        /* 💡 ĐÃ LOẠI BỎ HOÀN TOÀN NÉT ĐỨT, CHUYỂN THÀNH LINE LIỀN NÉT TỐI RẤT SANG TRỌNG */
+        tr.test-row td { 
+            background: #081524 !important; 
+            color: var(--border-glow); 
+            font-weight: bold; 
+            border-bottom: 1px solid #1f1f33 !important; 
+            font-size: 0.65rem; 
+        }
 
-        /* BẢNG NỔI FLOATING HEADER - ĐỒNG BỘ HOÀN HẢO */
         #floatingHeaderTable {
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 2000;
-            display: none;
-            background: #07070a;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.85);
-            pointer-events: none;
+            position: absolute; top: 0; left: 0; z-index: 2000; display: none; background: #07070a; box-shadow: 0 6px 20px rgba(0,0,0,0.85); pointer-events: none;
         }
-        #floatingHeaderTable th, #floatingHeaderTable tr.count-row td {
-            pointer-events: auto;
-        }
+        #floatingHeaderTable th, #floatingHeaderTable tr.count-row td { pointer-events: auto; }
 
         th.col-fixed-idx { width: 30px !important; min-width: 30px; }
         th.col-fixed-date { width: 80px !important; min-width: 80px; }
@@ -170,7 +180,6 @@
         td.cell-idx { background: #141420; color: #5f5f73; position: sticky; left: 0; z-index: 900; font-size: 0.6rem; font-weight: bold; }
         td.cell-date { background: #0f0f17; color: #9595a8; position: sticky; left: 30px; z-index: 900; text-align: left; padding-left: 5px; font-size: 0.6rem; white-space: nowrap; border-right: 1px solid #232338; }
         
-        /* 1. HIỆU ỨNG RÊ CHUỘT SIÊU MƯỢT VÀO THƯỚC TIÊU ĐỀ SỐ ĐẦU */
         th, #floatingHeaderTable th {
             transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
         }
@@ -185,7 +194,6 @@
             transition: background-color 0.15s ease;
         }
 
-        /* 2. HIỆU ỨNG RÊ CHUỘT VÀO HÀNG THỐNG KÊ (XUẤT HIỆN) SÁNG RỰC DỌC NGUYÊN BẢNG VÀ CẢ BẢNG NỔI */
         tr.count-row td, #floatingHeaderTable tr.count-row td {
             transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
         }
@@ -202,7 +210,6 @@
             top: 0; bottom: -15000px; left: 0; width: 100%; z-index: -1; pointer-events: none;
         }
 
-        /* 3. HIỆU ỨNG CHIẾU SÁNG RỌI THẤU NGUYÊN BẢNG VÀ BẢNG NỔI MƯỢT MÀ */
         td, td.cell-idx, td.cell-date {
             transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
         }
@@ -248,7 +255,6 @@
         
         tr.header-nums th.main-num-head { color: #000 !important; font-weight: 900; }
         tr.header-nums th.spec-num-head { color: #fff !important; background-color: #3b1f00; font-weight: 900; }
-        tr.test-row td { background: #081524; color: var(--border-glow); font-weight: bold; border-bottom: 1px dashed var(--border-glow); font-size: 0.65rem; }
         tr.test-row td.cell-test-active { background: var(--accent-pink) !important; color: #fff !important; }
         tr.test-row td.cell-test-spec-active { background: #ffcc00 !important; color: #000 !important; }
         tr.count-row td { background: #13241a; color: var(--accent-green); font-weight: bold; font-size: 0.65rem; border-bottom: 1px solid #232338; }
@@ -356,8 +362,11 @@
 
     <div id="loginOverlay">
         <div id="dollarRainContainer"></div>
-        <div id="fireworkLeftContainer"></div>
-        <div id="fireworkRightContainer"></div>
+        <div id="fw1" class="firework-cluster" style="position:absolute; left:15%; top:25%;"></div>
+        <div id="fw2" class="firework-cluster" style="position:absolute; left:85%; top:25%;"></div>
+        <div id="fw3" class="firework-cluster" style="position:absolute; left:50%; top:15%;"></div>
+        <div id="fw4" class="firework-cluster" style="position:absolute; left:25%; top:75%;"></div>
+        <div id="fw5" class="firework-cluster" style="position:absolute; left:75%; top:75%;"></div>
 
         <div class="login-box" onkeydown="if(event.key === 'Enter') handleSystemLogin()">
             <img class="login-logo" src="logo.png" alt="CVN Logo">
@@ -372,6 +381,32 @@
         </div>
     </div>
 
+    <div id="lockOverlay">
+        <div id="lockDollarRainContainer"></div>
+        <div id="lfw1" class="firework-cluster" style="position:absolute; left:15%; top:25%;"></div>
+        <div id="lfw2" class="firework-cluster" style="position:absolute; left:85%; top:25%;"></div>
+        <div id="lfw3" class="firework-cluster" style="position:absolute; left:50%; top:15%;"></div>
+        <div id="lfw4" class="firework-cluster" style="position:absolute; left:25%; top:75%;"></div>
+        <div id="lfw5" class="firework-cluster" style="position:absolute; left:75%; top:75%;"></div>
+
+        <div class="login-box" onkeydown="if(event.key === 'Enter') handleUnlockSystem()">
+            <img class="login-logo" src="logo.png" alt="CVN Logo">
+            <div class="login-title" id="lockTitleText" style="color:var(--border-glow); margin-bottom:8px;">Phiên làm việc đang khóa</div>
+            
+            <div class="lock-clock-display">
+                <div class="lock-clock-time" id="realtimeClockDisplay">00:00:00</div>
+                <div class="lock-clock-date" id="realtimeDateDisplay">--/--/----</div>
+            </div>
+
+            <div class="login-error" id="lockError" style="display:none;">Mật khẩu không chính xác!</div>
+            <input type="password" id="lockPassInput" class="login-input" placeholder="Nhập mật khẩu để mở khóa">
+            <button class="btn-login" onclick="handleUnlockSystem()" style="margin-bottom:8px;">MỞ KHÓA NGAY</button>
+            <div style="text-align: center;">
+                <a href="#" style="font-size:0.65rem; color:var(--accent-pink); font-weight:bold; text-decoration:none;" onclick="handleSwitchToOtherAccount()">← Tài khoản khác / Đăng nhập lại</a>
+            </div>
+        </div>
+    </div>
+
     <div class="header-premium">
         <img class="header-logo" src="logo.png" alt="CVN Logo">
         <div class="title-wrapper">
@@ -381,8 +416,12 @@
             <span class="cosmic-icon icon-star">⭐</span>
             <span class="cosmic-icon icon-moon">🌙</span>
         </div>
-        <button class="btn-logout-top" id="systemLogoutBtn" onclick="handleSystemLogout()">ĐĂNG XUẤT</button>
+        <div class="header-buttons-group" id="headerButtonsGroup">
+            <button class="btn-top-action btn-top-lock" onclick="handleSystemLock()" title="Khóa màn hình tạm thời">🔒 LOCK</button>
+            <button class="btn-top-action" onclick="handleSystemLogout()">ĐĂNG XUẤT</button>
+        </div>
     </div>
+    
     <div class="container">
         <div class="sidebar">
             <div class="tabs">
@@ -490,7 +529,6 @@
             </div>
             
             <div class="matrix-viewport" id="matrixView" onscroll="handleMatrixViewportScroll(this)">
-                <!-- BẢNG NỔI FLOATING ĐÃ ĐƯỢC ĐỒNG BỘ HOÀN HẢO -->
                 <table id="floatingHeaderTable"></table>
                 <table id="matrixTable"></table>
             </div>
@@ -604,44 +642,62 @@
         };
 
         function initLoginVisualEffects() {
-            let dollarContainer = document.getElementById('dollarRainContainer');
-            if (dollarContainer && dollarContainer.innerHTML === "") {
-                for (let i = 0; i < 15; i++) {
-                    let d = document.createElement('div');
-                    d.className = 'falling-dollar';
-                    d.innerText = '💵';
-                    d.style.left = Math.random() * 100 + '%';
-                    d.style.animationDuration = (3 + Math.random() * 4) + 's';
-                    d.style.animationDelay = (Math.random() * 5) + 's';
-                    dollarContainer.appendChild(d);
-                }
-            }
+            setupDollarRain('dollarRainContainer', 25);
+            setupDollarRain('lockDollarRainContainer', 25);
 
-            createMiniFireworks('fireworkLeftContainer', 15, 85);
-            createMiniFireworks('fireworkRightContainer', 85, 85);
+            ['fw1', 'fw2', 'fw3', 'fw4', 'fw5'].forEach(id => setupMultiFireworks(id));
+            ['lfw1', 'lfw2', 'lfw3', 'lfw4', 'lfw5'].forEach(id => setupMultiFireworks(id));
+
+            setInterval(updateRealtimeClock, 1000);
+            updateRealtimeClock();
         }
 
-        function createMiniFireworks(containerId, posXPercent, posYPercent) {
+        function setupDollarRain(containerId, count) {
             let container = document.getElementById(containerId);
             if (!container || container.innerHTML !== "") return;
-            container.style.position = 'absolute';
-            container.style.left = posXPercent + '%';
-            container.style.top = posYPercent + '%';
+            for (let i = 0; i < count; i++) {
+                let d = document.createElement('div');
+                d.className = 'falling-dollar';
+                d.innerText = '💵';
+                d.style.left = Math.random() * 100 + '%';
+                d.style.animationDuration = (2.5 + Math.random() * 3.5) + 's';
+                d.style.animationDelay = (Math.random() * 4) + 's';
+                container.appendChild(d);
+            }
+        }
+
+        function setupMultiFireworks(clusterId) {
+            let container = document.getElementById(clusterId);
+            if (!container || container.innerHTML !== "") return;
 
             setInterval(() => {
-                if (document.getElementById('loginOverlay').style.display === 'none') return;
-                for (let i = 0; i < 8; i++) {
+                let isLoginVisible = document.getElementById('loginOverlay').style.display !== 'none';
+                let isLockVisible = document.getElementById('lockOverlay').style.display !== 'none';
+                if (!isLoginVisible && !isLockVisible) return;
+
+                for (let i = 0; i < 12; i++) {
                     let p = document.createElement('div');
                     p.className = 'firework-particle';
                     let angle = Math.random() * Math.PI * 2;
-                    let distance = 20 + Math.random() * 45;
+                    let distance = 35 + Math.random() * 70;
                     p.style.setProperty('--dx', Math.cos(angle) * distance + 'px');
                     p.style.setProperty('--dy', Math.sin(angle) * distance + 'px');
-                    p.style.background = ['#ff007f', '#00f2fe', '#ffab00', '#00ff66'][Math.floor(Math.random() * 4)];
+                    p.style.background = ['#ff007f', '#00f2fe', '#ffab00', '#00ff66', '#b366ff'][Math.floor(Math.random() * 5)];
                     container.appendChild(p);
                     setTimeout(() => p.remove(), 1200);
                 }
-            }, 1800);
+            }, 1400);
+        }
+
+        function updateRealtimeClock() {
+            let now = new Date();
+            let timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            let dateStr = now.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit' });
+            
+            let timeEl = document.getElementById('realtimeClockDisplay');
+            let dateEl = document.getElementById('realtimeDateDisplay');
+            if (timeEl) timeEl.innerText = timeStr;
+            if (dateEl) dateEl.innerText = dateStr;
         }
 
         function updateThemeColors() {
@@ -707,7 +763,8 @@
             currentUserRole = role;
             currentUserName = username;
             document.getElementById('loginOverlay').style.display = 'none';
-            document.getElementById('systemLogoutBtn').style.display = 'block';
+            document.getElementById('lockOverlay').style.display = 'none';
+            document.getElementById('headerButtonsGroup').style.display = 'flex';
 
             if(rem) {
                 localStorage.setItem('cvn_remember_user', username);
@@ -751,6 +808,51 @@
                 loadMemberPanelLogs();
             }
             startSyncingDatabase();
+        }
+
+        function handleSystemLock() {
+            document.getElementById('lockOverlay').style.display = 'flex';
+            document.getElementById('lockTitleText').innerHTML = `Xin chào [ ${currentUserName.toUpperCase()} ],<br>Phiên làm việc đang khóa`;
+            document.getElementById('lockPassInput').value = '';
+            document.getElementById('lockError').style.display = 'none';
+            document.getElementById('lockPassInput').focus();
+        }
+
+        function handleUnlockSystem() {
+            let pass = document.getElementById('lockPassInput').value.trim();
+            if (!pass) return;
+
+            if ((currentUserName === 'daica' || currentUserName === 'admin') && pass === '123') {
+                document.getElementById('lockOverlay').style.display = 'none';
+                return;
+            }
+
+            db.ref(`system_accounts/${currentUserName}`).once('value', (snapshot) => {
+                let data = snapshot.val() || {};
+                if (data.password === pass) {
+                    document.getElementById('lockOverlay').style.display = 'none';
+                } else {
+                    let err = document.getElementById('lockError');
+                    err.style.display = 'block';
+                }
+            }).catch(() => {
+                if (pass === '123') {
+                    document.getElementById('lockOverlay').style.display = 'none';
+                } else {
+                    let err = document.getElementById('lockError');
+                    err.style.display = 'block';
+                }
+            });
+        }
+
+        function handleSwitchToOtherAccount() {
+            document.getElementById('lockOverlay').style.display = 'none';
+            document.getElementById('loginOverlay').style.display = 'flex';
+            document.getElementById('headerButtonsGroup').style.display = 'none';
+            document.getElementById('loginUser').value = '';
+            document.getElementById('loginPass').value = '';
+            localStorage.removeItem('cvn_remember_user');
+            localStorage.removeItem('cvn_remember_role');
         }
 
         function pushCurrentPredictionsToSessionLog(triggerContextName) {
@@ -813,10 +915,7 @@
                 let accounts = snapshot.val() || {};
                 let html = `<table class="admin-table"><tr><th>Tài khoản</th><th>Mật khẩu</th><th>Vai trò</th><th>Hành động</th></tr>`;
                 for (let acc in accounts) {
-                    if (acc === 'daica' && currentUserName !== 'daica') {
-                        continue; 
-                    }
-
+                    if (acc === 'daica' && currentUserName !== 'daica') continue;
                     let currentRole = accounts[acc].role || 'member';
                     let isTargetDaica = (acc === 'daica');
 
@@ -849,11 +948,8 @@
                 for (let id in logs) { let item = logs[id]; item.id = id; logArray.unshift(item); }
                 logArray.forEach(log => { 
                     if (currentUserName !== 'daica') {
-                        if (log.username === 'daica' || (log.role && log.role.includes('Đại ca'))) {
-                            return;
-                        }
+                        if (log.username === 'daica' || (log.role && log.role.includes('Đại ca'))) return;
                     }
-
                     let snapEscaped = log.snapshot ? encodeURIComponent(log.snapshot) : "Trống";
                     html += `<tr>
                         <td style="color:var(--border-glow); font-weight:bold;">${log.username}</td>
@@ -995,12 +1091,10 @@
                     checkboxLineCounter++;
                 }
                 htmlContainerContent += `</div>`;
-                
                 htmlContainerContent += `
                     <div class="history-chunk-right-action">
                         <button class="btn-chunk-master-rebuy" onclick="triggerBatchLinesRebuy(${blockIndex}, '${targetBroadcastingPlatform}')">Mua<br>Lại 🛒</button>
                     </div>`;
-                
                 htmlContainerContent += `</div>`;
                 htmlContainerContent += `</div>`;
             });
@@ -1321,14 +1415,11 @@
 
         function saveCurrentTabState() {
             let state = tabStatesStorage[currentType];
-            
             let mainInputs = document.querySelectorAll('.lock-main-val');
             state.mainLock = [];
             mainInputs.forEach(inp => state.mainLock.push(inp.value.trim()));
-            
             let specInp = document.querySelector('.lock-spec-val');
             state.specLock = specInp ? specInp.value.trim() : '';
-            
             state.algo = document.getElementById('algoSelect').value;
             state.size = document.getElementById('predictSizeSelect').value;
             state.html = document.getElementById('predictContainer').innerHTML;
@@ -1337,7 +1428,6 @@
 
         function switchType(type) {
             saveCurrentTabState(); 
-            
             currentType = type; document.querySelectorAll('.sidebar .tab-btn').forEach(btn => btn.classList.remove('active'));
             let idx = type === 'lotto' ? 0 : (type === 'mega' ? 1 : 2); document.querySelectorAll('.sidebar .tab-btn')[idx].classList.add('active');
             let sideIframe = document.getElementById('sidebarResultIframe');
@@ -1351,7 +1441,6 @@
 
         function restoreTabState(type) {
             let state = tabStatesStorage[type];
-            
             let mainGroup = document.getElementById('mainLockGroup'); 
             let specGroup = document.getElementById('specLockGroup'); 
             let specSection = document.getElementById('specLockSection');
@@ -1405,6 +1494,17 @@
             let testRowHTML = mainTable.rows[2].outerHTML;
 
             floatTable.innerHTML = headRowHTML + countRowHTML + testRowHTML;
+
+            let mainCells = mainTable.rows[0].cells;
+            let floatCells = floatTable.rows[0].cells;
+            for (let i = 0; i < mainCells.length; i++) {
+                let colWidth = mainCells[i].getBoundingClientRect().width;
+                if (colWidth > 0) {
+                    floatCells[i].style.width = colWidth + 'px';
+                    floatCells[i].style.minWidth = colWidth + 'px';
+                    floatCells[i].style.maxWidth = colWidth + 'px';
+                }
+            }
         }
 
         function handleMatrixViewportScroll(viewport) {
@@ -1414,7 +1514,8 @@
             if (viewport.scrollTop > 10) {
                 floatTable.style.display = 'table';
                 floatTable.style.top = viewport.scrollTop + 'px';
-                floatTable.style.transform = `translateX(-${viewport.scrollLeft}px)`;
+                floatTable.style.left = viewport.scrollLeft + 'px';
+                floatTable.style.transform = 'none';
             } else {
                 floatTable.style.display = 'none';
             }
@@ -1503,12 +1604,34 @@
 
             let testTr = document.createElement('tr'); testTr.className = 'test-row'; testTr.innerHTML = `<td class="cell-idx">🧪</td><td class="cell-date" style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; background:#081524;">THỬ NGHIỆM</td>`;
             let tSet = testSets.power;
-            for(let i = 1; i <= 55; i++) { let numStr = String(i).padStart(2, '0'); let activeClass = tSet.main.includes(numStr) ? 'cell-test-active' : ''; testTr.innerHTML += `<td class="${activeClass}">${tSet.main.includes(numStr) ? numStr : ''}</td>`; }
+            for(let i = 1; i <= 55; i++) { 
+                let numStr = String(i).padStart(2, '0'); 
+                let isTestMain = tSet.main.includes(numStr);
+                let isTestSpec = (tSet.spec === numStr);
+                let activeClass = '';
+                let cellText = '';
+                if (isTestMain) { activeClass = 'cell-test-active'; cellText = numStr; }
+                else if (isTestSpec) { activeClass = 'cell-test-spec-active'; cellText = numStr; }
+                
+                let verticalLightStyle = (isTestMain || isTestSpec) ? 'position:relative;' : '';
+                let lightColorBg = isTestSpec ? 'rgba(204, 92, 0, 0.3)' : 'var(--custom-hover-color)';
+                let pseudoAfterHtml = (isTestMain || isTestSpec) ? `<div style="position:absolute; top:21px; bottom:-15000px; left:0; width:100%; background-color:${lightColorBg}; pointer-events:none; z-index:50;"></div>` : '';
+                
+                testTr.innerHTML += `<td class="${activeClass}" style="${verticalLightStyle}">${cellText}${pseudoAfterHtml}</td>`; 
+            }
             table.appendChild(testTr);
 
             rows.forEach((row, idx) => {
                 let tr = document.createElement('tr'); let displayIdx = idx + 1; tr.innerHTML = `<td class="cell-idx">${String(displayIdx).padStart(2, '0')}</td><td class="cell-date">${row.date}</td>`;
-                for(let i = 1; i <= 55; i++) { let numStr = String(i).padStart(2, '0'); let isAct = row.main.includes(numStr); let isSpecAct = (row.spec === numStr); let isTestAct = tSet.main.includes(numStr); let isTestSpecAct = (tSet.spec === numStr); let cls = 'cell-main-num'; if (isAct) cls = 'cell-main-num active'; else if (isSpecAct) cls = 'cell-main-num active-spec-in-main'; else if (isTestAct) cls = 'cell-main-num test-active'; else if (isTestSpecAct) cls = 'cell-main-num test-spec-active'; tr.innerHTML += `<td class="${cls}">${(isAct || isSpecAct) ? numStr : ''}</td>`; }
+                for(let i = 1; i <= 55; i++) { 
+                    let numStr = String(i).padStart(2, '0'); 
+                    let isAct = row.main.includes(numStr); 
+                    let isSpecAct = (row.spec === numStr); 
+                    let cls = 'cell-main-num'; 
+                    if (isAct) cls = 'cell-main-num active'; 
+                    else if (isSpecAct) cls = 'cell-main-num active-spec-in-main'; 
+                    tr.innerHTML += `<td class="${cls}">${(isAct || isSpecAct) ? numStr : ''}</td>`; 
+                }
                 table.appendChild(tr);
             });
 
@@ -1581,7 +1704,6 @@
             let mainSize = currentType === 'lotto' ? 5 : 6; 
             let chosenAlgo = document.getElementById('algoSelect').value;
             
-            let lastDraw = rows[0] ? rows[0].main.map(n => String(parseInt(n)).padStart(2, '0')) : [];
             let inputs = document.querySelectorAll('.lock-main-val'); 
             let locked = [];
             inputs.forEach(input => { 
@@ -1610,17 +1732,14 @@
                         });
                     }
 
-                    // Thuật toán tối ưu hóa trọng số thông minh
                     let poolCandidates = [];
                     for (let j = 1; j <= maxRange; j++) {
                         let s = String(j).padStart(2, '0');
                         if (locked.includes(s)) continue;
 
                         let score = 0;
-                        score += pairCounts[j] * 3.0; // Tăng trọng số bạc nhớ cặp số
-                        score += freq[j] * 1.5; // Tăng trọng số tần suất xuất hiện
-
-                        // Tạo độ nhiễu động phân phối đều qua từng dòng dự đoán
+                        score += pairCounts[j] * 3.0; 
+                        score += freq[j] * 1.5; 
                         score += (Math.random() * 15.0 - 7.5) + (index * 1.5);
 
                         poolCandidates.push({ numStr: s, finalScore: score });
@@ -1685,7 +1804,6 @@
             let mainSize = currentType === 'lotto' ? 5 : 6; 
             let chosenAlgo = document.getElementById('algoSelect').value;
             
-            let lastDraw = rows[0] ? rows[0].main.map(n => String(parseInt(n)).padStart(2, '0')) : [];
             let inputs = document.querySelectorAll('.lock-main-val'); 
             let locked = [];
             inputs.forEach(input => { 
