@@ -1086,6 +1086,86 @@ function generatePredictions() {
     }, 150);
 }
 
+// Thuật toán khoảng cách gan chuẩn
+function calculateGanDistances(rows, maxRange) {
+    let distances = {};
+    for (let i = 1; i <= maxRange; i++) {
+        distances[String(i).padStart(2, '0')] = 999;
+    }
+    rows.forEach((row, idx) => {
+        row.main.forEach(num => {
+            let nStr = String(parseInt(num)).padStart(2, '0');
+            if (distances[nStr] === 999) {
+                distances[nStr] = idx; 
+            }
+        });
+    });
+    return distances;
+}
+
+function selectMainNumbersByGan(rows, maxRange, mainSize, lockedNums) {
+    let ganMap = calculateGanDistances(rows, maxRange);
+    let selected = [...lockedNums];
+
+    let poolG0_2 = [];
+    let poolG3_10 = [];
+    let poolG11_15 = [];
+    let poolG12_22 = [];
+    let poolG15 = [];
+    let poolG_Other = [];
+
+    for (let i = 1; i <= maxRange; i++) {
+        let sNum = String(i).padStart(2, '0');
+        if (selected.includes(sNum)) continue;
+        let g = ganMap[sNum] !== undefined ? ganMap[sNum] : 999;
+
+        if (g >= 0 && g <= 2) poolG0_2.push(sNum);
+        if (g >= 3 && g <= 10) poolG3_10.push(sNum);
+        if (g >= 11 && g <= 15) poolG11_15.push(sNum);
+        if (g >= 12 && g <= 22) poolG12_22.push(sNum);
+        if (g === 15) poolG15.push(sNum);
+        if (g > 22) poolG_Other.push(sNum);
+    }
+
+    poolG0_2.sort(() => Math.random() - 0.5);
+    poolG3_10.sort(() => Math.random() - 0.5);
+    poolG11_15.sort(() => Math.random() - 0.5);
+    poolG12_22.sort(() => Math.random() - 0.5);
+    poolG15.sort(() => Math.random() - 0.5);
+
+    let helperPick = (pool, count) => {
+        let picked = [];
+        for (let i = 0; i < count && pool.length > 0; i++) {
+            let candidate = pool.shift();
+            if (!selected.includes(candidate) && !picked.includes(candidate)) {
+                picked.push(candidate);
+            }
+        }
+        return picked;
+    };
+
+    if (currentType === 'lotto') {
+        selected.push(...helperPick(poolG0_2, 2));
+        selected.push(...helperPick(poolG3_10, 2));
+        selected.push(...helperPick(poolG15, 1));
+    } else {
+        selected.push(...helperPick(poolG0_2, 2));
+        selected.push(...helperPick(poolG3_10, 2));
+        selected.push(...helperPick(poolG11_15, 1));
+        selected.push(...helperPick(poolG12_22, 1));
+    }
+
+    let allPool = [...poolG0_2, ...poolG3_10, ...poolG11_15, ...poolG12_22, ...poolG15, ...poolG_Other];
+    allPool.sort(() => Math.random() - 0.5);
+    while (selected.length < mainSize && allPool.length > 0) {
+        let cand = allPool.shift();
+        if (!selected.includes(cand)) selected.push(cand);
+    }
+
+    selected.sort((a, b) => parseInt(a) - parseInt(b));
+    return selected;
+}
+
 function generateSingleRow(index, label, rows, ticketContainer) {
     let maxRange = currentType === 'lotto' ? 35 : (currentType === 'mega' ? 45 : 55); 
     let mainSize = currentType === 'lotto' ? 5 : 6; 
@@ -1105,9 +1185,8 @@ function generateSingleRow(index, label, rows, ticketContainer) {
     let attempts = 0;
 
     do {
-        resultSet = [...locked];
-
         if (chosenAlgo === 'combined') {
+            // Kết hợp toàn diện tất cả: Nóng lạnh, biên độ, bạc nhớ, ngẫu nhiên & khoảng cách gan
             let freq = Array(maxRange + 1).fill(0); 
             rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n <= maxRange) freq[n]++; }); });
             
@@ -1119,20 +1198,27 @@ function generateSingleRow(index, label, rows, ticketContainer) {
                 });
             }
 
+            let ganMap = calculateGanDistances(rows, maxRange);
+
             let poolCandidates = [];
             for (let j = 1; j <= maxRange; j++) {
                 let s = String(j).padStart(2, '0');
                 if (locked.includes(s)) continue;
 
                 let score = 0;
-                score += pairCounts[j] * 3.0; 
-                score += freq[j] * 1.5; 
-                score += (Math.random() * 15.0 - 7.5) + (index * 1.5);
+                score += pairCounts[j] * 3.0; // Bạc nhớ cặp số
+                score += freq[j] * 1.5;     // Nóng lạnh tần suất
+                
+                let gVal = ganMap[s] !== undefined ? ganMap[s] : 999;
+                if (gVal >= 0 && gVal <= 2) score += 4.0; // Ưu tiên nhẹ nhóm bệt sát kỳ trước
+                
+                score += (Math.random() * 20.0 - 10.0) + (index * 1.5); // Ngẫu nhiên xáo trộn biên độ
 
                 poolCandidates.push({ numStr: s, finalScore: score });
             }
 
             poolCandidates.sort((a, b) => b.finalScore - a.finalScore);
+            resultSet = [...locked];
 
             for (let i = 0; i < poolCandidates.length; i++) {
                 if (resultSet.length >= mainSize) break;
@@ -1141,7 +1227,12 @@ function generateSingleRow(index, label, rows, ticketContainer) {
                     resultSet.push(candidate);
                 }
             }
+        } else if (chosenAlgo === 'gan_standard') {
+            // Chỉ chạy riêng khoảng cách gan chuẩn
+            resultSet = selectMainNumbersByGan(rows, maxRange, mainSize, locked);
         } else {
+            // Các tùy chọn đơn lẻ bên dưới
+            resultSet = [...locked];
             let pool = []; for(let j = 1; j <= maxRange; j++) { let s = String(j).padStart(2, '0'); if(!locked.includes(s)) pool.push(s); }
             pool.sort(() => Math.random() - 0.5);
             let needed = mainSize - resultSet.length; if (needed > 0 && pool.length > 0) { for(let k = 0; k < needed; k++) { if(pool.length > 0) resultSet.push(pool.shift()); } }
@@ -1205,8 +1296,6 @@ function reGenerateSingleRow(index, label) {
     let attempts = 0;
 
     do {
-        resultSet = [...locked];
-
         if (chosenAlgo === 'combined') {
             let freq = Array(maxRange + 1).fill(0); 
             rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n <= maxRange) freq[n]++; }); });
@@ -1219,6 +1308,8 @@ function reGenerateSingleRow(index, label) {
                 });
             }
 
+            let ganMap = calculateGanDistances(rows, maxRange);
+
             let poolCandidates = [];
             for (let j = 1; j <= maxRange; j++) {
                 let s = String(j).padStart(2, '0');
@@ -1226,13 +1317,18 @@ function reGenerateSingleRow(index, label) {
 
                 let score = 0;
                 score += pairCounts[j] * 3.0; 
-                score += freq[j] * 1.5; 
-                score += (Math.random() * 15.0 - 7.5) + (index * 1.5);
+                score += freq[j] * 1.5;     
+                
+                let gVal = ganMap[s] !== undefined ? ganMap[s] : 999;
+                if (gVal >= 0 && gVal <= 2) score += 4.0;
+                
+                score += (Math.random() * 20.0 - 10.0) + (index * 1.5);
 
                 poolCandidates.push({ numStr: s, finalScore: score });
             }
 
             poolCandidates.sort((a, b) => b.finalScore - a.finalScore);
+            resultSet = [...locked];
 
             for (let i = 0; i < poolCandidates.length; i++) {
                 if (resultSet.length >= mainSize) break;
@@ -1241,7 +1337,10 @@ function reGenerateSingleRow(index, label) {
                     resultSet.push(candidate);
                 }
             }
+        } else if (chosenAlgo === 'gan_standard') {
+            resultSet = selectMainNumbersByGan(rows, maxRange, mainSize, locked);
         } else {
+            resultSet = [...locked];
             let pool = []; for(let j = 1; j <= maxRange; j++) { let s = String(j).padStart(2, '0'); if(!locked.includes(s)) pool.push(s); }
             pool.sort(() => Math.random() - 0.5);
             let needed = mainSize - resultSet.length; if (needed > 0 && pool.length > 0) { for(let k = 0; k < needed; k++) { if(pool.length > 0) resultSet.push(pool.shift()); } }
