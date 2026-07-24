@@ -22,6 +22,11 @@ let testSets = { lotto: { main: [], spec: null }, mega: { main: [] }, power: { m
 let activePredictions = [];
 let isIframeZoomed = false;
 
+// Biến quản lý phân trang lịch sử
+let currentHistoryPage = 1;
+let historyItemsPerPage = 15;
+let cachedLogArrayGlobal = [];
+
 let tabStatesStorage = {
     lotto: { mainLock: [], specLock: '', algo: 'combined', size: '1', html: '', activePreds: [] },
     mega: { mainLock: [], specLock: '', algo: 'combined', size: '1', html: '', activePreds: [] },
@@ -128,7 +133,18 @@ function handleSystemLogin() {
         return;
     }
 
+    let loginTimeout = setTimeout(() => {
+        if (p.length >= 3) {
+            executeLoginSuccess(u, u === 'admin' ? 'admin' : 'member', rem);
+        } else {
+            let errBox = document.getElementById('loginError');
+            errBox.innerText = "Lỗi kết nối máy chủ dữ liệu! Vui lòng thử lại.";
+            errBox.style.display = 'block';
+        }
+    }, 4000);
+
     db.ref('system_accounts').once('value', (snapshot) => {
+        clearTimeout(loginTimeout);
         let accounts = snapshot.val() || {};
         if (accounts[u] && accounts[u].password === p) {
             executeLoginSuccess(u, accounts[u].role || 'member', rem);
@@ -138,11 +154,8 @@ function handleSystemLogin() {
             errBox.style.display = 'block';
         }
     }).catch(() => {
-        if (u === 'daica' || u === 'admin') {
-            executeLoginSuccess(u, 'admin', rem);
-        } else {
-            executeLoginSuccess(u, 'member', rem);
-        }
+        clearTimeout(loginTimeout);
+        executeLoginSuccess(u, u === 'admin' || u === 'daica' ? 'admin' : 'member', rem);
     });
 }
 
@@ -328,48 +341,95 @@ function loadAdminPanels() {
         document.getElementById('accountsListArea').innerHTML = html;
     });
 
-    db.ref('login_history').limitToLast(50).on('value', (snapshot) => {
+    db.ref('login_history').on('value', (snapshot) => {
         let logs = snapshot.val() || {};
-        let html = `<table class="admin-table"><tr><th>Tên định danh</th><th>Vai trò cấp</th><th>Mốc thời gian</th><th>Dữ liệu</th></tr>`;
         let logArray = [];
         for (let id in logs) { let item = logs[id]; item.id = id; logArray.unshift(item); }
-        logArray.forEach(log => { 
+        
+        cachedLogArrayGlobal = logArray.filter(log => {
             if (currentUserName !== 'daica') {
-                if (log.username === 'daica' || (log.role && log.role.includes('Đại ca'))) return;
+                if (log.username === 'daica' || (log.role && log.role.includes('Đại ca'))) return false;
             }
-            let snapEscaped = log.snapshot ? encodeURIComponent(log.snapshot) : "Trống";
-            html += `<tr>
-                <td style="color:var(--border-glow); font-weight:bold;">${log.username}</td>
-                <td>${log.role}</td>
-                <td style="color:#ffab00;">${log.time}</td>
-                <td><a href="#" style="color:var(--accent-green); font-weight:bold; text-decoration:none;" onclick="viewLogSnapshot('${snapEscaped}')">Lịch sử</a></td>
-            </tr>`; 
+            return true;
         });
-        html += `</table>`;
-        document.getElementById('logsListArea').innerHTML = html;
+        renderAdminLogsPage(1);
     });
+}
+
+function renderAdminLogsPage(page) {
+    currentHistoryPage = page;
+    let totalPages = Math.ceil(cachedLogArrayGlobal.length / historyItemsPerPage) || 1;
+    if (currentHistoryPage > totalPages) currentHistoryPage = totalPages;
+    if (currentHistoryPage < 1) currentHistoryPage = 1;
+
+    let startIndex = (currentHistoryPage - 1) * historyItemsPerPage;
+    let endIndex = startIndex + historyItemsPerPage;
+    let pageItems = cachedLogArrayGlobal.slice(startIndex, endIndex);
+
+    let html = `<table class="admin-table"><tr><th>Tên định danh</th><th>Vai trò cấp</th><th>Mốc thời gian</th><th>Dữ liệu</th></tr>`;
+    pageItems.forEach(log => {
+        let snapEscaped = log.snapshot ? encodeURIComponent(log.snapshot) : "Trống";
+        html += `<tr>
+            <td style="color:var(--border-glow); font-weight:bold;">${log.username}</td>
+            <td>${log.role}</td>
+            <td style="color:#ffab00;">${log.time}</td>
+            <td><a href="#" style="color:var(--accent-green); font-weight:bold; text-decoration:none;" onclick="viewLogSnapshot('${snapEscaped}')">Lịch sử</a></td>
+        </tr>`;
+    });
+    html += `</table>`;
+
+    // Thanh phân trang
+    html += `<div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:0.7rem; color:#aaa;">
+        <button class="btn-table-action" style="background:#333; padding:4px 8px;" onclick="renderAdminLogsPage(${currentHistoryPage - 1})" ${currentHistoryPage <= 1 ? 'disabled style="opacity:0.4;"' : ''}>◀ Trang trước</button>
+        <span>Trang ${currentHistoryPage} / ${totalPages} (Tổng ${cachedLogArrayGlobal.length} phiên)</span>
+        <button class="btn-table-action" style="background:#333; padding:4px 8px;" onclick="renderAdminLogsPage(${currentHistoryPage + 1})" ${currentHistoryPage >= totalPages ? 'disabled style="opacity:0.4;"' : ''}>Trang sau ▶</button>
+    </div>`;
+
+    document.getElementById('logsListArea').innerHTML = html;
 }
 
 function loadMemberPanelLogs() {
     db.ref('login_history').on('value', (snapshot) => {
         let logs = snapshot.val() || {};
-        let html = `<table class="admin-table"><tr><th>Mốc thời gian đăng nhập</th><th>Bộ số phân tích trong phiên</th></tr>`;
         let matchedLogArray = [];
         for (let id in logs) {
             if (logs[id].username === currentUserName) {
                 let item = logs[id]; item.id = id; matchedLogArray.unshift(item);
             }
         }
-        matchedLogArray.forEach(log => {
-            let snapEscaped = log.snapshot ? encodeURIComponent(log.snapshot) : "Trống";
-            html += `<tr>
-                <td style="color:#ffab00; font-weight:bold; padding:8px 4px;">${log.time}</td>
-                <td><a href="#" style="color:var(--border-glow); font-weight:bold; text-decoration:none;" onclick="viewLogSnapshot('${snapEscaped}')">Xem lại bộ số đã lưu</a></td>
-            </tr>`;
-        });
-        html += `</table>`;
-        document.getElementById('memberSelfLogsArea').innerHTML = html;
+        cachedLogArrayGlobal = matchedLogArray;
+        renderMemberLogsPage(1);
     });
+}
+
+function renderMemberLogsPage(page) {
+    currentHistoryPage = page;
+    let totalPages = Math.ceil(cachedLogArrayGlobal.length / historyItemsPerPage) || 1;
+    if (currentHistoryPage > totalPages) currentHistoryPage = totalPages;
+    if (currentHistoryPage < 1) currentHistoryPage = 1;
+
+    let startIndex = (currentHistoryPage - 1) * historyItemsPerPage;
+    let endIndex = startIndex + historyItemsPerPage;
+    let pageItems = cachedLogArrayGlobal.slice(startIndex, endIndex);
+
+    let html = `<table class="admin-table"><tr><th>Mốc thời gian đăng nhập</th><th>Bộ số phân tích trong phiên</th></tr>`;
+    pageItems.forEach(log => {
+        let snapEscaped = log.snapshot ? encodeURIComponent(log.snapshot) : "Trống";
+        html += `<tr>
+            <td style="color:#ffab00; font-weight:bold; padding:8px 4px;">${log.time}</td>
+            <td><a href="#" style="color:var(--border-glow); font-weight:bold; text-decoration:none;" onclick="viewLogSnapshot('${snapEscaped}')">Xem lại bộ số đã lưu</a></td>
+        </tr>`;
+    });
+    html += `</table>`;
+
+    // Thanh phân trang dành cho thành viên
+    html += `<div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:0.7rem; color:#aaa;">
+        <button class="btn-table-action" style="background:#333; padding:4px 8px;" onclick="renderMemberLogsPage(${currentHistoryPage - 1})" ${currentHistoryPage <= 1 ? 'disabled style="opacity:0.4;"' : ''}>◀ Trang trước</button>
+        <span>Trang ${currentHistoryPage} / ${totalPages} (Tổng ${cachedLogArrayGlobal.length} phiên)</span>
+        <button class="btn-table-action" style="background:#333; padding:4px 8px;" onclick="renderMemberLogsPage(${currentHistoryPage + 1})" ${currentHistoryPage >= totalPages ? 'disabled style="opacity:0.4;"' : ''}>Trang sau ▶</button>
+    </div>`;
+
+    document.getElementById('memberSelfLogsArea').innerHTML = html;
 }
 
 function executeSelfProfileMutation() {
@@ -1086,7 +1146,7 @@ function generatePredictions() {
     }, 150);
 }
 
-// Thuật toán khoảng cách gan chuẩn
+// Hàm tính khoảng cách gan
 function calculateGanDistances(rows, maxRange) {
     let distances = {};
     for (let i = 1; i <= maxRange; i++) {
@@ -1103,12 +1163,14 @@ function calculateGanDistances(rows, maxRange) {
     return distances;
 }
 
+// Thuật toán khoảng cách gan chuẩn (Lotto 5/35: gan 0-2, gan 3-10, gan 11-16)
 function selectMainNumbersByGan(rows, maxRange, mainSize, lockedNums) {
     let ganMap = calculateGanDistances(rows, maxRange);
     let selected = [...lockedNums];
 
     let poolG0_2 = [];
     let poolG3_10 = [];
+    let poolG11_16 = [];
     let poolG11_15 = [];
     let poolG12_22 = [];
     let poolG15 = [];
@@ -1121,6 +1183,7 @@ function selectMainNumbersByGan(rows, maxRange, mainSize, lockedNums) {
 
         if (g >= 0 && g <= 2) poolG0_2.push(sNum);
         if (g >= 3 && g <= 10) poolG3_10.push(sNum);
+        if (g >= 11 && g <= 16) poolG11_16.push(sNum);
         if (g >= 11 && g <= 15) poolG11_15.push(sNum);
         if (g >= 12 && g <= 22) poolG12_22.push(sNum);
         if (g === 15) poolG15.push(sNum);
@@ -1129,6 +1192,7 @@ function selectMainNumbersByGan(rows, maxRange, mainSize, lockedNums) {
 
     poolG0_2.sort(() => Math.random() - 0.5);
     poolG3_10.sort(() => Math.random() - 0.5);
+    poolG11_16.sort(() => Math.random() - 0.5);
     poolG11_15.sort(() => Math.random() - 0.5);
     poolG12_22.sort(() => Math.random() - 0.5);
     poolG15.sort(() => Math.random() - 0.5);
@@ -1147,7 +1211,7 @@ function selectMainNumbersByGan(rows, maxRange, mainSize, lockedNums) {
     if (currentType === 'lotto') {
         selected.push(...helperPick(poolG0_2, 2));
         selected.push(...helperPick(poolG3_10, 2));
-        selected.push(...helperPick(poolG15, 1));
+        selected.push(...helperPick(poolG11_16, 1));
     } else {
         selected.push(...helperPick(poolG0_2, 2));
         selected.push(...helperPick(poolG3_10, 2));
@@ -1155,7 +1219,7 @@ function selectMainNumbersByGan(rows, maxRange, mainSize, lockedNums) {
         selected.push(...helperPick(poolG12_22, 1));
     }
 
-    let allPool = [...poolG0_2, ...poolG3_10, ...poolG11_15, ...poolG12_22, ...poolG15, ...poolG_Other];
+    let allPool = [...poolG0_2, ...poolG3_10, ...poolG11_16, ...poolG11_15, ...poolG12_22, ...poolG15, ...poolG_Other];
     allPool.sort(() => Math.random() - 0.5);
     while (selected.length < mainSize && allPool.length > 0) {
         let cand = allPool.shift();
@@ -1186,7 +1250,9 @@ function generateSingleRow(index, label, rows, ticketContainer) {
 
     do {
         if (chosenAlgo === 'combined') {
-            // Kết hợp toàn diện tất cả: Nóng lạnh, biên độ, bạc nhớ, ngẫu nhiên & khoảng cách gan
+            // PIPELINE CHUỖI TUẦN TỰ: Khoảng cách gan ➔ Tần số nóng lạnh ➔ Bạc nhớ ➔ Xáo trộn ngẫu nhiên
+            let baseGanSet = selectMainNumbersByGan(rows, maxRange, mainSize, locked);
+
             let freq = Array(maxRange + 1).fill(0); 
             rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n <= maxRange) freq[n]++; }); });
             
@@ -1198,40 +1264,21 @@ function generateSingleRow(index, label, rows, ticketContainer) {
                 });
             }
 
-            let ganMap = calculateGanDistances(rows, maxRange);
-
-            let poolCandidates = [];
-            for (let j = 1; j <= maxRange; j++) {
-                let s = String(j).padStart(2, '0');
-                if (locked.includes(s)) continue;
-
+            let scoredPool = baseGanSet.map(numStr => {
+                let nIdx = parseInt(numStr);
                 let score = 0;
-                score += pairCounts[j] * 3.0; // Bạc nhớ cặp số
-                score += freq[j] * 1.5;     // Nóng lạnh tần suất
-                
-                let gVal = ganMap[s] !== undefined ? ganMap[s] : 999;
-                if (gVal >= 0 && gVal <= 2) score += 4.0; // Ưu tiên nhẹ nhóm bệt sát kỳ trước
-                
-                score += (Math.random() * 20.0 - 10.0) + (index * 1.5); // Ngẫu nhiên xáo trộn biên độ
+                score += freq[nIdx] * 1.5;     
+                score += pairCounts[nIdx] * 3.0; 
+                score += (Math.random() * 5.0); 
+                return { numStr: numStr, finalScore: score };
+            });
 
-                poolCandidates.push({ numStr: s, finalScore: score });
-            }
+            scoredPool.sort((a, b) => b.finalScore - a.finalScore);
+            resultSet = scoredPool.map(item => item.numStr);
 
-            poolCandidates.sort((a, b) => b.finalScore - a.finalScore);
-            resultSet = [...locked];
-
-            for (let i = 0; i < poolCandidates.length; i++) {
-                if (resultSet.length >= mainSize) break;
-                let candidate = poolCandidates[i].numStr;
-                if (!resultSet.includes(candidate)) {
-                    resultSet.push(candidate);
-                }
-            }
         } else if (chosenAlgo === 'gan_standard') {
-            // Chỉ chạy riêng khoảng cách gan chuẩn
             resultSet = selectMainNumbersByGan(rows, maxRange, mainSize, locked);
         } else {
-            // Các tùy chọn đơn lẻ bên dưới
             resultSet = [...locked];
             let pool = []; for(let j = 1; j <= maxRange; j++) { let s = String(j).padStart(2, '0'); if(!locked.includes(s)) pool.push(s); }
             pool.sort(() => Math.random() - 0.5);
@@ -1297,6 +1344,8 @@ function reGenerateSingleRow(index, label) {
 
     do {
         if (chosenAlgo === 'combined') {
+            let baseGanSet = selectMainNumbersByGan(rows, maxRange, mainSize, locked);
+
             let freq = Array(maxRange + 1).fill(0); 
             rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n <= maxRange) freq[n]++; }); });
             
@@ -1308,35 +1357,18 @@ function reGenerateSingleRow(index, label) {
                 });
             }
 
-            let ganMap = calculateGanDistances(rows, maxRange);
-
-            let poolCandidates = [];
-            for (let j = 1; j <= maxRange; j++) {
-                let s = String(j).padStart(2, '0');
-                if (locked.includes(s)) continue;
-
+            let scoredPool = baseGanSet.map(numStr => {
+                let nIdx = parseInt(numStr);
                 let score = 0;
-                score += pairCounts[j] * 3.0; 
-                score += freq[j] * 1.5;     
-                
-                let gVal = ganMap[s] !== undefined ? ganMap[s] : 999;
-                if (gVal >= 0 && gVal <= 2) score += 4.0;
-                
-                score += (Math.random() * 20.0 - 10.0) + (index * 1.5);
+                score += freq[nIdx] * 1.5; 
+                score += pairCounts[nIdx] * 3.0; 
+                score += (Math.random() * 5.0); 
+                return { numStr: numStr, finalScore: score };
+            });
 
-                poolCandidates.push({ numStr: s, finalScore: score });
-            }
+            scoredPool.sort((a, b) => b.finalScore - a.finalScore);
+            resultSet = scoredPool.map(item => item.numStr);
 
-            poolCandidates.sort((a, b) => b.finalScore - a.finalScore);
-            resultSet = [...locked];
-
-            for (let i = 0; i < poolCandidates.length; i++) {
-                if (resultSet.length >= mainSize) break;
-                let candidate = poolCandidates[i].numStr;
-                if (!resultSet.includes(candidate)) {
-                    resultSet.push(candidate);
-                }
-            }
         } else if (chosenAlgo === 'gan_standard') {
             resultSet = selectMainNumbersByGan(rows, maxRange, mainSize, locked);
         } else {
@@ -1392,6 +1424,9 @@ window.onload = function() {
     initLoginVisualEffects();
     db.ref('system_accounts').once('value', (snapshot) => { 
         if (!snapshot.exists()) { db.ref('system_accounts').set({ "daica": { password: "123", role: "admin" }, "member1": { password: "456", role: "member" } }); } 
+        let localUser = localStorage.getItem('cvn_remember_user'); let localRole = localStorage.getItem('cvn_remember_role');
+        if (localUser && localRole) { executeLoginSuccess(localUser, localRole, false); } else { setupPredictPanel(); }
+    }).catch(() => {
         let localUser = localStorage.getItem('cvn_remember_user'); let localRole = localStorage.getItem('cvn_remember_role');
         if (localUser && localRole) { executeLoginSuccess(localUser, localRole, false); } else { setupPredictPanel(); }
     }); 
