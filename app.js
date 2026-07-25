@@ -22,7 +22,6 @@ let testSets = { lotto: { main: [], spec: null }, mega: { main: [] }, power: { m
 let activePredictions = [];
 let isIframeZoomed = false;
 
-// Biến quản lý phân trang lịch sử
 let currentHistoryPage = 1;
 let historyItemsPerPage = 15;
 let cachedLogArrayGlobal = [];
@@ -378,7 +377,6 @@ function renderAdminLogsPage(page) {
     });
     html += `</table>`;
 
-    // Thanh phân trang
     html += `<div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:0.7rem; color:#aaa;">
         <button class="btn-table-action" style="background:#333; padding:4px 8px;" onclick="renderAdminLogsPage(${currentHistoryPage - 1})" ${currentHistoryPage <= 1 ? 'disabled style="opacity:0.4;"' : ''}>◀ Trang trước</button>
         <span>Trang ${currentHistoryPage} / ${totalPages} (Tổng ${cachedLogArrayGlobal.length} phiên)</span>
@@ -422,7 +420,6 @@ function renderMemberLogsPage(page) {
     });
     html += `</table>`;
 
-    // Thanh phân trang dành cho thành viên
     html += `<div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:0.7rem; color:#aaa;">
         <button class="btn-table-action" style="background:#333; padding:4px 8px;" onclick="renderMemberLogsPage(${currentHistoryPage - 1})" ${currentHistoryPage <= 1 ? 'disabled style="opacity:0.4;"' : ''}>◀ Trang trước</button>
         <span>Trang ${currentHistoryPage} / ${totalPages} (Tổng ${cachedLogArrayGlobal.length} phiên)</span>
@@ -1163,7 +1160,7 @@ function calculateGanDistances(rows, maxRange) {
     return distances;
 }
 
-// Thuật toán khoảng cách gan chuẩn (Lotto 5/35: gan 0-2, gan 3-10, gan 11-16)
+// Thuật toán khoảng cách gan chuẩn
 function selectMainNumbersByGan(rows, maxRange, mainSize, lockedNums) {
     let ganMap = calculateGanDistances(rows, maxRange);
     let selected = [...lockedNums];
@@ -1226,6 +1223,10 @@ function selectMainNumbersByGan(rows, maxRange, mainSize, lockedNums) {
         if (!selected.includes(cand)) selected.push(cand);
     }
 
+    if (selected.length > mainSize) {
+        selected = selected.slice(0, mainSize);
+    }
+
     selected.sort((a, b) => parseInt(a) - parseInt(b));
     return selected;
 }
@@ -1241,16 +1242,22 @@ function generateSingleRow(index, label, rows, ticketContainer) {
         let v = input.value.trim(); 
         if(v !== "") { 
             let n = parseInt(v); 
-            if(n >= 1 && n <= maxRange) locked.push(String(n).padStart(2, '0')); 
+            if(n >= 1 && n <= maxRange) {
+                let sFormatted = String(n).padStart(2, '0');
+                if (!locked.includes(sFormatted)) locked.push(sFormatted); 
+            } 
         } 
     });
+
+    if (locked.length > mainSize) {
+        locked = locked.slice(0, mainSize);
+    }
 
     let resultSet = [];
     let attempts = 0;
 
     do {
         if (chosenAlgo === 'combined') {
-            // PIPELINE CHUỖI TUẦN TỰ: Khoảng cách gan ➔ Tần số nóng lạnh ➔ Bạc nhớ ➔ Xáo trộn ngẫu nhiên
             let baseGanSet = selectMainNumbersByGan(rows, maxRange, mainSize, locked);
 
             let freq = Array(maxRange + 1).fill(0); 
@@ -1260,7 +1267,7 @@ function generateSingleRow(index, label, rows, ticketContainer) {
             if (locked.length > 0) {
                 rows.forEach(r => { 
                     let hasLocked = locked.some(l => r.main.includes(l)); 
-                    if (hasLocked) r.main.forEach(num => pairCounts[parseInt(num)]++); 
+                    if (hasLocked) r.main.forEach(num => pairCounts[parseInt(num)]++; }); 
                 });
             }
 
@@ -1284,6 +1291,11 @@ function generateSingleRow(index, label, rows, ticketContainer) {
             pool.sort(() => Math.random() - 0.5);
             let needed = mainSize - resultSet.length; if (needed > 0 && pool.length > 0) { for(let k = 0; k < needed; k++) { if(pool.length > 0) resultSet.push(pool.shift()); } }
         }
+
+        if (resultSet.length > mainSize) {
+            resultSet = resultSet.slice(0, mainSize);
+        }
+
         resultSet.sort((a, b) => parseInt(a) - parseInt(b));
         attempts++;
 
@@ -1335,9 +1347,16 @@ function reGenerateSingleRow(index, label) {
         let v = input.value.trim(); 
         if(v !== "") { 
             let n = parseInt(v); 
-            if(n >= 1 && n <= maxRange) locked.push(String(n).padStart(2, '0')); 
+            if(n >= 1 && n <= maxRange) {
+                let sFormatted = String(n).padStart(2, '0');
+                if (!locked.includes(sFormatted)) locked.push(sFormatted); 
+            } 
         } 
     });
+
+    if (locked.length > mainSize) {
+        locked = locked.slice(0, mainSize);
+    }
 
     let resultSet = [];
     let attempts = 0;
@@ -1353,7 +1372,7 @@ function reGenerateSingleRow(index, label) {
             if (locked.length > 0) {
                 rows.forEach(r => { 
                     let hasLocked = locked.some(l => r.main.includes(l)); 
-                    if (hasLocked) r.main.forEach(num => pairCounts[parseInt(num)]++); 
+                    if (hasLocked) r.main.forEach(num => pairCounts[parseInt(num)]++; }); 
                 });
             }
 
@@ -1377,6 +1396,11 @@ function reGenerateSingleRow(index, label) {
             pool.sort(() => Math.random() - 0.5);
             let needed = mainSize - resultSet.length; if (needed > 0 && pool.length > 0) { for(let k = 0; k < needed; k++) { if(pool.length > 0) resultSet.push(pool.shift()); } }
         }
+
+        if (resultSet.length > mainSize) {
+            resultSet = resultSet.slice(0, mainSize);
+        }
+
         resultSet.sort((a, b) => parseInt(a) - parseInt(b));
         attempts++;
 
