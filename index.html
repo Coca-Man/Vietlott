@@ -160,7 +160,6 @@
         th { background: #141420; color: #9595a8; font-size: 0.65rem; height: 21px; border-bottom: 1px solid #232338; }
         tr.count-row td { background: #13241a !important; height: 21px; }
         
-        /* 💡 ĐÃ LOẠI BỎ HOÀN TOÀN NÉT ĐỨT, CHUYỂN THÀNH LINE LIỀN NÉT TỐI RẤT SANG TRỌNG */
         tr.test-row td { 
             background: #081524 !important; 
             color: var(--border-glow); 
@@ -314,8 +313,8 @@
         .history-line-data { color: #00ff66; font-family: monospace; font-weight: bold; }
         .history-rebuy-checkbox { cursor: pointer; accent-color: var(--accent-pink); width: 14px; height: 14px; margin-left: 10px; vertical-align: middle; }
         
-        .history-chunk-right-action { width: 90px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border-left: 1px solid #23233c; padding-left: 8px; }
-        .btn-chunk-master-rebuy { background: linear-gradient(135deg, var(--accent-pink) 0%, #b30059 100%); color: #fff; border: none; font-size: 0.65rem; font-weight: 900; width: 100%; padding: 12px 4px; border-radius: 6px; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 8px rgba(255,0,127,0.3); text-align: center; line-height: 1.3; font-family: inherit; }
+        .history-chunk-right-action { width: 110px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border-left: 1px solid #23233c; padding-left: 8px; }
+        .btn-chunk-master-rebuy { background: linear-gradient(135deg, var(--accent-pink) 0%, #b30059 100%); color: #fff; border: none; font-size: 0.7rem; font-weight: 900; width: 100%; padding: 10px 4px; border-radius: 6px; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 8px rgba(255,0,127,0.3); text-align: center; white-space: nowrap; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
         .btn-chunk-master-rebuy:hover { box-shadow: 0 0 12px var(--accent-pink); transform: translateY(-1px); }
 
         .sms-block { background: #0e0e16; border: 1px solid #1f1f33; padding: 8px; border-radius: 6px; margin-bottom: 8px; position: relative; }
@@ -448,7 +447,7 @@
                         <textarea class="raw-data-textarea" id="boardRawInput" placeholder="Nhập dữ liệu. Ví dụ:&#10;T2, 20/07/2026 | 03 12 17 27 35 | 07 (5/35)&#10;T6, 20/07/2026 | 05 12 24 31 38 42 (6/45)&#10;CN, 19/07/2026 | 02 11 25 33 41 52 | 15 (6/55)"></textarea>
                     </div>
                     <div class="board-right-panel">
-                        <a class="btn-gemini-link" href="https://gemini.google.com/app/44cfac50974dfc1c?hl=vi" target="_blank">🚀 Mở Gemini</a>
+                        <a class="btn-gemini-link" href="https://gemini.google.com/app/5f4abb0d08c40246" target="_blank">🚀 Mở Gemini</a>
                         <button class="btn-board-push" onclick="handleBoardDataPush()">Cập nhật</button>
                     </div>
                 </div>
@@ -478,11 +477,8 @@
 				<div style="display: flex; align-items: center; gap: 4px; margin-bottom: 4px; background: #12121a; padding: 4px; border-radius: 5px; border: 1px solid #1f1f33;">
                     <span style="font-size: 0.65rem; font-weight: bold; color: var(--text-muted); white-space: nowrap;">Chiến thuật:</span>
                     <select class="count-select" id="algoSelect" onchange="saveCurrentTabState()" style="flex: 1; font-size: 0.65rem; padding: 2px; height: 22px;">
-                        <option value="combined" selected>⚡ Kết hợp bộ lọc ma trận</option>
-                        <option value="hotcold">🔥 Phân tích tần suất Nóng Lạnh</option>
-                        <option value="nobet">❌ Loại trừ trùng lặp biên độ</option>
-                        <option value="pair">🔗 Thuật toán Bạc nhớ cặp số</option>
-                        <option value="random_mix">🎲 Xáo trộn động ngẫu nhiên</option>
+                        <option value="combined" selected>⚡ Thuật toán dự đoán</option>
+                        <option value="random_mix">🎲 Xáo trộn ngẫu nhiên</option>
                     </select>
                 </div>
                 <div class="predict-trigger-container">
@@ -1093,7 +1089,7 @@
                 htmlContainerContent += `</div>`;
                 htmlContainerContent += `
                     <div class="history-chunk-right-action">
-                        <button class="btn-chunk-master-rebuy" onclick="triggerBatchLinesRebuy(${blockIndex}, '${targetBroadcastingPlatform}')">Mua<br>Lại 🛒</button>
+                        <button class="btn-chunk-master-rebuy" onclick="triggerBatchLinesRebuy(${blockIndex}, '${targetBroadcastingPlatform}')">MUA LẠI 🛒</button>
                     </div>`;
                 htmlContainerContent += `</div>`;
                 htmlContainerContent += `</div>`;
@@ -1682,6 +1678,139 @@
         function copyIndividualSms(elementId) { let text = document.getElementById(elementId).innerText; navigator.clipboard.writeText(text).then(() => { alert("Đã sao chép phôi tin nhắn!"); }); }
         function closeComposeModal() { document.getElementById('composeModal').style.display = 'none'; }
 
+        // Hàm tính toán cốt lõi cho 2 thuật toán: Thuật toán dự đoán (combined) và Xáo trộn ngẫu nhiên (random_mix)
+        function computeResultSet(maxRange, mainSize, chosenAlgo, locked, index, rows) {
+            let resultSet = [];
+            let attempts = 0;
+
+            if (chosenAlgo === 'combined') {
+                // Tính khoảng cách gan cho từng số chính dựa trên 60 kỳ dữ liệu
+                let ganMap = Array(maxRange + 1).fill(0);
+                for(let j = 1; j <= maxRange; j++) {
+                    let s = String(j).padStart(2, '0');
+                    let foundDist = rows.length; 
+                    for(let rIdx = 0; rIdx < rows.length; rIdx++) {
+                        if(rows[rIdx].main.includes(s) || rows[rIdx].spec === s) {
+                            foundDist = rIdx;
+                            break;
+                        }
+                    }
+                    ganMap[j] = foundDist;
+                }
+
+                // Phân nhóm khoảng cách gan theo chỉ đạo của Đại ca:
+                // Nhóm 1: gan từ 0 đến 4
+                // Nhóm 2: gan từ 5 đến 10
+                // Nhóm 3: gan từ 8 đến 22
+                let poolGroup1 = [];
+                let poolGroup2 = [];
+                let poolGroup3 = [];
+
+                for (let j = 1; j <= maxRange; j++) {
+                    let s = String(j).padStart(2, '0');
+                    if (locked.includes(s)) continue;
+
+                    let g = ganMap[j];
+                    if (g >= 0 && g <= 4) poolGroup1.push(s);
+                    if (g >= 5 && g <= 10) poolGroup2.push(s);
+                    if (g >= 8 && g <= 22) poolGroup3.push(s);
+                }
+
+                // Xáo trộn ngẫu nhiên các nhóm để đảm bảo lấy ngẫu nhiên khi có nhiều số thỏa mãn
+                poolGroup1.sort(() => Math.random() - 0.5);
+                poolGroup2.sort(() => Math.random() - 0.5);
+                poolGroup3.sort(() => Math.random() - 0.5);
+
+                let targetCountGroup1 = (currentType === 'lotto') ? 2 : 2;
+                let targetCountGroup2 = (currentType === 'lotto') ? 2 : 2;
+                let targetCountGroup3 = (currentType === 'lotto') ? 1 : 2;
+
+                do {
+                    resultSet = [...locked];
+
+                    // Lấy số từ nhóm 1 (gan 0-4)
+                    let picked1 = 0;
+                    for (let i = 0; i < poolGroup1.length && picked1 < targetCountGroup1; i++) {
+                        if (!resultSet.includes(poolGroup1[i])) {
+                            resultSet.push(poolGroup1[i]);
+                            picked1++;
+                        }
+                    }
+
+                    // Lấy số từ nhóm 2 (gan 5-10)
+                    let picked2 = 0;
+                    for (let i = 0; i < poolGroup2.length && picked2 < targetCountGroup2; i++) {
+                        if (!resultSet.includes(poolGroup2[i])) {
+                            resultSet.push(poolGroup2[i]);
+                            picked2++;
+                        }
+                    }
+
+                    // Lấy số từ nhóm 3 (gan 8-22)
+                    let picked3 = 0;
+                    for (let i = 0; i < poolGroup3.length && picked3 < targetCountGroup3; i++) {
+                        if (!resultSet.includes(poolGroup3[i])) {
+                            resultSet.push(poolGroup3[i]);
+                            picked3++;
+                        }
+                    }
+
+                    // Nếu chưa đủ số lượng chính do thiếu số ở các khoảng gan, vét bù từ kho tổng quát
+                    if (resultSet.length < mainSize) {
+                        let fallbackPool = [];
+                        for (let j = 1; j <= maxRange; j++) {
+                            let s = String(j).padStart(2, '0');
+                            if (!resultSet.includes(s) && !locked.includes(s)) fallbackPool.push(s);
+                        }
+                        fallbackPool.sort(() => Math.random() - 0.5);
+                        while (resultSet.length < mainSize && fallbackPool.length > 0) {
+                            resultSet.push(fallbackPool.shift());
+                        }
+                    }
+
+                    resultSet.sort((a, b) => parseInt(a) - parseInt(b));
+                    attempts++;
+
+                    var isDuplicate = activePredictions.some((p, pIdx) => {
+                        if (pIdx !== index && p && p.main) {
+                            return p.main.join(',') === resultSet.join(',');
+                        }
+                        return false;
+                    });
+
+                } while (isDuplicate && attempts < 50);
+
+            } else {
+                // Thuật toán 'random_mix': Xáo trộn động ngẫu nhiên toàn phần
+                do {
+                    resultSet = [...locked];
+                    let pool = []; 
+                    for(let j = 1; j <= maxRange; j++) { 
+                        let s = String(j).padStart(2, '0'); 
+                        if(!locked.includes(s)) pool.push(s); 
+                    }
+                    pool.sort(() => Math.random() - 0.5);
+                    let needed = mainSize - resultSet.length; 
+                    if (needed > 0 && pool.length > 0) { 
+                        for(let k = 0; k < needed; k++) { 
+                            if(pool.length > 0) resultSet.push(pool.shift()); 
+                        } 
+                    }
+                    resultSet.sort((a, b) => parseInt(a) - parseInt(b));
+                    attempts++;
+
+                    var isDuplicate = activePredictions.some((p, pIdx) => {
+                        if (pIdx !== index && p && p.main) {
+                            return p.main.join(',') === resultSet.join(',');
+                        }
+                        return false;
+                    });
+                } while (isDuplicate && attempts < 50);
+            }
+
+            return resultSet;
+        }
+
         function generatePredictions() {
             let container = document.getElementById('predictContainer'); container.innerHTML = '<div style="font-size:0.7rem; color:#8a8a9e; text-align:center; padding:5px;">Hệ thống đang cấu trúc lại ma trận...</div>';
             let rows = globalOnlineData[currentType] || []; if (rows.length === 0) { setTimeout(() => { container.innerHTML = '<div style="font-size:0.7rem; color:var(--accent-pink); text-align:center; padding:5px;">Lỗi: Trống dữ liệu trực tuyến!</div>'; }, 200); return; }
@@ -1714,62 +1843,7 @@
                 } 
             });
 
-            let resultSet = [];
-            let attempts = 0;
-
-            do {
-                resultSet = [...locked];
-
-                if (chosenAlgo === 'combined') {
-                    let freq = Array(maxRange + 1).fill(0); 
-                    rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n <= maxRange) freq[n]++; }); });
-                    
-                    let pairCounts = Array(maxRange + 1).fill(0); 
-                    if (locked.length > 0) {
-                        rows.forEach(r => { 
-                            let hasLocked = locked.some(l => r.main.includes(l)); 
-                            if (hasLocked) r.main.forEach(num => pairCounts[parseInt(num)]++); 
-                        });
-                    }
-
-                    let poolCandidates = [];
-                    for (let j = 1; j <= maxRange; j++) {
-                        let s = String(j).padStart(2, '0');
-                        if (locked.includes(s)) continue;
-
-                        let score = 0;
-                        score += pairCounts[j] * 3.0; 
-                        score += freq[j] * 1.5; 
-                        score += (Math.random() * 15.0 - 7.5) + (index * 1.5);
-
-                        poolCandidates.push({ numStr: s, finalScore: score });
-                    }
-
-                    poolCandidates.sort((a, b) => b.finalScore - a.finalScore);
-
-                    for (let i = 0; i < poolCandidates.length; i++) {
-                        if (resultSet.length >= mainSize) break;
-                        let candidate = poolCandidates[i].numStr;
-                        if (!resultSet.includes(candidate)) {
-                            resultSet.push(candidate);
-                        }
-                    }
-                } else {
-                    let pool = []; for(let j = 1; j <= maxRange; j++) { let s = String(j).padStart(2, '0'); if(!locked.includes(s)) pool.push(s); }
-                    pool.sort(() => Math.random() - 0.5);
-                    let needed = mainSize - resultSet.length; if (needed > 0 && pool.length > 0) { for(let k = 0; k < needed; k++) { if(pool.length > 0) resultSet.push(pool.shift()); } }
-                }
-                resultSet.sort((a, b) => parseInt(a) - parseInt(b));
-                attempts++;
-
-                var isDuplicate = activePredictions.some((p, pIdx) => {
-                    if (pIdx < index && p && p.main) {
-                        return p.main.join(',') === resultSet.join(',');
-                    }
-                    return false;
-                });
-
-            } while (isDuplicate && attempts < 50);
+            let resultSet = computeResultSet(maxRange, mainSize, chosenAlgo, locked, index, rows);
 
             let sNum = ""; 
             if (currentType !== 'mega') { 
@@ -1814,62 +1888,7 @@
                 } 
             });
 
-            let resultSet = [];
-            let attempts = 0;
-
-            do {
-                resultSet = [...locked];
-
-                if (chosenAlgo === 'combined') {
-                    let freq = Array(maxRange + 1).fill(0); 
-                    rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n <= maxRange) freq[n]++; }); });
-                    
-                    let pairCounts = Array(maxRange + 1).fill(0); 
-                    if (locked.length > 0) {
-                        rows.forEach(r => { 
-                            let hasLocked = locked.some(l => r.main.includes(l)); 
-                            if (hasLocked) r.main.forEach(num => pairCounts[parseInt(num)]++); 
-                        });
-                    }
-
-                    let poolCandidates = [];
-                    for (let j = 1; j <= maxRange; j++) {
-                        let s = String(j).padStart(2, '0');
-                        if (locked.includes(s)) continue;
-
-                        let score = 0;
-                        score += pairCounts[j] * 3.0; 
-                        score += freq[j] * 1.5; 
-                        score += (Math.random() * 15.0 - 7.5) + (index * 1.5);
-
-                        poolCandidates.push({ numStr: s, finalScore: score });
-                    }
-
-                    poolCandidates.sort((a, b) => b.finalScore - a.finalScore);
-
-                    for (let i = 0; i < poolCandidates.length; i++) {
-                        if (resultSet.length >= mainSize) break;
-                        let candidate = poolCandidates[i].numStr;
-                        if (!resultSet.includes(candidate)) {
-                            resultSet.push(candidate);
-                        }
-                    }
-                } else {
-                    let pool = []; for(let j = 1; j <= maxRange; j++) { let s = String(j).padStart(2, '0'); if(!locked.includes(s)) pool.push(s); }
-                    pool.sort(() => Math.random() - 0.5);
-                    let needed = mainSize - resultSet.length; if (needed > 0 && pool.length > 0) { for(let k = 0; k < needed; k++) { if(pool.length > 0) resultSet.push(pool.shift()); } }
-                }
-                resultSet.sort((a, b) => parseInt(a) - parseInt(b));
-                attempts++;
-
-                var isDuplicate = activePredictions.some((p, pIdx) => {
-                    if (pIdx !== index && p && p.main) {
-                        return p.main.join(',') === resultSet.join(',');
-                    }
-                    return false;
-                });
-
-            } while (isDuplicate && attempts < 50);
+            let resultSet = computeResultSet(maxRange, mainSize, chosenAlgo, locked, index, rows);
 
             let sNum = ""; 
             if (currentType !== 'mega') { 
