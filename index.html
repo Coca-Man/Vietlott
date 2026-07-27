@@ -314,7 +314,7 @@
         .history-rebuy-checkbox { cursor: pointer; accent-color: var(--accent-pink); width: 14px; height: 14px; margin-left: 10px; vertical-align: middle; }
         
         .history-chunk-right-action { width: 110px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border-left: 1px solid #23233c; padding-left: 8px; }
-        .btn-chunk-master-rebuy { background: linear-gradient(135deg, var(--accent-pink) 0%, #b30059 100%); color: #fff; border: none; font-size: 0.65rem; font-weight: 900; width: 100%; padding: 8px 4px; border-radius: 6px; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 8px rgba(255,0,127,0.3); text-align: center; white-space: nowrap; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
+        .btn-chunk-master-rebuy { background: linear-gradient(135deg, var(--accent-pink) 0%, #b30059 100%); color: #fff; border: none; font-size: 0.65rem; font-weight: 900; width: 100%; padding: 8px 4px; border-radius: 6px; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 8px rgba(255,0,127,0.3); text-align: center; white-space: nowrap; font-family: inherit; display: inline-flex; flex-direction: row; align-items: center; justify-content: center; gap: 4px; }
         .btn-chunk-master-rebuy:hover { box-shadow: 0 0 12px var(--accent-pink); transform: translateY(-1px); }
 
         .sms-block { background: #0e0e16; border: 1px solid #1f1f33; padding: 8px; border-radius: 6px; margin-bottom: 8px; position: relative; }
@@ -1320,6 +1320,7 @@
             if (exportedCount > 0) { alert(`Hệ thống bảo mật đã xuất ${exportedCount} tệp lưu trữ thành công thưa Đại ca!`); }
         }
 
+        // Cải tiến phần ô dùng dán dữ liệu: So sánh trùng kỳ, các kỳ không trùng được thay thế tiếp và đẩy lên phần trên cùng
         function handleBoardDataPush() {
             let text = document.getElementById('boardRawInput').value.trim();
             if (!text) { 
@@ -1377,35 +1378,30 @@
                 }
             }
 
-            let finalDataset = [];
+            let existingData = globalOnlineData[autoDetectedType] || [];
+            let mergedRows = [...existingData];
             let addedCount = 0;
 
-            if (parsedNewRows.length >= 50) {
-                finalDataset = parsedNewRows.slice(0, 60);
-                addedCount = finalDataset.length;
-            } else {
-                let existingData = globalOnlineData[autoDetectedType] || [];
-                let mergedRows = [...existingData];
-
-                let isExist = mergedRows.some(oldRow => {
-                    let sameDate = (oldRow.date === parsedNewRows[0].date);
-                    let sameMain = (oldRow.main.join(',') === parsedNewRows[0].main.join(','));
-                    let sameSpec = (oldRow.spec === parsedNewRows[0].spec);
-                    return sameDate && sameMain && sameSpec;
-                });
-
-                if (!isExist) {
-                    for (let i = parsedNewRows.length - 1; i >= 0; i--) {
-                        mergedRows.unshift(parsedNewRows[i]);
-                        addedCount++;
-                    }
+            // Đảo ngược danh sách mới dán để xử lý theo thứ tự từ trên xuống (đẩy các kỳ mới không trùng lên trên cùng)
+            let uniqueNewRows = [];
+            parsedNewRows.forEach(newRow => {
+                let isDuplicate = mergedRows.some(oldRow => oldRow.date === newRow.date && oldRow.main.join(',') === newRow.main.join(','));
+                if (!isDuplicate) {
+                    uniqueNewRows.push(newRow);
                 }
-                finalDataset = mergedRows.slice(0, 60);
+            });
+
+            // Chèn các kỳ mới không trùng lên trên cùng của danh sách hiện tại
+            for (let i = uniqueNewRows.length - 1; i >= 0; i--) {
+                mergedRows.unshift(uniqueNewRows[i]);
+                addedCount++;
             }
+
+            let finalDataset = mergedRows.slice(0, 60);
 
             db.ref('vietlott_matrix_data/' + autoDetectedType).set(finalDataset).then(() => {
                 document.getElementById('boardRawInput').value = ''; 
-                alert(`CẬP NHẬT THÀNH CÔNG!\n- Đài: ${autoDetectedType.toUpperCase()}\n- Đã nhận diện: ${addedCount} kỳ mới\n- Tổng lưu trữ hệ thống: ${finalDataset.length} kỳ`);
+                alert(`CẬP NHẬT THÀNH CÔNG!\n- Đài: ${autoDetectedType.toUpperCase()}\n- Đã thêm mới các kỳ không trùng lên trên: ${addedCount} kỳ\n- Tổng lưu trữ hệ thống: ${finalDataset.length} kỳ`);
             });
         }
 
@@ -1678,13 +1674,12 @@
         function copyIndividualSms(elementId) { let text = document.getElementById(elementId).innerText; navigator.clipboard.writeText(text).then(() => { alert("Đã sao chép phôi tin nhắn!"); }); }
         function closeComposeModal() { document.getElementById('composeModal').style.display = 'none'; }
 
-        // Hàm tính toán cốt lõi cho 2 thuật toán: Thuật toán dự đoán (combined) và Xáo trộn ngẫu nhiên (random_mix)
+        // Cải tiến phần Khóa số nuôi: vị trí số nuôi thay thế vị trí số tương ứng trong dãy đưa ra, sau đó sắp xếp theo thứ tự tăng dần rồi hiển thị
         function computeResultSet(maxRange, mainSize, chosenAlgo, locked, index, rows) {
             let resultSet = [];
             let attempts = 0;
 
             if (chosenAlgo === 'combined') {
-                // Tính khoảng cách gan cho từng số chính dựa trên 60 kỳ dữ liệu
                 let ganMap = Array(maxRange + 1).fill(0);
                 for(let j = 1; j <= maxRange; j++) {
                     let s = String(j).padStart(2, '0');
@@ -1698,76 +1693,64 @@
                     ganMap[j] = foundDist;
                 }
 
-                // Phân nhóm khoảng cách gan theo chỉ đạo của Đại ca:
-                // Nhóm 1: gan từ 0 đến 4
-                // Nhóm 2: gan từ 5 đến 10
-                // Nhóm 3: gan từ 8 đến 22
-                let poolGroup1 = [];
-                let poolGroup2 = [];
-                let poolGroup3 = [];
+                // Phân nhóm đúng theo khoảng gan quy ước của Đại ca
+                let poolG1 = []; // Gan từ 0 đến 4
+                let poolG2 = []; // Gan từ 5 đến 10
+                let poolG3 = []; // Gan từ 8 đến 22
 
                 for (let j = 1; j <= maxRange; j++) {
                     let s = String(j).padStart(2, '0');
                     if (locked.includes(s)) continue;
 
                     let g = ganMap[j];
-                    if (g >= 0 && g <= 4) poolGroup1.push(s);
-                    if (g >= 5 && g <= 10) poolGroup2.push(s);
-                    if (g >= 8 && g <= 22) poolGroup3.push(s);
+                    if (g >= 0 && g <= 4) poolG1.push(s);
+                    if (g >= 5 && g <= 10) poolG2.push(s);
+                    if (g >= 8 && g <= 22) poolG3.push(s);
                 }
 
-                // Xáo trộn ngẫu nhiên các nhóm để đảm bảo lấy ngẫu nhiên khi có nhiều số thỏa mãn
-                poolGroup1.sort(() => Math.random() - 0.5);
-                poolGroup2.sort(() => Math.random() - 0.5);
-                poolGroup3.sort(() => Math.random() - 0.5);
+                poolG1.sort(() => Math.random() - 0.5);
+                poolG2.sort(() => Math.random() - 0.5);
+                poolG3.sort(() => Math.random() - 0.5);
 
-                let targetCountGroup1 = (currentType === 'lotto') ? 2 : 2;
-                let targetCountGroup2 = (currentType === 'lotto') ? 2 : 2;
-                let targetCountGroup3 = (currentType === 'lotto') ? 1 : 2;
+                // Xác định số lượng cần lấy theo đúng Cụm loại hình xổ số
+                let count1 = 2; // Gan 0-4
+                let count2 = 2; // Gan 5-10
+                let count3 = (mainSize === 5) ? 1 : 2; // Lotto 5 số lấy 1, Mega/Power 6 số lấy 2
 
                 do {
-                    resultSet = [...locked];
+                    resultSet = [];
+                    let p1 = [...poolG1];
+                    let p2 = [...poolG2];
+                    let p3 = [...poolG3];
 
-                    // Lấy số từ nhóm 1 (gan 0-4)
-                    let picked1 = 0;
-                    for (let i = 0; i < poolGroup1.length && picked1 < targetCountGroup1; i++) {
-                        if (!resultSet.includes(poolGroup1[i])) {
-                            resultSet.push(poolGroup1[i]);
-                            picked1++;
-                        }
-                    }
+                    let pickedPool = [];
+                    for(let i = 0; i < count1 && p1.length > 0; i++) pickedPool.push(p1.shift());
+                    for(let i = 0; i < count2 && p2.length > 0; i++) pickedPool.push(p2.shift());
+                    for(let i = 0; i < count3 && p3.length > 0; i++) pickedPool.push(p3.shift());
 
-                    // Lấy số từ nhóm 2 (gan 5-10)
-                    let picked2 = 0;
-                    for (let i = 0; i < poolGroup2.length && picked2 < targetCountGroup2; i++) {
-                        if (!resultSet.includes(poolGroup2[i])) {
-                            resultSet.push(poolGroup2[i]);
-                            picked2++;
-                        }
-                    }
-
-                    // Lấy số từ nhóm 3 (gan 8-22)
-                    let picked3 = 0;
-                    for (let i = 0; i < poolGroup3.length && picked3 < targetCountGroup3; i++) {
-                        if (!resultSet.includes(poolGroup3[i])) {
-                            resultSet.push(poolGroup3[i]);
-                            picked3++;
-                        }
-                    }
-
-                    // Nếu chưa đủ số lượng chính do thiếu số ở các khoảng gan, vét bù từ kho tổng quát
-                    if (resultSet.length < mainSize) {
-                        let fallbackPool = [];
-                        for (let j = 1; j <= maxRange; j++) {
+                    // Nếu thiếu số do số lượng trong nhóm hạn chế, vét bù từ kho tổng quát
+                    if (pickedPool.length < mainSize) {
+                        for(let j = 1; j <= maxRange; j++) {
                             let s = String(j).padStart(2, '0');
-                            if (!resultSet.includes(s) && !locked.includes(s)) fallbackPool.push(s);
-                        }
-                        fallbackPool.sort(() => Math.random() - 0.5);
-                        while (resultSet.length < mainSize && fallbackPool.length > 0) {
-                            resultSet.push(fallbackPool.shift());
+                            if (!pickedPool.includes(s) && !locked.includes(s)) {
+                                pickedPool.push(s);
+                            }
+                            if (pickedPool.length >= mainSize) break;
                         }
                     }
 
+                    pickedPool.sort(() => Math.random() - 0.5);
+
+                    // Đắp số nuôi vào đúng vị trí tương ứng, các vị trí trống được điền từ pool đã chọn
+                    for (let pos = 0; pos < mainSize; pos++) {
+                        if (locked[pos]) {
+                            resultSet.push(locked[pos]);
+                        } else {
+                            resultSet.push(pickedPool.shift());
+                        }
+                    }
+
+                    // Sắp xếp theo thứ tự tăng dần trước khi hiển thị
                     resultSet.sort((a, b) => parseInt(a) - parseInt(b));
                     attempts++;
 
@@ -1781,21 +1764,24 @@
                 } while (isDuplicate && attempts < 50);
 
             } else {
-                // Thuật toán 'random_mix': Xáo trộn động ngẫu nhiên toàn phần
+                // Thuật toán xáo trộn ngẫu nhiên (random_mix)
                 do {
-                    resultSet = [...locked];
+                    resultSet = [];
                     let pool = []; 
                     for(let j = 1; j <= maxRange; j++) { 
                         let s = String(j).padStart(2, '0'); 
                         if(!locked.includes(s)) pool.push(s); 
                     }
                     pool.sort(() => Math.random() - 0.5);
-                    let needed = mainSize - resultSet.length; 
-                    if (needed > 0 && pool.length > 0) { 
-                        for(let k = 0; k < needed; k++) { 
-                            if(pool.length > 0) resultSet.push(pool.shift()); 
-                        } 
+
+                    for (let pos = 0; pos < mainSize; pos++) {
+                        if (locked[pos]) {
+                            resultSet.push(locked[pos]);
+                        } else {
+                            resultSet.push(pool.shift());
+                        }
                     }
+
                     resultSet.sort((a, b) => parseInt(a) - parseInt(b));
                     attempts++;
 
@@ -1840,7 +1826,9 @@
                 if(v !== "") { 
                     let n = parseInt(v); 
                     if(n >= 1 && n <= maxRange) locked.push(String(n).padStart(2, '0')); 
-                } 
+                } else {
+                    locked.push(null);
+                }
             });
 
             let resultSet = computeResultSet(maxRange, mainSize, chosenAlgo, locked, index, rows);
@@ -1885,7 +1873,9 @@
                 if(v !== "") { 
                     let n = parseInt(v); 
                     if(n >= 1 && n <= maxRange) locked.push(String(n).padStart(2, '0')); 
-                } 
+                } else {
+                    locked.push(null);
+                }
             });
 
             let resultSet = computeResultSet(maxRange, mainSize, chosenAlgo, locked, index, rows);
