@@ -298,18 +298,41 @@
         .btn-gemini-link { background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); color: #fff; border: none; padding: 4px 2px; font-size: 0.6rem; font-weight: 800; border-radius: 4px; cursor: pointer; text-transform: uppercase; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 2px; white-space: nowrap; width: 100%; box-sizing: border-box; height: 28px; font-family: inherit; }
         .btn-board-push { width: 100%; height: 28px; padding: 2px; background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color: #000; font-weight: 900; font-size: 0.6rem; border: none; border-radius: 4px; cursor: pointer; text-transform: uppercase; white-space: nowrap; box-sizing: border-box; font-family: inherit; }
 
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 9000; }
-        .modal-box { background: rgba(18, 18, 28, 0.95); border: 2px solid var(--border-glow); box-shadow: 0 0 30px rgba(0, 242, 254, 0.35); border-radius: 12px; width: 92%; max-width: 580px; padding: 16px; box-sizing: border-box; animation: modalFadeIn 0.2s ease-out; }
-        @keyframes modalFadeIn { from { transform: scale(0.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .modal-title { font-size: 0.9rem; font-weight: 900; color: var(--border-glow); text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+        .modal-overlay { 
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+            background: transparent; 
+            display: none; align-items: center; justify-content: center; 
+            z-index: 9000; 
+            pointer-events: none; 
+        }
+        .modal-box { 
+            position: absolute;
+            background: rgba(18, 18, 28, 0.85); 
+            border: 2px solid var(--accent-pink); 
+            box-shadow: 0 0 30px rgba(255, 0, 127, 0.45); 
+            border-radius: 12px; 
+            width: 92%; max-width: 580px; 
+            padding: 16px; 
+            box-sizing: border-box; 
+            backdrop-filter: blur(8px); 
+            pointer-events: auto; 
+        }
+        .modal-title { 
+            font-size: 0.9rem; font-weight: 900; 
+            color: #ffffff; 
+            text-transform: uppercase; margin-bottom: 12px; 
+            display: flex; align-items: center; justify-content: space-between; 
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 0, 127, 0.5);
+            cursor: move; user-select: none;
+        }
         .modal-close { color: var(--text-muted); font-size: 1.2rem; cursor: pointer; border: none; background: none; }
-        .modal-content-area { background: #050508; border: 1px solid #232338; border-radius: 8px; padding: 12px; font-family: monospace; font-size: 0.8rem; max-height: 420px; overflow-y: auto; margin-bottom: 12px; line-height: 1.4; }
+        .modal-content-area { background: rgba(5, 5, 8, 0.15); border: 1px solid #232338; border-radius: 8px; padding: 12px; font-family: monospace; font-size: 0.8rem; max-height: 360px; overflow-y: auto; margin-bottom: 10px; line-height: 1.4; }
         
-        .history-chunk-box { background: rgba(14, 14, 24, 0.7); border: 1px solid #222238; border-radius: 6px; padding: 8px; margin-bottom: 10px; text-align: left; display: flex; flex-direction: column; gap: 6px; }
+        .history-chunk-box { background: rgba(14, 14, 24, 0.2); border: 1px solid #222238; border-radius: 6px; padding: 8px; margin-bottom: 10px; text-align: left; display: flex; flex-direction: column; gap: 6px; }
         .history-chunk-title { font-size: 0.7rem; font-weight: bold; color: var(--accent-green); padding-bottom: 4px; border-bottom: 1px dashed #23233c; white-space: nowrap; display: block; width: 100%; box-sizing: border-box; }
         .history-chunk-body-layout { display: flex; gap: 8px; align-items: center; width: 100%; }
         .history-chunk-left-lines { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-        .history-ticket-line { display: flex; align-items: center; justify-content: space-between; background: #0a0a0f; padding: 4px 8px; border-radius: 4px; border: 1px solid #171726; font-size: 0.7rem; }
+        .history-ticket-line { display: flex; align-items: center; justify-content: space-between; background: rgba(10, 10, 15, 0.25); padding: 4px 8px; border-radius: 4px; border: 1px solid #171726; font-size: 0.7rem; }
         .history-line-data { color: #00ff66; font-family: monospace; font-weight: bold; }
         .history-rebuy-checkbox { cursor: pointer; accent-color: var(--accent-pink); width: 14px; height: 14px; margin-left: 10px; vertical-align: middle; }
         
@@ -317,11 +340,16 @@
         .btn-chunk-master-rebuy { background: linear-gradient(135deg, var(--accent-pink) 0%, #b30059 100%); color: #fff; border: none; font-size: 0.65rem; font-weight: 900; width: 100%; padding: 8px 4px; border-radius: 6px; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 8px rgba(255,0,127,0.3); text-align: center; white-space: nowrap; font-family: inherit; display: inline-flex; flex-direction: row; align-items: center; justify-content: center; gap: 4px; }
         .btn-chunk-master-rebuy:hover { box-shadow: 0 0 12px var(--accent-pink); transform: translateY(-1px); }
 
-        .sms-block { background: #0e0e16; border: 1px solid #1f1f33; padding: 8px; border-radius: 6px; margin-bottom: 8px; position: relative; }
+        .pagination-bar { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 10px; }
+        .page-btn { background: #161622; border: 1px solid #36364d; color: var(--border-glow); padding: 3px 8px; font-size: 0.65rem; font-weight: bold; border-radius: 4px; cursor: pointer; font-family: inherit; }
+        .page-btn:hover { background: var(--border-glow); color: #000; }
+        .page-btn.active { background: var(--accent-pink); border-color: var(--accent-pink); color: #fff; }
+
+        .sms-block { background: rgba(14, 14, 22, 0.25); border: 1px solid #1f1f33; padding: 8px; border-radius: 6px; margin-bottom: 8px; position: relative; }
         .sms-header { font-size: 0.65rem; color: var(--border-glow); font-weight: 800; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
-        .sms-text { color: #ffab00; user-select: all; word-break: break-all; font-weight: 700; background: #050508; padding: 5px; border-radius: 4px; border: 1px solid #141420; }
+        .sms-text { color: #ffab00; user-select: all; word-break: break-all; font-weight: 700; background: rgba(5, 5, 8, 0.2); padding: 5px; border-radius: 4px; border: 1px solid #141420; }
         .btn-copy-sms { background: #141420; border: 1px solid var(--border-glow); color: var(--border-glow); font-size: 0.55rem; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-weight: 900; font-family: inherit; }
-        .modal-btn-cancel { padding: 6px 14px; font-size: 0.75rem; font-weight: bold; border-radius: 5px; cursor: pointer; background: #1f1f2e; border: 1px solid #36364d; color: var(--text-muted); font-family: inherit; }
+        .modal-btn-cancel { padding: 6px 14px; font-size: 0.75rem; font-weight: bold; border-radius: 5px; cursor: pointer; background: rgba(31, 31, 46, 0.3); border: 1px solid #36364d; color: var(--text-muted); font-family: inherit; display: inline-flex; align-items: center; gap: 4px; }
 
         .admin-dashboard-layout { display: grid; grid-template-columns: 1fr 1.3fr; gap: 10px; }
         .admin-section-box { background: rgba(24, 24, 38, 0.5); padding: 10px; border-radius: 8px; border: 1px solid #23233c; }
@@ -373,9 +401,6 @@
             <div class="login-error" id="loginError">Mật khẩu xác thực không đúng thưa Đại ca!</div>
             <input type="text" id="loginUser" class="login-input" placeholder="Tên đăng nhập">
             <input type="password" id="loginPass" class="login-input" placeholder="Mật khẩu">
-            <label class="remember-layout">
-                <input type="checkbox" id="loginRemember"> Ghi nhớ trạng thái đăng nhập
-            </label>
             <button class="btn-login" onclick="handleSystemLogin()">ĐĂNG NHẬP</button>
         </div>
     </div>
@@ -454,8 +479,10 @@
             </div>
 
             <div class="panel" style="display: flex; flex-direction: column; flex: 1; min-height: 0; padding: 4px; height: 100%; position: relative;">
-                <div class="section-title" style="margin-bottom: 2px; flex-shrink: 0; display:flex; justify-content:space-between; align-items:center;">
-                    <span>🔮 Khóa số nuôi &amp; Chiến thuật</span>
+                <div class="section-title" style="margin-bottom: 2px; flex-shrink: 0; display:flex; justify-content:space-between; align-items:center;" title="NGUYÊN TẮC HOẠT ĐỘNG:
+- Thuật toán phân bổ: Lấy đúng tỷ lệ khoảng cách gan (Gan ngắn 0-4, Gan trung bình 5-10, Gan dài 8-22) rải đều các cột, tuyệt đối không dồn cục.
+- Khóa số nuôi: Cố định vị trí số nuôi do Đại ca chỉ định, các vị trí còn lại lấp đầy bằng thuật toán và sắp xếp tăng dần trước khi xuất vé.">
+                    <span>🔮 Khóa số nuôi &amp; Chiến thuật ℹ️</span>
                     <div style="display:flex; gap:3px; align-items:center;">
                         <input type="color" id="pickerMainColor" class="color-picker-input" value="#005229" onchange="updateThemeColors()" title="Màu nền số chính">
                         <input type="color" id="pickerSpecColor" class="color-picker-input" value="#cc5c00" onchange="updateThemeColors()" title="Màu nền số Đặc biệt">
@@ -464,7 +491,8 @@
                         <button class="btn-color-reset" onclick="resetThemeColorsDefault()" title="Đặt lại màu mặc định ban đầu">🔄</button>
                     </div>
                 </div>
-                <div class="lock-horizontal-layout">
+                <div class="lock-horizontal-layout" title="NGUYÊN TẮC KHÓA SỐ:
+Điền số vào ô tương ứng để neo cố định vị trí số nuôi. Hệ thống sẽ giữ nguyên vị trí này và tự động sắp xếp lại trật tự tăng dần cho toàn dãy số sau khi hoàn tất.">
                     <div class="lock-sub-section">
                         <span class="lock-sub-title">Số chính:</span>
                         <div class="lock-inputs" id="mainLockGroup"></div>
@@ -474,8 +502,10 @@
                         <div class="lock-inputs" id="specLockGroup"></div>
                     </div>
                 </div>
-				<div style="display: flex; align-items: center; gap: 4px; margin-bottom: 4px; background: #12121a; padding: 4px; border-radius: 5px; border: 1px solid #1f1f33;">
-                    <span style="font-size: 0.65rem; font-weight: bold; color: var(--text-muted); white-space: nowrap;">Chiến thuật:</span>
+				<div style="display: flex; align-items: center; gap: 4px; margin-bottom: 4px; background: #12121a; padding: 4px; border-radius: 5px; border: 1px solid #1f1f33;" title="NGUYÊN TẮC CHIẾN THUẬT:
+- Thuật toán dự đoán: Bốc số có kiểm soát theo cụm khoảng cách gan chuẩn.
+- Xáo trộn ngẫu nhiên: Xáo trộn toàn bộ dải số không phân biệt gan.">
+                    <span style="font-size: 0.65rem; font-weight: bold; color: var(--text-muted); white-space: nowrap;">Chiến thuật ℹ️:</span>
                     <select class="count-select" id="algoSelect" onchange="saveCurrentTabState()" style="flex: 1; font-size: 0.65rem; padding: 2px; height: 22px;">
                         <option value="combined" selected>⚡ Thuật toán dự đoán</option>
                         <option value="random_mix">🎲 Xáo trộn ngẫu nhiên</option>
@@ -550,7 +580,10 @@
                         <div id="accountsListArea" style="max-height: 580px; overflow-y: auto;"></div>
                     </div>
                     <div class="admin-section-box">
-                        <div class="section-title" style="color:#ffab00;">📜 NHẬT KÝ XÁC THỰC TRUY CẬP (THỜI GIAN THỰC)</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                            <div class="section-title" style="color:#ffab00; margin-bottom: 0;">📜 NHẬT KÝ XÁC THỰC TRUY CẬP (THỜI GIAN THỰC)</div>
+                            <button class="btn-clear-premium" onclick="clearAllSystemAccessLogs()" style="height: 24px; padding: 0 8px; font-size: 0.6rem;">🗑️ Xoá tất cả</button>
+                        </div>
                         <div id="logsListArea" style="max-height: 580px; overflow-y: auto;"></div>
                     </div>
                 </div>
@@ -593,15 +626,18 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="composeModal">
-        <div class="modal-box">
-            <div class="modal-title">
-                <span id="modalTitleText">Cấu trúc tin nhắn mua vé Vietlott SMS</span>
-                <button class="modal-close" onclick="closeComposeModal()">✕</button>
+    <div class="modal-overlay" id="composeModal" onclick="if(event.target === this) closeComposeModal()">
+        <div class="modal-box" id="draggableModalBox" style="top: 50%; left: 50%; transform: translate(-50%, -50%);">
+            <div class="modal-title" id="draggableModalTitle">
+                <span id="modalTitleText" style="color:#ffffff;">Cấu trúc tin nhắn mua vé Vietlott SMS</span>
+                <div style="display:flex; gap:6px; align-items:center;" id="modalTopActionContainer">
+                    <button class="modal-close" onclick="closeComposeModal()">✕</button>
+                </div>
             </div>
             <div class="modal-content-area" id="modalTextContent"></div>
-            <div class="modal-actions">
-                <button class="modal-btn-cancel" onclick="closeComposeModal()">Đóng hộp thoại</button>
+            <div id="modalPaginationContainer"></div>
+            <div class="modal-actions" id="modalBottomActionsContainer" style="display: flex; justify-content: flex-end;">
+                <button class="modal-btn-cancel" id="modalBackBtn" onclick="reloadPreviousHistoryPopupSession()">↩️ Quay lại Nhật ký</button>
             </div>
         </div>
     </div>
@@ -627,6 +663,8 @@
         let currentLogSessionKey = null; 
         let currentPredictionCount = 0; 
         let cachedLogSnapshotText = ""; 
+        let currentHistoryCurrentPage = 1;
+        let currentHistoryPaginationChunks = [];
         let testSets = { lotto: { main: [], spec: null }, mega: { main: [] }, power: { main: [], spec: null } };
         let activePredictions = [];
         let isIframeZoomed = false;
@@ -646,6 +684,42 @@
 
             setInterval(updateRealtimeClock, 1000);
             updateRealtimeClock();
+            initDraggableModal();
+        }
+
+        function initDraggableModal() {
+            let box = document.getElementById('draggableModalBox');
+            let titleBar = document.getElementById('draggableModalTitle');
+            let isDragging = false;
+            let startX, startY, initialLeft, initialTop;
+
+            titleBar.addEventListener('mousedown', (e) => {
+                if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                
+                let rect = box.getBoundingClientRect();
+                box.style.transform = 'none';
+                box.style.left = rect.left + 'px';
+                box.style.top = rect.top + 'px';
+                initialLeft = rect.left;
+                initialTop = rect.top;
+                
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                let dx = e.clientX - startX;
+                let dy = e.clientY - startY;
+                box.style.left = (initialLeft + dx) + 'px';
+                box.style.top = (initialTop + dy) + 'px';
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
         }
 
         function setupDollarRain(containerId, count) {
@@ -723,7 +797,6 @@
         function handleSystemLogin() {
             let u = document.getElementById('loginUser').value.trim().toLowerCase();
             let p = document.getElementById('loginPass').value.trim();
-            let rem = document.getElementById('loginRemember').checked;
             
             if(!u || !p) {
                 let errBox = document.getElementById('loginError');
@@ -733,14 +806,14 @@
             }
 
             if ((u === 'daica' && p === '123') || (u === 'admin' && p === '123')) {
-                executeLoginSuccess(u, 'admin', rem);
+                executeLoginSuccess(u, 'admin');
                 return;
             }
 
             db.ref('system_accounts').once('value', (snapshot) => {
                 let accounts = snapshot.val() || {};
                 if (accounts[u] && accounts[u].password === p) {
-                    executeLoginSuccess(u, accounts[u].role || 'member', rem);
+                    executeLoginSuccess(u, accounts[u].role || 'member');
                 } else {
                     let errBox = document.getElementById('loginError');
                     errBox.innerText = "Mật khẩu hoặc tên đăng nhập không đúng thưa Đại ca!";
@@ -748,24 +821,21 @@
                 }
             }).catch(() => {
                 if (u === 'daica' || u === 'admin') {
-                    executeLoginSuccess(u, 'admin', rem);
+                    executeLoginSuccess(u, 'admin');
                 } else {
-                    executeLoginSuccess(u, 'member', rem);
+                    executeLoginSuccess(u, 'member');
                 }
             });
         }
 
-        function executeLoginSuccess(username, role, rem) {
+        function executeLoginSuccess(username, role) {
             currentUserRole = role;
             currentUserName = username;
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('lockOverlay').style.display = 'none';
             document.getElementById('headerButtonsGroup').style.display = 'flex';
 
-            if(rem) {
-                localStorage.setItem('cvn_remember_user', username);
-                localStorage.setItem('cvn_remember_role', role);
-            }
+            setupPredictPanel();
 
             let timeStr = new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
             let initialSnapshot = "Chưa kích hoạt dự đoán";
@@ -847,8 +917,6 @@
             document.getElementById('headerButtonsGroup').style.display = 'none';
             document.getElementById('loginUser').value = '';
             document.getElementById('loginPass').value = '';
-            localStorage.removeItem('cvn_remember_user');
-            localStorage.removeItem('cvn_remember_role');
         }
 
         function pushCurrentPredictionsToSessionLog(triggerContextName) {
@@ -882,9 +950,27 @@
             });
         }
 
+        function clearCurrentSessionHistoryOnly() {
+            if (!currentLogSessionKey) return;
+            if (confirm("Đại ca có chắc muốn xoá lịch sử bộ số của phiên thời gian này không?")) {
+                let emptySnapshot = "Chưa kích hoạt dự đoán";
+                cachedLogSnapshotText = emptySnapshot;
+                db.ref(`login_history/${currentLogSessionKey}/snapshot`).set(emptySnapshot).then(() => {
+                    viewLogSnapshot(encodeURIComponent(emptySnapshot));
+                    alert("Đã xoá lịch sử phiên thời gian này thành công!");
+                });
+            }
+        }
+
+        function clearAllSystemAccessLogs() {
+            if (confirm("Đại ca có chắc muốn xoá toàn bộ nhật ký truy cập hệ thống trên đám mây không?")) {
+                db.ref('login_history').remove().then(() => {
+                    alert("Đã xoá toàn bộ lịch sử truy cập thành công!");
+                });
+            }
+        }
+
         function handleSystemLogout() {
-            localStorage.removeItem('cvn_remember_user');
-            localStorage.removeItem('cvn_remember_role');
             location.reload();
         }
 
@@ -946,12 +1032,12 @@
                     if (currentUserName !== 'daica') {
                         if (log.username === 'daica' || (log.role && log.role.includes('Đại ca'))) return;
                     }
-                    let snapEscaped = log.snapshot ? encodeURIComponent(log.snapshot) : "Trống";
+                    let sessionKey = log.id;
                     html += `<tr>
                         <td style="color:var(--border-glow); font-weight:bold;">${log.username}</td>
                         <td>${log.role}</td>
                         <td style="color:#ffab00;">${log.time}</td>
-                        <td><a href="#" style="color:var(--accent-green); font-weight:bold; text-decoration:none;" onclick="viewLogSnapshot('${snapEscaped}')">Lịch sử</a></td>
+                        <td><a href="#" style="color:var(--accent-green); font-weight:bold; text-decoration:none;" onclick="viewLogSnapshotSpecific('${sessionKey}')">Lịch sử</a></td>
                     </tr>`; 
                 });
                 html += `</table>`;
@@ -970,10 +1056,10 @@
                     }
                 }
                 matchedLogArray.forEach(log => {
-                    let snapEscaped = log.snapshot ? encodeURIComponent(log.snapshot) : "Trống";
+                    let sessionKey = log.id;
                     html += `<tr>
                         <td style="color:#ffab00; font-weight:bold; padding:8px 4px;">${log.time}</td>
-                        <td><a href="#" style="color:var(--border-glow); font-weight:bold; text-decoration:none;" onclick="viewLogSnapshot('${snapEscaped}')">Xem lại bộ số đã lưu</a></td>
+                        <td><a href="#" style="color:var(--border-glow); font-weight:bold; text-decoration:none;" onclick="viewLogSnapshotSpecific('${sessionKey}')">Xem lại bộ số đã lưu</a></td>
                     </tr>`;
                 });
                 html += `</table>`;
@@ -1011,7 +1097,6 @@
                     }).then(() => {
                         if (newUser && newUser !== currentUserName) {
                             db.ref(`system_accounts/${currentUserName}`).remove();
-                            localStorage.setItem('cvn_remember_user', targetUserKey);
                             currentUserName = targetUserKey;
                         }
                         alert("Đã cập nhật thông tin thành công!");
@@ -1036,6 +1121,16 @@
             });
         }
 
+        function viewLogSnapshotSpecific(sessionKey) {
+            currentLogSessionKey = sessionKey;
+            db.ref(`login_history/${sessionKey}`).once('value', (snap) => {
+                let logData = snap.val() || {};
+                let cloudText = logData.snapshot || "Chưa kích hoạt dự đoán";
+                cachedLogSnapshotText = cloudText;
+                viewLogSnapshot(encodeURIComponent(cloudText));
+            });
+        }
+
         function viewLogSnapshot(snapTextEncoded) {
             let text = decodeURIComponent(snapTextEncoded);
             if ((text === "Chưa kích hoạt dự đoán" || !text.trim()) && cachedLogSnapshotText && cachedLogSnapshotText !== "Chưa kích hoạt dự đoán") {
@@ -1045,17 +1140,45 @@
 
             document.getElementById('modalTitleText').innerText = "Nhật ký lưu trữ các lần dự đoán của phiên";
             
+            let topActionContainer = document.getElementById('modalTopActionContainer');
+            topActionContainer.innerHTML = `
+                <button class="btn-clear-premium" onclick="clearCurrentSessionHistoryOnly()" style="height:22px; padding:0 6px; font-size:0.6rem;" title="Xoá lịch sử bộ số phiên này">🗑️ Xoá lịch sử</button>
+                <button class="modal-close" onclick="closeComposeModal()">✕</button>
+            `;
+
+            let bottomActionContainer = document.getElementById('modalBottomActionsContainer');
+            bottomActionContainer.innerHTML = `<button class="modal-btn-cancel" onclick="closeComposeModal()">Đóng hộp thoại</button>`;
+
             if (text === "Chưa kích hoạt dự đoán" || !text.trim()) {
                 document.getElementById('modalTextContent').innerHTML = `<div style="color:var(--text-muted); text-align:center; padding:20px;">Chưa kích hoạt lượt dự đoán nào trong phiên này!</div>`;
+                document.getElementById('modalPaginationContainer').innerHTML = '';
                 document.getElementById('composeModal').style.display = 'flex';
                 return;
             }
 
-            let htmlContainerContent = "";
-            let chunkBlocks = text.split(/\n(?=\[Lần)/g); 
+            let chunkBlocks = text.split(/\n(?=\[Lần)/g).filter(b => b.trim().length > 0);
+            currentHistoryPaginationChunks = chunkBlocks;
+            currentHistoryCurrentPage = 1;
+            renderHistoryPage(1);
+            document.getElementById('composeModal').style.display = 'flex';
+        }
 
-            chunkBlocks.forEach((block, blockIndex) => {
-                if (!block.trim()) return;
+        function renderHistoryPage(page) {
+            currentHistoryCurrentPage = page;
+            let itemsPerPage = 3;
+            let totalItems = currentHistoryPaginationChunks.length;
+            let totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+            
+            if (page > totalPages) page = totalPages;
+            if (page < 1) page = 1;
+
+            let startIndex = (page - 1) * itemsPerPage;
+            let endIndex = startIndex + itemsPerPage;
+            let pageChunks = currentHistoryPaginationChunks.slice(startIndex, endIndex);
+
+            let htmlContainerContent = "";
+            pageChunks.forEach((block, localIdx) => {
+                let absoluteBlockIndex = startIndex + localIdx;
                 let lines = block.split('\n');
                 let blockHeaderTitle = lines[0] || "Lượt nhật ký";
                 
@@ -1080,23 +1203,33 @@
                         <div class="history-ticket-line">
                             <div>
                                 <span style="color:var(--text-muted); margin-right:8px; font-weight:bold;">${leftLabelPrefix}:</span>
-                                <span class="history-line-data" id="data_string_${blockIndex}_${checkboxLineCounter}">${dataCoreSegment}</span>
+                                <span class="history-line-data" id="data_string_${absoluteBlockIndex}_${checkboxLineCounter}">${dataCoreSegment}</span>
                             </div>
-                            <input type="checkbox" class="history-rebuy-checkbox rebuy-check-node-${blockIndex}" data-index="${checkboxLineCounter}" checked>
+                            <input type="checkbox" class="history-rebuy-checkbox rebuy-check-node-${absoluteBlockIndex}" data-index="${checkboxLineCounter}" checked>
                         </div>`;
                     checkboxLineCounter++;
                 }
                 htmlContainerContent += `</div>`;
                 htmlContainerContent += `
                     <div class="history-chunk-right-action">
-                        <button class="btn-chunk-master-rebuy" onclick="triggerBatchLinesRebuy(${blockIndex}, '${targetBroadcastingPlatform}')">MUA LẠI 🛒</button>
+                        <button class="btn-chunk-master-rebuy" onclick="triggerBatchLinesRebuy(${absoluteBlockIndex}, '${targetBroadcastingPlatform}')">MUA LẠI 🛒</button>
                     </div>`;
                 htmlContainerContent += `</div>`;
                 htmlContainerContent += `</div>`;
             });
 
             document.getElementById('modalTextContent').innerHTML = htmlContainerContent;
-            document.getElementById('composeModal').style.display = 'flex';
+
+            let paginationHtml = "";
+            if (totalPages > 1) {
+                paginationHtml += `<div class="pagination-bar">`;
+                for (let p = 1; p <= totalPages; p++) {
+                    let activeCls = (p === page) ? 'active' : '';
+                    paginationHtml += `<button class="page-btn ${activeCls}" onclick="renderHistoryPage(${p})">${p}</button>`;
+                }
+                paginationHtml += `</div>`;
+            }
+            document.getElementById('modalPaginationContainer').innerHTML = paginationHtml;
         }
 
         function triggerBatchLinesRebuy(blockId, broadcastingPlatformName) {
@@ -1132,8 +1265,13 @@
             else if (broadcastingPlatformName === "POWER") prefixCode = "655 K1";
 
             document.getElementById('modalTitleText').innerText = "CẤU TRÚC PHÔI VÉ MUA LẠI";
+            
+            let topActionContainer = document.getElementById('modalTopActionContainer');
+            topActionContainer.innerHTML = `<button class="modal-close" onclick="closeComposeModal()">✕</button>`;
+
             let container = document.getElementById('modalTextContent');
             container.innerHTML = '';
+            document.getElementById('modalPaginationContainer').innerHTML = '';
 
             let linesPerTicket = 6;
             let ticketCount = Math.ceil(compiledSmsLinesArray.length / linesPerTicket);
@@ -1154,18 +1292,23 @@
                     blockDiv.innerHTML = `
                         <div class="sms-header">
                             <span style="color:var(--accent-green)">🎟️ PHÔI VÉ MUA LẠI SỐ ${blockIndex} (ĐÀI ${broadcastingPlatformName})</span>
-                            <button class="btn-copy-sms" onclick="copyIndividualSms('rebuy_sms_block_${blockIndex}')">SAO CHÉP VÉ ${blockIndex}</button>
+                            <button class="btn-copy-sms" onclick="copyIndividualRebuySmsAndLog('rebuy_sms_block_${blockIndex}', '${broadcastingPlatformName}')">SAO CHÉP VÉ ${blockIndex}</button>
                         </div>
                         <div class="sms-text" id="rebuy_sms_block_${blockIndex}">${fullSmsText}</div>`;
                     container.appendChild(blockDiv);
                 }
             }
 
-            let navigationBackDiv = document.createElement('div');
-            navigationBackDiv.style.textAlign = 'center';
-            navigationBackDiv.style.marginTop = '12px';
-            navigationBackDiv.innerHTML = `<button class="modal-btn-cancel" style="border-color:var(--border-glow); color:var(--border-glow);" onclick="reloadPreviousHistoryPopupSession()">↩️ Quay lại Nhật ký</button>`;
-            container.appendChild(navigationBackDiv);
+            let bottomActionContainer = document.getElementById('modalBottomActionsContainer');
+            bottomActionContainer.innerHTML = `<button class="modal-btn-cancel" style="border-color:var(--border-glow); color:var(--border-glow); display:inline-flex;" onclick="reloadPreviousHistoryPopupSession()">↩️ Quay lại Nhật ký</button>`;
+        }
+
+        function copyIndividualRebuySmsAndLog(elementId, platformName) {
+            let text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Đã sao chép phôi vé mua lại thành công!");
+            });
+            pushCurrentPredictionsToSessionLog(`Sao chép phôi mua lại (${platformName})`);
         }
 
         function reloadPreviousHistoryPopupSession() {
@@ -1194,10 +1337,6 @@
                 db.ref(`system_accounts/${newUsername}`).set({ password: newPass, role: newRole }).then(() => {
                     if (newUsername !== originalKey) {
                         db.ref(`system_accounts/${originalKey}`).remove();
-                        if (currentUserName === originalKey) {
-                            currentUserName = newUsername;
-                            localStorage.setItem('cvn_remember_user', newUsername);
-                        }
                     }
                     alert(`Đã cập nhật cấu hình [${newUsername}] thành công!`);
                 });
@@ -1320,7 +1459,6 @@
             if (exportedCount > 0) { alert(`Hệ thống bảo mật đã xuất ${exportedCount} tệp lưu trữ thành công thưa Đại ca!`); }
         }
 
-        // Cải tiến phần ô dùng dán dữ liệu: So sánh trùng kỳ, các kỳ không trùng được thay thế tiếp và đẩy lên phần trên cùng
         function handleBoardDataPush() {
             let text = document.getElementById('boardRawInput').value.trim();
             if (!text) { 
@@ -1382,7 +1520,6 @@
             let mergedRows = [...existingData];
             let addedCount = 0;
 
-            // Đảo ngược danh sách mới dán để xử lý theo thứ tự từ trên xuống (đẩy các kỳ mới không trùng lên trên cùng)
             let uniqueNewRows = [];
             parsedNewRows.forEach(newRow => {
                 let isDuplicate = mergedRows.some(oldRow => oldRow.date === newRow.date && oldRow.main.join(',') === newRow.main.join(','));
@@ -1391,7 +1528,6 @@
                 }
             });
 
-            // Chèn các kỳ mới không trùng lên trên cùng của danh sách hiện tại
             for (let i = uniqueNewRows.length - 1; i >= 0; i--) {
                 mergedRows.unshift(uniqueNewRows[i]);
                 addedCount++;
@@ -1636,11 +1772,14 @@
 
         function openComposeModal() {
             if (activePredictions.length === 0) { alert("Vui lòng khởi chạy Dự đoán dãy số trước khi soạn phôi SMS!"); return; }
-            pushCurrentPredictionsToSessionLog("Bấm Soạn tin");
             
             let prefix = currentType === 'lotto' ? "535 K1" : (currentType === 'mega' ? "645 K1" : "655 K1");
             let container = document.getElementById('modalTextContent'); container.innerHTML = '';
             document.getElementById('modalTitleText').innerText = "Cấu trúc tin nhắn mua vé Vietlott SMS";
+            document.getElementById('modalPaginationContainer').innerHTML = '';
+            
+            let topActionContainer = document.getElementById('modalTopActionContainer');
+            topActionContainer.innerHTML = `<button class="modal-close" onclick="closeComposeModal()">✕</button>`;
 
             let validPreds = activePredictions.filter(p => p !== null);
             let linesPerTicket = 6; let ticketCount = Math.ceil(validPreds.length / linesPerTicket);
@@ -1663,18 +1802,26 @@
                 if (currentSmsLines.length > 0) {
                     hasValidSms = true; let fullSmsText = `${prefix} ${currentSmsLines.join(' ')}`; let blockIndex = t + 1;
                     let blockDiv = document.createElement('div'); blockDiv.className = 'sms-block';
-                    blockDiv.innerHTML = `<div class="sms-header"><span>🎟️ PHÔI VÉ ĐIỆN TOÁN SỐ ${blockIndex}</span><button class="btn-copy-sms" onclick="copyIndividualSms('sms_text_block_${blockIndex}')">SAO CHÉP VÉ ${blockIndex}</button></div><div class="sms-text" id="sms_text_block_${blockIndex}">${fullSmsText}</div>`;
+                    blockDiv.innerHTML = `<div class="sms-header"><span>🎟️ PHÔI VÉ ĐIỆN TOÁN SỐ ${blockIndex}</span><button class="btn-copy-sms" onclick="copyIndividualSmsAndLog('sms_text_block_${blockIndex}')">SAO CHÉP VÉ ${blockIndex}</button></div><div class="sms-text" id="sms_text_block_${blockIndex}">${fullSmsText}</div>`;
                     container.appendChild(blockDiv);
                 }
             }
             if (!hasValidSms) { alert("Không tìm thấy bộ dãy số hợp lệ!"); return; }
+            
+            document.getElementById('modalBottomActionsContainer').innerHTML = `<button class="modal-btn-cancel" onclick="closeComposeModal()">Đóng hộp thoại</button>`;
             document.getElementById('composeModal').style.display = 'flex';
         }
         
-        function copyIndividualSms(elementId) { let text = document.getElementById(elementId).innerText; navigator.clipboard.writeText(text).then(() => { alert("Đã sao chép phôi tin nhắn!"); }); }
+        function copyIndividualSmsAndLog(elementId) { 
+            let text = document.getElementById(elementId).innerText; 
+            navigator.clipboard.writeText(text).then(() => { 
+                alert("Đã sao chép phôi tin nhắn và ghi nhận lịch sử phiên thành công!"); 
+            }); 
+            pushCurrentPredictionsToSessionLog("Sao chép phôi tin nhắn SMS");
+        }
+
         function closeComposeModal() { document.getElementById('composeModal').style.display = 'none'; }
 
-        // Cải tiến phần Khóa số nuôi: vị trí số nuôi thay thế vị trí số tương ứng trong dãy đưa ra, sau đó sắp xếp theo thứ tự tăng dần rồi hiển thị
         function computeResultSet(maxRange, mainSize, chosenAlgo, locked, index, rows) {
             let resultSet = [];
             let attempts = 0;
@@ -1693,10 +1840,9 @@
                     ganMap[j] = foundDist;
                 }
 
-                // Phân nhóm đúng theo khoảng gan quy ước của Đại ca
-                let poolG1 = []; // Gan từ 0 đến 4
-                let poolG2 = []; // Gan từ 5 đến 10
-                let poolG3 = []; // Gan từ 8 đến 22
+                let poolG1 = []; 
+                let poolG2 = []; 
+                let poolG3 = []; 
 
                 for (let j = 1; j <= maxRange; j++) {
                     let s = String(j).padStart(2, '0');
@@ -1704,18 +1850,17 @@
 
                     let g = ganMap[j];
                     if (g >= 0 && g <= 4) poolG1.push(s);
-                    if (g >= 5 && g <= 10) poolG2.push(s);
-                    if (g >= 8 && g <= 22) poolG3.push(s);
+                    else if (g >= 5 && g <= 10) poolG2.push(s);
+                    else if (g >= 8 && g <= 22) poolG3.push(s);
                 }
 
                 poolG1.sort(() => Math.random() - 0.5);
                 poolG2.sort(() => Math.random() - 0.5);
                 poolG3.sort(() => Math.random() - 0.5);
 
-                // Xác định số lượng cần lấy theo đúng Cụm loại hình xổ số
-                let count1 = 2; // Gan 0-4
-                let count2 = 2; // Gan 5-10
-                let count3 = (mainSize === 5) ? 1 : 2; // Lotto 5 số lấy 1, Mega/Power 6 số lấy 2
+                let count1 = 2; 
+                let count2 = 2; 
+                let count3 = (mainSize === 5) ? 1 : 2; 
 
                 do {
                     resultSet = [];
@@ -1728,7 +1873,6 @@
                     for(let i = 0; i < count2 && p2.length > 0; i++) pickedPool.push(p2.shift());
                     for(let i = 0; i < count3 && p3.length > 0; i++) pickedPool.push(p3.shift());
 
-                    // Nếu thiếu số do số lượng trong nhóm hạn chế, vét bù từ kho tổng quát
                     if (pickedPool.length < mainSize) {
                         for(let j = 1; j <= maxRange; j++) {
                             let s = String(j).padStart(2, '0');
@@ -1741,7 +1885,6 @@
 
                     pickedPool.sort(() => Math.random() - 0.5);
 
-                    // Đắp số nuôi vào đúng vị trí tương ứng, các vị trí trống được điền từ pool đã chọn
                     for (let pos = 0; pos < mainSize; pos++) {
                         if (locked[pos]) {
                             resultSet.push(locked[pos]);
@@ -1750,7 +1893,6 @@
                         }
                     }
 
-                    // Sắp xếp theo thứ tự tăng dần trước khi hiển thị
                     resultSet.sort((a, b) => parseInt(a) - parseInt(b));
                     attempts++;
 
@@ -1764,7 +1906,6 @@
                 } while (isDuplicate && attempts < 50);
 
             } else {
-                // Thuật toán xáo trộn ngẫu nhiên (random_mix)
                 do {
                     resultSet = [];
                     let pool = []; 
@@ -1809,7 +1950,6 @@
                     for (let l = 0; l < 6; l++) { let globalIndex = t * 6 + l; generateSingleRow(globalIndex, labels[l], rows, ticketGroupDiv); }
                     container.appendChild(ticketGroupDiv);
                 }
-                pushCurrentPredictionsToSessionLog("Bấm Dự đoán");
                 saveCurrentTabState(); 
             }, 150);
         }
@@ -1904,7 +2044,6 @@
             let actionsInner = `<button class="action-inline-btn btn-try" onclick="tryOnMatrix('${currentType}', '${resultSet.join(',')}', ${sNum ? "'"+sNum+"'" : 'null'})">Thử</button><button class="action-inline-btn btn-del" onclick="clearTestMatrix('${currentType}')">Bỏ</button><button class="action-inline-btn" style="border-color:#4e4e66; color:#a5a5bc;" onclick="clearSinglePrediction(${index}, '${label}')">🗑️</button>`;
             document.getElementById(`actionsArea_${index}`).innerHTML = actionsInner;
             
-            pushCurrentPredictionsToSessionLog("Thay đổi bộ số đơn lẻ"); 
             saveCurrentTabState();
         }
 
@@ -1915,8 +2054,7 @@
             initLoginVisualEffects();
             db.ref('system_accounts').once('value', (snapshot) => { 
                 if (!snapshot.exists()) { db.ref('system_accounts').set({ "daica": { password: "123", role: "admin" }, "member1": { password: "456", role: "member" } }); } 
-                let localUser = localStorage.getItem('cvn_remember_user'); let localRole = localStorage.getItem('cvn_remember_role');
-                if (localUser && localRole) { executeLoginSuccess(localUser, localRole, false); } else { setupPredictPanel(); }
+                setupPredictPanel();
             }); 
         };
     </script></body></html>
