@@ -87,7 +87,6 @@
         .btn-login { width: 100%; padding: 10px; background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); border: none; color: #000; font-weight: 900; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; font-family: inherit; }
         .btn-login:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(0, 242, 254, 0.4); }
         .login-error { color: var(--accent-pink); font-size: 0.7rem; font-weight: bold; margin-bottom: 10px; display: none; }
-        .remember-layout { display: flex; align-items: center; gap: 6px; justify-content: flex-start; margin-bottom: 12px; font-size: 0.7rem; color: var(--text-muted); cursor: pointer; user-select: none; }
 
         .lock-clock-display {
             background: #08080f; border: 1px solid var(--border-glow); border-radius: 6px;
@@ -660,7 +659,8 @@
         let globalOnlineData = { lotto: [], mega: [], power: [] };
         let currentUserRole = 'member'; 
         let currentUserName = '';
-        let currentLogSessionKey = null; 
+        let currentLogSessionKey = null; // Khóa phiên làm việc hiện tại khi đăng nhập
+        let activeViewingSessionKey = null; // Khóa phiên đang xem lại lịch sử (cô lập để không ghi nhầm)
         let currentPredictionCount = 0; 
         let cachedLogSnapshotText = ""; 
         let currentHistoryCurrentPage = 1;
@@ -846,6 +846,7 @@
                 snapshot: initialSnapshot 
             });
             currentLogSessionKey = pushRef.key;
+            activeViewingSessionKey = currentLogSessionKey; // Mặc định phiên xem chính là phiên hiện tại
             currentPredictionCount = 0; 
             cachedLogSnapshotText = initialSnapshot;
 
@@ -920,9 +921,27 @@
         }
 
         function pushCurrentPredictionsToSessionLog(triggerContextName) {
-            if (!currentLogSessionKey) return;
+            // Luôn ghi dữ liệu vào đúng phiên làm việc hiện tại (currentLogSessionKey) của tài khoản đang đăng nhập,
+            // ngăn chặn hoàn toàn việc ghi nhầm sang phiên cũ (activeViewingSessionKey) khi đang xem lại lịch sử.
+            let targetSessionKey = currentLogSessionKey;
+            if (!targetSessionKey) {
+                let timeStr = new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
+                let newRef = db.ref('login_history').push({ 
+                    username: currentUserName || 'member', 
+                    role: currentUserName === 'daica' ? 'Đại ca tối cao' : 'Thành viên', 
+                    time: timeStr, 
+                    snapshot: "Chưa kích hoạt dự đoán" 
+                });
+                currentLogSessionKey = newRef.key;
+                targetSessionKey = currentLogSessionKey;
+            }
+
             let validPreds = activePredictions.filter(x => x !== null);
-            if (validPreds.length === 0) return;
+            if (validPreds.length === 0) {
+                generatePredictionsSilently();
+                validPreds = activePredictions.filter(x => x !== null);
+                if (validPreds.length === 0) return;
+            }
 
             currentPredictionCount++;
             let currentLocalTime = new Date().toLocaleTimeString('vi-VN');
@@ -937,7 +956,7 @@
             let chunkLogHeader = `[Lần ${currentPredictionCount} - Lúc ${currentLocalTime} từ Hành động: ${triggerContextName}] (Đài: ${currentType.toUpperCase()})`;
             let newLogBlockSegment = chunkLogHeader + `\n` + formattedList.join('\n');
 
-            db.ref(`login_history/${currentLogSessionKey}/snapshot`).once('value', (snapshot) => {
+            db.ref(`login_history/${targetSessionKey}/snapshot`).once('value', (snapshot) => {
                 let existingDataText = snapshot.val() || "";
                 let updatedCumulativeLogText = "";
                 if (existingDataText === "Chưa kích hoạt dự đoán" || existingDataText === "") {
@@ -945,17 +964,42 @@
                 } else {
                     updatedCumulativeLogText = existingDataText + `\n\n` + newLogBlockSegment;
                 }
-                cachedLogSnapshotText = updatedCumulativeLogText; 
-                db.ref(`login_history/${currentLogSessionKey}/snapshot`).set(updatedCumulativeLogText);
+                if (targetSessionKey === currentLogSessionKey) {
+                    cachedLogSnapshotText = updatedCumulativeLogText; 
+                }
+                db.ref(`login_history/${targetSessionKey}/snapshot`).set(updatedCumulativeLogText);
             });
         }
 
+        function generatePredictionsSilently() {
+            let rows = globalOnlineData[currentType] || [];
+            if (rows.length === 0) return;
+            let tickets = parseInt(document.getElementById('predictSizeSelect')?.value) || 1;
+            let totalNeededRows = tickets * 6;
+            activePredictions = Array(totalNeededRows).fill(null);
+            
+            let maxRange = currentType === 'lotto' ? 35 : (currentType === 'mega' ? 45 : 55);
+            let mainSize = currentType === 'lotto' ? 5 : 6;
+            
+            for (let i = 0; i < totalNeededRows; i++) {
+                let resultSet = computeResultSet(maxRange, mainSize, 'combined', Array(mainSize).fill(null), i, rows);
+                let sNum = "";
+                if (currentType !== 'mega') {
+                    let maxSpec = currentType === 'lotto' ? 12 : 55;
+                    sNum = String(Math.floor(Math.random() * maxSpec) + 1).padStart(2, '0');
+                }
+                activePredictions[i] = (currentType === 'mega') ? { main: resultSet } : { main: resultSet, spec: sNum };
+            }
+        }
+
         function clearCurrentSessionHistoryOnly() {
-            if (!currentLogSessionKey) return;
+            if (!activeViewingSessionKey) return;
             if (confirm("Đại ca có chắc muốn xoá lịch sử bộ số của phiên thời gian này không?")) {
                 let emptySnapshot = "Chưa kích hoạt dự đoán";
-                cachedLogSnapshotText = emptySnapshot;
-                db.ref(`login_history/${currentLogSessionKey}/snapshot`).set(emptySnapshot).then(() => {
+                if (activeViewingSessionKey === currentLogSessionKey) {
+                    cachedLogSnapshotText = emptySnapshot;
+                }
+                db.ref(`login_history/${activeViewingSessionKey}/snapshot`).set(emptySnapshot).then(() => {
                     viewLogSnapshot(encodeURIComponent(emptySnapshot));
                     alert("Đã xoá lịch sử phiên thời gian này thành công!");
                 });
@@ -1122,21 +1166,23 @@
         }
 
         function viewLogSnapshotSpecific(sessionKey) {
-            currentLogSessionKey = sessionKey;
+            // Thiết lập riêng khóa phiên đang xem lịch sử để cô lập hoàn toàn với phiên hiện tại
+            activeViewingSessionKey = sessionKey;
             db.ref(`login_history/${sessionKey}`).once('value', (snap) => {
                 let logData = snap.val() || {};
                 let cloudText = logData.snapshot || "Chưa kích hoạt dự đoán";
-                cachedLogSnapshotText = cloudText;
+                if (sessionKey === currentLogSessionKey) {
+                    cachedLogSnapshotText = cloudText;
+                }
                 viewLogSnapshot(encodeURIComponent(cloudText));
             });
         }
 
         function viewLogSnapshot(snapTextEncoded) {
             let text = decodeURIComponent(snapTextEncoded);
-            if ((text === "Chưa kích hoạt dự đoán" || !text.trim()) && cachedLogSnapshotText && cachedLogSnapshotText !== "Chưa kích hoạt dự đoán") {
+            if ((text === "Chưa kích hoạt dự đoán" || !text.trim()) && activeViewingSessionKey === currentLogSessionKey && cachedLogSnapshotText && cachedLogSnapshotText !== "Chưa kích hoạt dự đoán") {
                 text = cachedLogSnapshotText;
             }
-            cachedLogSnapshotText = text;
 
             document.getElementById('modalTitleText').innerText = "Nhật ký lưu trữ các lần dự đoán của phiên";
             
@@ -1312,7 +1358,12 @@
         }
 
         function reloadPreviousHistoryPopupSession() {
-            viewLogSnapshot(encodeURIComponent(cachedLogSnapshotText));
+            // Trở về xem lại đúng phiên cũ đang mở (activeViewingSessionKey)
+            if (activeViewingSessionKey) {
+                viewLogSnapshotSpecific(activeViewingSessionKey);
+            } else {
+                viewLogSnapshot(encodeURIComponent(cachedLogSnapshotText));
+            }
         }
 
         function addNewAccountOnline() {
