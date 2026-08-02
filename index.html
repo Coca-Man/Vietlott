@@ -69,12 +69,13 @@
             background-origin: border-box; background-clip: padding-box, border-box;
             box-shadow: 0 0 35px rgba(0, 242, 254, 0.25), inset 0 0 15px rgba(255, 0, 127, 0.15); 
             padding: 22px 20px; border-radius: 12px; width: 100%; max-width: 323px; text-align: center; 
-            position: relative; animation: loginStarOrbit 4s linear infinite;
+            position: relative; animation: loginBoxGlow 4s linear infinite;
             transform: scale(0.88); transform-origin: center; z-index: 9995;
         }
-        @keyframes loginStarOrbit {
-            0% { filter: hue-rotate(0deg); }
-            100% { filter: hue-rotate(360deg); }
+        @keyframes loginBoxGlow {
+            0% { box-shadow: 0 0 35px rgba(0, 242, 254, 0.25), inset 0 0 15px rgba(255, 0, 127, 0.15); }
+            50% { box-shadow: 0 0 35px rgba(255, 0, 127, 0.35), inset 0 0 15px rgba(0, 242, 254, 0.2); }
+            100% { box-shadow: 0 0 35px rgba(0, 242, 254, 0.25), inset 0 0 15px rgba(255, 0, 127, 0.15); }
         }
         .login-logo { height: 60px; width: auto; margin-bottom: 8px; opacity: 1; border-radius: 6px; display: inline-block; filter: drop-shadow(0 0 8px var(--border-glow)); }
         .login-title { 
@@ -262,7 +263,8 @@
         .predict-ticket-title { font-size: 0.65rem; font-weight: 900; color: var(--accent-pink); margin-bottom: 4px; padding-left: 2px; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 3px; }
         .predict-row { display: flex; align-items: center; gap: 5px; background: #12121a; padding: 3px 4px; border-radius: 5px; border: 1px solid #1c1c2b; margin-bottom: 2px; }
         .predict-row-label { font-size: 0.75rem; font-weight: 900; color: var(--border-glow); width: 16px; text-align: center; }
-        .ball-predict { width: 19px; height: 19px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: bold; color: var(--custom-text-color) !important; }
+        .ball-predict { width: 19px; height: 19px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: bold; color: var(--custom-text-color) !important; cursor: pointer; user-select: none; transition: transform 0.1s; }
+        .ball-predict:hover { transform: scale(1.15); box-shadow: 0 0 8px var(--border-glow); }
         .ball-main-custom { background-color: var(--custom-main-color) !important; }
         .ball-spec-custom { background-color: var(--custom-spec-color) !important; }
         
@@ -395,7 +397,7 @@
         <div id="fw5" class="firework-cluster" style="position:absolute; left:75%; top:75%;"></div>
 
         <div class="login-box" onkeydown="if(event.key === 'Enter') handleSystemLogin()">
-            <img class="login-logo" src="logo.png" alt="CVN Logo">
+            <img class="login-logo" src="logo.png" alt="CVN Logo" style="filter:none !important;">
             <div class="login-title">HỆ THỐNG PHÂN TÍCH &amp; DỰ ĐOÁN VIETLOTT</div>
             <div class="login-error" id="loginError">Mật khẩu xác thực không đúng thưa Đại ca!</div>
             <input type="text" id="loginUser" class="login-input" placeholder="Tên đăng nhập">
@@ -413,7 +415,7 @@
         <div id="lfw5" class="firework-cluster" style="position:absolute; left:75%; top:75%;"></div>
 
         <div class="login-box" onkeydown="if(event.key === 'Enter') handleUnlockSystem()">
-            <img class="login-logo" src="logo.png" alt="CVN Logo">
+            <img class="login-logo" src="logo.png" alt="CVN Logo" style="filter:none !important;">
             <div class="login-title" id="lockTitleText" style="color:var(--border-glow); margin-bottom:8px;">Phiên làm việc đang khóa</div>
             
             <div class="lock-clock-display">
@@ -431,7 +433,7 @@
     </div>
 
     <div class="header-premium">
-        <img class="header-logo" src="logo.png" alt="CVN Logo">
+        <img class="header-logo" src="logo.png" alt="CVN Logo" style="filter:none !important;">
         <div class="title-wrapper">
             <span class="cosmic-icon icon-sun">☀️</span>
             <span class="cosmic-icon icon-star">⭐</span>
@@ -659,8 +661,8 @@
         let globalOnlineData = { lotto: [], mega: [], power: [] };
         let currentUserRole = 'member'; 
         let currentUserName = '';
-        let currentLogSessionKey = null; // Khóa phiên làm việc hiện tại khi đăng nhập
-        let activeViewingSessionKey = null; // Khóa phiên đang xem lại lịch sử (cô lập để không ghi nhầm)
+        let currentLogSessionKey = null; 
+        let activeViewingSessionKey = null; 
         let currentPredictionCount = 0; 
         let cachedLogSnapshotText = ""; 
         let currentHistoryCurrentPage = 1;
@@ -846,7 +848,7 @@
                 snapshot: initialSnapshot 
             });
             currentLogSessionKey = pushRef.key;
-            activeViewingSessionKey = currentLogSessionKey; // Mặc định phiên xem chính là phiên hiện tại
+            activeViewingSessionKey = currentLogSessionKey; 
             currentPredictionCount = 0; 
             cachedLogSnapshotText = initialSnapshot;
 
@@ -921,8 +923,6 @@
         }
 
         function pushCurrentPredictionsToSessionLog(triggerContextName) {
-            // Luôn ghi dữ liệu vào đúng phiên làm việc hiện tại (currentLogSessionKey) của tài khoản đang đăng nhập,
-            // ngăn chặn hoàn toàn việc ghi nhầm sang phiên cũ (activeViewingSessionKey) khi đang xem lại lịch sử.
             let targetSessionKey = currentLogSessionKey;
             if (!targetSessionKey) {
                 let timeStr = new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
@@ -1166,7 +1166,6 @@
         }
 
         function viewLogSnapshotSpecific(sessionKey) {
-            // Thiết lập riêng khóa phiên đang xem lịch sử để cô lập hoàn toàn với phiên hiện tại
             activeViewingSessionKey = sessionKey;
             db.ref(`login_history/${sessionKey}`).once('value', (snap) => {
                 let logData = snap.val() || {};
@@ -1358,7 +1357,6 @@
         }
 
         function reloadPreviousHistoryPopupSession() {
-            // Trở về xem lại đúng phiên cũ đang mở (activeViewingSessionKey)
             if (activeViewingSessionKey) {
                 viewLogSnapshotSpecific(activeViewingSessionKey);
             } else {
@@ -1873,6 +1871,52 @@
 
         function closeComposeModal() { document.getElementById('composeModal').style.display = 'none'; }
 
+        function promptEditBallNumber(predIndex, isSpec, subIndex) {
+            let pred = activePredictions[predIndex];
+            if (!pred) return;
+            let currentVal = isSpec ? pred.spec : pred.main[subIndex];
+            let maxRange = currentType === 'lotto' ? 35 : (currentType === 'mega' ? 45 : 55);
+            if (isSpec) maxRange = currentType === 'lotto' ? 12 : 55;
+
+            let inputStr = prompt(`Đại ca hãy nhập số mới (từ 01 đến ${String(maxRange).padStart(2, '0')}):`, currentVal);
+            if (inputStr === null) return;
+            let cleanNum = parseInt(inputStr.trim());
+            if (isNaN(cleanNum) || cleanNum < 1 || cleanNum > maxRange) {
+                alert("Số nhập vào không hợp lệ hoặc vượt ngưỡng cho phép!");
+                return;
+            }
+            let formattedStr = String(cleanNum).padStart(2, '0');
+
+            if (isSpec) {
+                pred.spec = formattedStr;
+            } else {
+                pred.main[subIndex] = formattedStr;
+                pred.main.sort((a, b) => parseInt(a) - parseInt(b));
+            }
+
+            let ticketRowIndex = Math.floor(predIndex / 6);
+            let localRowOffset = predIndex % 6;
+            let labels = ['A', 'B', 'C', 'D', 'E', 'F'];
+            refreshSingleRowDom(predIndex, labels[localRowOffset]);
+            saveCurrentTabState();
+        }
+
+        function refreshSingleRowDom(index, label) {
+            let pred = activePredictions[index];
+            if (!pred) return;
+            let ballsArea = document.getElementById(`ballsArea_${index}`);
+            if (!ballsArea) return;
+
+            let rowInner = ``;
+            pred.main.forEach((num, sIdx) => {
+                rowInner += `<div class="ball-predict ball-main-custom" onclick="promptEditBallNumber(${index}, false, ${sIdx})" title="Bấm để sửa số">${num}</div>`;
+            });
+            if (currentType !== 'mega' && pred.spec) {
+                rowInner += `<div style="color:#3a3a52; font-weight:bold;">|</div><div class="ball-predict ball-spec-custom" onclick="promptEditBallNumber(${index}, true, 0)" title="Bấm để sửa số ĐB">${pred.spec}</div>`;
+            }
+            ballsArea.innerHTML = rowInner;
+        }
+
         function computeResultSet(maxRange, mainSize, chosenAlgo, locked, index, rows) {
             let resultSet = [];
             let attempts = 0;
@@ -1909,9 +1953,30 @@
                 poolG2.sort(() => Math.random() - 0.5);
                 poolG3.sort(() => Math.random() - 0.5);
 
-                let count1 = 2; 
-                let count2 = 2; 
-                let count3 = (mainSize === 5) ? 1 : 2; 
+                let target1 = 2; 
+                let target2 = 2; 
+                let target3 = (mainSize === 5) ? 1 : 2; 
+
+                // Tinh chỉnh thông minh: Kiểm tra xem số khóa thuộc nhóm gan nào để bớt số bốc ngẫu nhiên tương ứng
+                let lockedCount1 = 0;
+                let lockedCount2 = 0;
+                let lockedCount3 = 0;
+
+                locked.forEach(val => {
+                    if (val !== null && val !== '') {
+                        let numInt = parseInt(val);
+                        if (numInt >= 1 && numInt <= maxRange) {
+                            let g = ganMap[numInt];
+                            if (g >= 0 && g <= 4) lockedCount1++;
+                            else if (g >= 5 && g <= 10) lockedCount2++;
+                            else if (g >= 8 && g <= 22) lockedCount3++;
+                        }
+                    }
+                });
+
+                let count1 = Math.max(0, target1 - lockedCount1);
+                let count2 = Math.max(0, target2 - lockedCount2);
+                let count3 = Math.max(0, target3 - lockedCount3);
 
                 do {
                     resultSet = [];
@@ -1924,20 +1989,21 @@
                     for(let i = 0; i < count2 && p2.length > 0; i++) pickedPool.push(p2.shift());
                     for(let i = 0; i < count3 && p3.length > 0; i++) pickedPool.push(p3.shift());
 
-                    if (pickedPool.length < mainSize) {
+                    let neededRemaining = mainSize - locked.filter(v => v !== null && v !== '').length - pickedPool.length;
+                    if (neededRemaining > 0) {
                         for(let j = 1; j <= maxRange; j++) {
                             let s = String(j).padStart(2, '0');
                             if (!pickedPool.includes(s) && !locked.includes(s)) {
                                 pickedPool.push(s);
                             }
-                            if (pickedPool.length >= mainSize) break;
+                            if (pickedPool.length >= (mainSize - locked.filter(v => v !== null && v !== '').length)) break;
                         }
                     }
 
                     pickedPool.sort(() => Math.random() - 0.5);
 
                     for (let pos = 0; pos < mainSize; pos++) {
-                        if (locked[pos]) {
+                        if (locked[pos] !== null && locked[pos] !== '') {
                             resultSet.push(locked[pos]);
                         } else {
                             resultSet.push(pickedPool.shift());
@@ -1967,7 +2033,7 @@
                     pool.sort(() => Math.random() - 0.5);
 
                     for (let pos = 0; pos < mainSize; pos++) {
-                        if (locked[pos]) {
+                        if (locked[pos] !== null && locked[pos] !== '') {
                             resultSet.push(locked[pos]);
                         } else {
                             resultSet.push(pool.shift());
@@ -2042,8 +2108,8 @@
 
             let rowDiv = document.createElement('div'); rowDiv.className = 'predict-row'; rowDiv.id = `predictRow_${index}`; ticketContainer.appendChild(rowDiv);
             let rowInner = `<div class="predict-row-label">${label}</div><div id="ballsArea_${index}" style="display:flex; gap:4px; align-items:center;">`;
-            resultSet.forEach(num => { rowInner += `<div class="ball-predict ball-main-custom">${num}</div>`; }); 
-            if (currentType !== 'mega') rowInner += `<div style="color:#3a3a52; font-weight:bold;">|</div><div class="ball-predict ball-spec-custom">${sNum}</div>`;
+            resultSet.forEach((num, sIdx) => { rowInner += `<div class="ball-predict ball-main-custom" onclick="promptEditBallNumber(${index}, false, ${sIdx})" title="Bấm để sửa số">${num}</div>`; }); 
+            if (currentType !== 'mega') rowInner += `<div style="color:#3a3a52; font-weight:bold;">|</div><div class="ball-predict ball-spec-custom" onclick="promptEditBallNumber(${index}, true, 0)" title="Bấm để sửa số ĐB">${sNum}</div>`;
             rowInner += `</div><div style="flex:1;"></div><div id="actionsArea_${index}" style="display:flex; gap:2px; align-items:center;">`;
             rowInner += `<button class="action-inline-btn btn-try" onclick="tryOnMatrix('${currentType}', '${resultSet.join(',')}', ${sNum ? "'"+sNum+"'" : 'null'})">Thử</button><button class="action-inline-btn btn-del" onclick="clearTestMatrix('${currentType}')">Bỏ</button><button class="action-inline-btn" style="border-color:#4e4e66; color:#a5a5bc;" onclick="clearSinglePrediction(${index}, '${label}')">🗑️</button></div>`;
             rowDiv.innerHTML = rowInner;
@@ -2088,8 +2154,8 @@
             activePredictions[index] = (currentType === 'mega') ? { main: resultSet } : { main: resultSet, spec: sNum };
 
             let ballsInner = ''; 
-            resultSet.forEach(num => { ballsInner += `<div class="ball-predict ball-main-custom">${num}</div>`; }); 
-            if (currentType !== 'mega') ballsInner += `<div style="color:#3a3a52; font-weight:bold;">|</div><div class="ball-predict ball-spec-custom">${sNum}</div>`;
+            resultSet.forEach((num, sIdx) => { ballsInner += `<div class="ball-predict ball-main-custom" onclick="promptEditBallNumber(${index}, false, ${sIdx})" title="Bấm để sửa số">${num}</div>`; }); 
+            if (currentType !== 'mega') ballsInner += `<div style="color:#3a3a52; font-weight:bold;">|</div><div class="ball-predict ball-spec-custom" onclick="promptEditBallNumber(${index}, true, 0)" title="Bấm để sửa số ĐB">${sNum}</div>`;
             document.getElementById(`ballsArea_${index}`).innerHTML = ballsInner;
             
             let actionsInner = `<button class="action-inline-btn btn-try" onclick="tryOnMatrix('${currentType}', '${resultSet.join(',')}', ${sNum ? "'"+sNum+"'" : 'null'})">Thử</button><button class="action-inline-btn btn-del" onclick="clearTestMatrix('${currentType}')">Bỏ</button><button class="action-inline-btn" style="border-color:#4e4e66; color:#a5a5bc;" onclick="clearSinglePrediction(${index}, '${label}')">🗑️</button>`;
