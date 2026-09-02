@@ -329,6 +329,22 @@
         .modal-close { color: var(--text-muted); font-size: 1.2rem; cursor: pointer; border: none; background: none; }
         .modal-content-area { background: rgba(5, 5, 8, 0.15); border: 1px solid #232338; border-radius: 8px; padding: 12px; font-family: monospace; font-size: 0.8rem; max-height: 360px; overflow-y: auto; margin-bottom: 10px; line-height: 1.4; }
         
+        /* CSS Bảng nổi quy đổi - Thu hẹp chiều ngang vừa khít 2 điểm đánh dấu */
+        #conversionModalOverlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: transparent; display: none; align-items: center; justify-content: center;
+            z-index: 8900; pointer-events: none;
+        }
+        #conversionModalBox {
+            position: absolute; background: rgba(28, 28, 44, 0.96);
+            border: 2px solid var(--border-glow); box-shadow: 0 0 35px rgba(0, 242, 254, 0.4);
+            border-radius: 14px; width: auto; max-width: 520px; padding: 16px;
+            box-sizing: border-box; backdrop-filter: blur(12px); pointer-events: auto;
+        }
+        .conversion-table { width: 100%; color: #fff; border-collapse: collapse; font-size: 0.75rem; margin-top: 6px; }
+        .conversion-table th { background: #26263b; color: var(--border-glow); padding: 7px 5px; border: 1px solid #3b3b54; text-align: center; }
+        .conversion-table td { padding: 7px 5px; border: 1px solid #3b3b54; background: #1a1a26; text-align: center; vertical-align: middle; }
+
         .history-chunk-box { background: rgba(14, 14, 24, 0.2); border: 1px solid #222238; border-radius: 6px; padding: 8px; margin-bottom: 10px; text-align: left; display: flex; flex-direction: column; gap: 6px; }
         .history-chunk-title { font-size: 0.7rem; font-weight: bold; color: var(--accent-green); padding-bottom: 4px; border-bottom: 1px dashed #23233c; white-space: nowrap; display: block; width: 100%; box-sizing: border-box; }
         .history-chunk-body-layout { display: flex; gap: 8px; align-items: center; width: 100%; }
@@ -539,6 +555,8 @@
         <div class="main-content">
             <div class="tabs" style="margin-bottom: 6px; align-items: center;">
                 <button class="tab-btn active" id="viewMatrixBtn" onclick="switchView('matrix')">Biểu đồ xu hướng</button>
+                <!-- NÚT TAB BẢNG QUY ĐỔI ĐẶT NGAY GIỮA -->
+                <button class="tab-btn" id="viewConversionBtn" onclick="openConversionModal()">📊 Bảng quy đổi</button>
                 <div style="display: flex; align-items: center; gap: 4px; padding: 0 4px;">
                     <span style="font-size: 0.65rem; font-weight: bold; color: var(--text-muted); white-space: nowrap;">Thống kê biên:</span>
                     <select class="count-select" id="countLimitSelect" onchange="reloadCurrentMatrix()" style="height: 24px; padding: 0 4px;">
@@ -627,6 +645,20 @@
         </div>
     </div>
 
+    <!-- BẢNG NỔI QUY ĐỔI (DRAGGABLE MODAL) - Thu hẹp vừa khít chữ -->
+    <div id="conversionModalOverlay" onclick="if(event.target === this) closeConversionModal()">
+        <div id="conversionModalBox">
+            <div class="modal-title" id="draggableConversionTitle">
+                <span style="color:var(--border-glow); font-size:0.85rem;">Bảng quy đổi chục &amp; Tần suất (<span id="conversionModalTypeTitle">5/35</span>)</span>
+                <button class="modal-close" onclick="closeConversionModal()">✕</button>
+            </div>
+            <div style="font-size:0.7rem; color:#b0b0c2; margin-bottom:8px;">
+                Quy tắc: 0-9(0), 10-19(1), 20-29(2), 30-39(3), 40-49(4), 50-55(5). So khớp trong <span id="conversionModalLimitText">5</span> kỳ (Thống kê biên).
+            </div>
+            <div style="max-height: 420px; overflow-y: auto;" id="conversionTableContainer"></div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="composeModal" onclick="if(event.target === this) closeComposeModal()">
         <div class="modal-box" id="draggableModalBox" style="top: 50%; left: 50%; transform: translate(-50%, -50%);">
             <div class="modal-title" id="draggableModalTitle">
@@ -677,6 +709,110 @@
             power: { mainLock: [], specLock: '', algo: 'combined', size: '1', html: '', activePreds: [] }
         };
 
+        // Kéo thả bảng nổi quy đổi
+        let isConversionDragging = false;
+        let startConvX, startConvY, initConvLeft, initConvTop;
+
+        function initConversionModalDrag() {
+            let box = document.getElementById('conversionModalBox');
+            let titleBar = document.getElementById('draggableConversionTitle');
+            if (!box || !titleBar) return;
+
+            titleBar.addEventListener('mousedown', (e) => {
+                if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+                isConversionDragging = true;
+                startConvX = e.clientX;
+                startConvY = e.clientY;
+                
+                let rect = box.getBoundingClientRect();
+                box.style.transform = 'none';
+                box.style.left = rect.left + 'px';
+                box.style.top = rect.top + 'px';
+                initConvLeft = rect.left;
+                initConvTop = rect.top;
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isConversionDragging) return;
+                let dx = e.clientX - startConvX;
+                let dy = e.clientY - startConvY;
+                box.style.left = (initConvLeft + dx) + 'px';
+                box.style.top = (initConvTop + dy) + 'px';
+            });
+
+            document.addEventListener('mouseup', () => {
+                isConversionDragging = false;
+            });
+        }
+
+        // Quy đổi số chính theo khoảng chục
+        function convertNumberToGroup(numStr) {
+            let n = parseInt(numStr);
+            if (isNaN(n)) return 0;
+            if (n <= 9) return 0;
+            if (n <= 19) return 1;
+            if (n <= 29) return 2;
+            if (n <= 39) return 3;
+            if (n <= 49) return 4;
+            return 5; // 50-55
+        }
+
+        function openConversionModal() {
+            let rows = globalOnlineData[currentType] || [];
+            let limit = parseInt(document.getElementById('countLimitSelect').value) || 5;
+            let targetRows = rows.slice(0, limit);
+
+            document.getElementById('conversionModalTypeTitle').innerText = currentType === 'lotto' ? 'Lotto 5/35' : (currentType === 'mega' ? 'Mega 6/45' : 'Power 6/55');
+            document.getElementById('conversionModalLimitText').innerText = limit;
+
+            let convertedRecords = targetRows.map(r => {
+                let convertedMain = r.main.map(num => convertNumberToGroup(num));
+                convertedMain.sort((a, b) => a - b);
+                let fullResultStr = r.spec ? `${r.main.join(' ')} | ${r.spec}` : r.main.join(' ');
+                return {
+                    date: r.date,
+                    resultStr: fullResultStr,
+                    convertedStr: convertedMain.join(' ')
+                };
+            });
+
+            // 4 Cột: Đã bỏ chữ "Cột 1:", chỉ giữ "Kết quả xổ"
+            let html = `<table class="conversion-table">
+                <tr>
+                    <th style="width: 22%;">Ngày / Kỳ</th>
+                    <th style="width: 35%;">Kết quả xổ</th>
+                    <th style="width: 23%;">Dãy quy đổi</th>
+                    <th style="width: 20%;">Số lần trùng (${limit} kỳ)</th>
+                </tr>`;
+
+            convertedRecords.forEach((rec) => {
+                let matchCount = convertedRecords.filter(item => item.convertedStr === rec.convertedStr).length;
+
+                html += `<tr>
+                    <td style="color:#ffcc00; font-weight:bold; font-size:0.68rem; white-space:nowrap;">${rec.date}</td>
+                    <td style="color:#ffffff; font-family:monospace; font-weight:bold; font-size:0.72rem; white-space:nowrap;">${rec.resultStr}</td>
+                    <td style="color:var(--border-glow); font-family:monospace; font-weight:bold; font-size:0.75rem; white-space:nowrap;">[ ${rec.convertedStr} ]</td>
+                    <td style="color:var(--accent-green); font-weight:bold; font-size:0.8rem;">${matchCount}</td>
+                </tr>`;
+            });
+
+            html += `</table>`;
+            document.getElementById('conversionTableContainer').innerHTML = html;
+            
+            let overlay = document.getElementById('conversionModalOverlay');
+            overlay.style.display = 'flex';
+            
+            let box = document.getElementById('conversionModalBox');
+            box.style.left = '50%';
+            box.style.top = '50%';
+            box.style.transform = 'translate(-50%, -50%)';
+        }
+
+        function closeConversionModal() {
+            document.getElementById('conversionModalOverlay').style.display = 'none';
+        }
+
         function initLoginVisualEffects() {
             setupDollarRain('dollarRainContainer', 25);
             setupDollarRain('lockDollarRainContainer', 25);
@@ -687,6 +823,7 @@
             setInterval(updateRealtimeClock, 1000);
             updateRealtimeClock();
             initDraggableModal();
+            initConversionModalDrag();
         }
 
         function initDraggableModal() {
@@ -1957,7 +2094,6 @@
                 let target2 = 2; 
                 let target3 = (mainSize === 5) ? 1 : 2; 
 
-                // Tinh chỉnh thông minh: Kiểm tra xem số khóa thuộc nhóm gan nào để bớt số bốc ngẫu nhiên tương ứng
                 let lockedCount1 = 0;
                 let lockedCount2 = 0;
                 let lockedCount3 = 0;
