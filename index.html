@@ -19,6 +19,7 @@
             --custom-spec-color: #cc5c00;
             --custom-text-color: #ffffff;
             --custom-hover-color: rgba(0, 242, 254, 0.25);
+            --custom-matrix-bg: #07070a;
         }
 
         ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -152,13 +153,13 @@
         }
         .btn-color-reset:hover { transform: rotate(180deg); background: var(--border-glow); color: #000; box-shadow: 0 0 8px var(--border-glow); }
 
-        .matrix-viewport { flex: 1; overflow: auto; border: 1px solid #222233; border-radius: 8px; background: #07070a; max-height: calc(100% - 38px); position: relative; }
+        .matrix-viewport { flex: 1; overflow: auto; border: 1px solid #222233; border-radius: 8px; background: var(--custom-matrix-bg); max-height: calc(100% - 38px); position: relative; }
         
         table { border-collapse: separate; border-spacing: 1px; width: 100%; font-size: 0.7rem; text-align: center; overflow: hidden; position: relative; }
         th, td { padding: 2px 0; width: 19px; height: 19px; min-height: 19px; max-height: 19px; box-sizing: border-box; font-weight: 600; position: relative; }
         
         th { background: #141420; color: #9595a8; font-size: 0.65rem; height: 21px; border-bottom: 1px solid #232338; }
-        tr.count-row td { background: #13241a !important; height: 21px; }
+        tr.count-row td { background: #13241a !important; height: 21px; font-size: 0.55rem !important; }
         
         tr.test-row td { 
             background: #081524 !important; 
@@ -169,7 +170,7 @@
         }
 
         #floatingHeaderTable {
-            position: absolute; top: 0; left: 0; z-index: 2000; display: none; background: #07070a; box-shadow: 0 6px 20px rgba(0,0,0,0.85); pointer-events: none;
+            position: absolute; top: 0; left: 0; z-index: 2000; display: none; background: var(--custom-matrix-bg); box-shadow: 0 6px 20px rgba(0,0,0,0.85); pointer-events: none;
         }
         #floatingHeaderTable th, #floatingHeaderTable tr.count-row td { pointer-events: auto; }
 
@@ -256,7 +257,7 @@
         tr.header-nums th.spec-num-head { color: #fff !important; background-color: #3b1f00; font-weight: 900; }
         tr.test-row td.cell-test-active { background: var(--accent-pink) !important; color: #fff !important; }
         tr.test-row td.cell-test-spec-active { background: #ffcc00 !important; color: #000 !important; }
-        tr.count-row td { background: #13241a; color: var(--accent-green); font-weight: bold; font-size: 0.65rem; border-bottom: 1px solid #232338; }
+        tr.count-row td { background: #13241a; color: var(--accent-green); font-weight: bold; font-size: 0.55rem; border-bottom: 1px solid #232338; }
 
         .predict-box { display: flex; flex-direction: column; gap: 3px; background: #060609; border: 1px solid #232338; padding: 4px; max-height: 235px; overflow-y: auto; flex-shrink: 0; border-radius: 6px; }
         .predict-ticket-group { border: 1px dashed var(--accent-pink); padding: 5px; border-radius: 6px; margin-bottom: 5px; background: rgba(20,15,22,0.4); }
@@ -329,7 +330,6 @@
         .modal-close { color: var(--text-muted); font-size: 1.2rem; cursor: pointer; border: none; background: none; }
         .modal-content-area { background: rgba(5, 5, 8, 0.15); border: 1px solid #232338; border-radius: 8px; padding: 12px; font-family: monospace; font-size: 0.8rem; max-height: 360px; overflow-y: auto; margin-bottom: 10px; line-height: 1.4; }
         
-        /* CSS Bảng nổi quy đổi - Thu hẹp chiều ngang vừa khít 2 điểm đánh dấu */
         #conversionModalOverlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: transparent; display: none; align-items: center; justify-content: center;
@@ -368,7 +368,7 @@
         .btn-copy-sms { background: #141420; border: 1px solid var(--border-glow); color: var(--border-glow); font-size: 0.55rem; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-weight: 900; font-family: inherit; }
         .modal-btn-cancel { padding: 6px 14px; font-size: 0.75rem; font-weight: bold; border-radius: 5px; cursor: pointer; background: rgba(31, 31, 46, 0.3); border: 1px solid #36364d; color: var(--text-muted); font-family: inherit; display: inline-flex; align-items: center; gap: 4px; }
 
-        .admin-dashboard-layout { display: grid; grid-template-columns: 1fr 1.3fr; gap: 10px; }
+        .admin-dashboard-layout { display: grid; grid-template-columns: 1.1fr 1fr; gap: 10px; }
         .admin-section-box { background: rgba(24, 24, 38, 0.5); padding: 10px; border-radius: 8px; border: 1px solid #23233c; }
 
         .sidebar-iframe-container { flex: 1; min-height: 0; border: 1px solid #232338; border-radius: 8px; overflow: hidden; background: #0f0f17; height: 100%; position: relative; transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); z-index: 10; }
@@ -402,6 +402,16 @@
         .member-profile-input:focus { border-color: var(--border-glow); }
         .pwd-change-box { background: rgba(30, 20, 35, 0.6); padding: 10px; border-radius: 8px; border: 1px solid #4a1535; margin-bottom: 12px; text-align: left; }
         .pwd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px; }
+
+        /* Style cho bảng chọn biên nền trắng 10x6 */
+        .bound-grid-btn {
+            background: #f2f2f7; border: 1px solid #d1d1d6; color: #1c1c1e; font-size: 0.7rem; font-weight: bold;
+            height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 4px; cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .bound-grid-btn:hover {
+            background: var(--accent-pink); color: #fff; border-color: var(--accent-pink); box-shadow: 0 0 8px var(--accent-pink);
+        }
     </style></head><body>
 
     <div id="loginOverlay">
@@ -501,6 +511,7 @@
 - Khóa số nuôi: Cố định vị trí số nuôi do Đại ca chỉ định, các vị trí còn lại lấp đầy bằng thuật toán và sắp xếp tăng dần trước khi xuất vé.">
                     <span>🔮 Khóa số nuôi &amp; Chiến thuật ℹ️</span>
                     <div style="display:flex; gap:3px; align-items:center;">
+                        <input type="color" id="pickerMatrixBg" class="color-picker-input" value="#07070a" onchange="updateThemeColors()" title="Màu nền biểu đồ ma trận">
                         <input type="color" id="pickerMainColor" class="color-picker-input" value="#005229" onchange="updateThemeColors()" title="Màu nền số chính">
                         <input type="color" id="pickerSpecColor" class="color-picker-input" value="#cc5c00" onchange="updateThemeColors()" title="Màu nền số Đặc biệt">
                         <input type="color" id="pickerTextColor" class="color-picker-input" value="#ffffff" onchange="updateThemeColors()" title="Màu chữ ô số">
@@ -555,19 +566,12 @@
         <div class="main-content">
             <div class="tabs" style="margin-bottom: 6px; align-items: center;">
                 <button class="tab-btn active" id="viewMatrixBtn" onclick="switchView('matrix')">Biểu đồ xu hướng</button>
-                <!-- NÚT TAB BẢNG QUY ĐỔI ĐẶT NGAY GIỮA -->
                 <button class="tab-btn" id="viewConversionBtn" onclick="openConversionModal()">📊 Bảng quy đổi</button>
-                <div style="display: flex; align-items: center; gap: 4px; padding: 0 4px;">
-                    <span style="font-size: 0.65rem; font-weight: bold; color: var(--text-muted); white-space: nowrap;">Thống kê biên:</span>
-                    <select class="count-select" id="countLimitSelect" onchange="reloadCurrentMatrix()" style="height: 24px; padding: 0 4px;">
-                        <option value="5" selected>5 kỳ</option>
-                        <option value="10">10 kỳ</option>
-                        <option value="20">20 kỳ</option>
-                        <option value="30">30 kỳ</option>
-                        <option value="40">40 kỳ</option>
-                        <option value="50">50 kỳ</option>
-                        <option value="60">60 kỳ</option>
-                    </select>
+                <div style="display: flex; align-items: center; gap: 4px; padding: 0 4px; position: relative;" title="Chọn khoảng biên kỳ từ (Biên trên) đến (Biên dưới) để thống kê">
+                    <span style="font-size: 0.62rem; font-weight: bold; color: var(--text-muted); white-space: nowrap;">Biên:</span>
+                    <input type="text" id="boundTopInput" readonly onclick="openBoundPicker('top', event)" value="01" style="width:34px; height:24px; background:#0f0f17; color:var(--border-glow); border:1px solid #232338; font-size:0.7rem; font-weight:bold; border-radius:4px; text-align:center; cursor:pointer;" title="Kỳ biên trên (Từ 1-60)">
+                    <span style="font-size: 0.62rem; color:var(--text-muted);">đến</span>
+                    <input type="text" id="boundBottomInput" readonly onclick="openBoundPicker('bottom', event)" value="10" style="width:34px; height:24px; background:#0f0f17; color:var(--border-glow); border:1px solid #232338; font-size:0.7rem; font-weight:bold; border-radius:4px; text-align:center; cursor:pointer;" title="Kỳ biên dưới (Từ 1-60)">
                 </div>
                 <button class="tab-btn" id="viewIframeBtn" onclick="switchView('iframe')">Trực tiếp cổng điện toán</button>
                 <button class="tab-btn" id="viewAdminBtn" onclick="switchView('admin')" style="display: none; background: #260d18; color: var(--accent-pink); border-color: #591632;">🛡️ QUẢN TRỊ</button>
@@ -579,7 +583,7 @@
             </div>
             
             <div class="iframe-container" id="iframeView" style="display: none;">
-                <iframe id="resultIframe" src="https://www.ketquadientoan.com/"></iframe>
+                <iframe id="resultIframe" src="https://www.minhchinh.com/xo-so-dien-toan.html"></iframe>
             </div>
 
             <div class="matrix-viewport" id="adminView" style="display: none; padding: 10px;">
@@ -645,7 +649,12 @@
         </div>
     </div>
 
-    <!-- BẢNG NỔI QUY ĐỔI (DRAGGABLE MODAL) - Thu hẹp vừa khít chữ -->
+    <!-- Bảng popup chọn số nền trắng 10x6 -->
+    <div id="boundPickerModal" style="position:fixed; display:none; background:#ffffff; color:#000; border:2px solid #00f2fe; padding:8px; border-radius:8px; z-index:99999; box-shadow:0 6px 25px rgba(0,0,0,0.5); width:230px;">
+        <div style="font-weight:900; font-size:0.7rem; margin-bottom:6px; text-align:center; color:#111; text-transform:uppercase;">Chọn kỳ biên (1 - 60)</div>
+        <div id="boundPickerGrid" style="display:grid; grid-template-columns:repeat(10, 1fr); gap:3px;"></div>
+    </div>
+
     <div id="conversionModalOverlay" onclick="if(event.target === this) closeConversionModal()">
         <div id="conversionModalBox">
             <div class="modal-title" id="draggableConversionTitle">
@@ -653,7 +662,7 @@
                 <button class="modal-close" onclick="closeConversionModal()">✕</button>
             </div>
             <div style="font-size:0.7rem; color:#b0b0c2; margin-bottom:8px;">
-                Quy tắc: 0-9(0), 10-19(1), 20-29(2), 30-39(3), 40-49(4), 50-55(5). So khớp trong <span id="conversionModalLimitText">5</span> kỳ (Thống kê biên).
+                Quy tắc: 0-9(0), 10-19(1), 20-29(2), 30-39(3), 40-49(4), 50-55(5). So khớp trong khoảng biên kỳ từ <span id="conversionModalTopText">01</span> đến <span id="conversionModalBottomText">10</span>.
             </div>
             <div style="max-height: 420px; overflow-y: auto;" id="conversionTableContainer"></div>
         </div>
@@ -709,9 +718,48 @@
             power: { mainLock: [], specLock: '', algo: 'combined', size: '1', html: '', activePreds: [] }
         };
 
-        // Kéo thả bảng nổi quy đổi
         let isConversionDragging = false;
         let startConvX, startConvY, initConvLeft, initConvTop;
+        let activeBoundTarget = null;
+
+        function openBoundPicker(targetType, event) {
+            activeBoundTarget = targetType;
+            let modal = document.getElementById('boundPickerModal');
+            let grid = document.getElementById('boundPickerGrid');
+            grid.innerHTML = '';
+            
+            for (let i = 1; i <= 60; i++) {
+                let btn = document.createElement('div');
+                btn.className = 'bound-grid-btn';
+                btn.innerText = String(i).padStart(2, '0');
+                btn.onclick = () => selectBoundValue(i);
+                grid.appendChild(btn);
+            }
+            
+            let rect = event.target.getBoundingClientRect();
+            modal.style.left = Math.min(rect.left, window.innerWidth - 245) + 'px';
+            modal.style.top = (rect.bottom + 6) + 'px';
+            modal.style.display = 'block';
+            event.stopPropagation();
+        }
+
+        function selectBoundValue(val) {
+            let formattedVal = String(val).padStart(2, '0');
+            if (activeBoundTarget === 'top') {
+                document.getElementById('boundTopInput').value = formattedVal;
+            } else if (activeBoundTarget === 'bottom') {
+                document.getElementById('boundBottomInput').value = formattedVal;
+            }
+            document.getElementById('boundPickerModal').style.display = 'none';
+            validateAndReloadMatrixBounds();
+        }
+
+        document.addEventListener('click', (e) => {
+            let modal = document.getElementById('boundPickerModal');
+            if (modal && !modal.contains(e.target)) {
+                modal.style.display = 'none';
+            }
+        });
 
         function initConversionModalDrag() {
             let box = document.getElementById('conversionModalBox');
@@ -746,7 +794,6 @@
             });
         }
 
-        // Quy đổi số chính theo khoảng chục
         function convertNumberToGroup(numStr) {
             let n = parseInt(numStr);
             if (isNaN(n)) return 0;
@@ -755,16 +802,46 @@
             if (n <= 29) return 2;
             if (n <= 39) return 3;
             if (n <= 49) return 4;
-            return 5; // 50-55
+            return 5;
+        }
+
+        function getValidatedMatrixBounds() {
+            let topInput = document.getElementById('boundTopInput');
+            let bottomInput = document.getElementById('boundBottomInput');
+            let top = parseInt(topInput.value) || 1;
+            let bottom = parseInt(bottomInput.value) || 10;
+
+            if (top < 1) top = 1;
+            if (top > 60) top = 60;
+            if (bottom < 1) bottom = 1;
+            if (bottom > 60) bottom = 60;
+
+            if (top > bottom) {
+                let temp = top;
+                top = bottom;
+                bottom = temp;
+            }
+
+            topInput.value = String(top).padStart(2, '0');
+            bottomInput.value = String(bottom).padStart(2, '0');
+            return { top, bottom };
+        }
+
+        function validateAndReloadMatrixBounds() {
+            getValidatedMatrixBounds();
+            reloadCurrentMatrix();
         }
 
         function openConversionModal() {
             let rows = globalOnlineData[currentType] || [];
-            let limit = parseInt(document.getElementById('countLimitSelect').value) || 5;
-            let targetRows = rows.slice(0, limit);
+            let bounds = getValidatedMatrixBounds();
+            let startIndex = bounds.top - 1;
+            let endIndex = bounds.bottom;
+            let targetRows = rows.slice(startIndex, endIndex);
 
             document.getElementById('conversionModalTypeTitle').innerText = currentType === 'lotto' ? 'Lotto 5/35' : (currentType === 'mega' ? 'Mega 6/45' : 'Power 6/55');
-            document.getElementById('conversionModalLimitText').innerText = limit;
+            document.getElementById('conversionModalTopText').innerText = String(bounds.top).padStart(2, '0');
+            document.getElementById('conversionModalBottomText').innerText = String(bounds.bottom).padStart(2, '0');
 
             let convertedRecords = targetRows.map(r => {
                 let convertedMain = r.main.map(num => convertNumberToGroup(num));
@@ -777,13 +854,12 @@
                 };
             });
 
-            // 4 Cột: Đã bỏ chữ "Cột 1:", chỉ giữ "Kết quả xổ"
             let html = `<table class="conversion-table">
                 <tr>
                     <th style="width: 22%;">Ngày / Kỳ</th>
                     <th style="width: 35%;">Kết quả xổ</th>
                     <th style="width: 23%;">Dãy quy đổi</th>
-                    <th style="width: 20%;">Số lần trùng (${limit} kỳ)</th>
+                    <th style="width: 20%;">Số lần trùng (Biên ${String(bounds.top).padStart(2, '0')}-${String(bounds.bottom).padStart(2, '0')})</th>
                 </tr>`;
 
             convertedRecords.forEach((rec) => {
@@ -910,11 +986,13 @@
         }
 
         function updateThemeColors() {
+            let bgMatColor = document.getElementById('pickerMatrixBg').value;
             let mColor = document.getElementById('pickerMainColor').value;
             let sColor = document.getElementById('pickerSpecColor').value;
             let tColor = document.getElementById('pickerTextColor').value;
             let hColor = document.getElementById('pickerHoverColor').value;
             
+            document.documentElement.style.setProperty('--custom-matrix-bg', bgMatColor);
             document.documentElement.style.setProperty('--custom-main-color', mColor);
             document.documentElement.style.setProperty('--custom-spec-color', sColor);
             document.documentElement.style.setProperty('--custom-text-color', tColor);
@@ -926,6 +1004,7 @@
         }
 
         function resetThemeColorsDefault() {
+            document.getElementById('pickerMatrixBg').value = "#07070a";
             document.getElementById('pickerMainColor').value = "#005229";
             document.getElementById('pickerSpecColor').value = "#cc5c00";
             document.getElementById('pickerTextColor').value = "#ffffff";
@@ -1745,9 +1824,9 @@
             currentType = type; document.querySelectorAll('.sidebar .tab-btn').forEach(btn => btn.classList.remove('active'));
             let idx = type === 'lotto' ? 0 : (type === 'mega' ? 1 : 2); document.querySelectorAll('.sidebar .tab-btn')[idx].classList.add('active');
             let sideIframe = document.getElementById('sidebarResultIframe');
-            if(type === 'lotto') sideIframe.src = "https://www.ketquadientoan.com/tat-ca-ky-xo-so-lotto-535.html";
-            else if(type === 'mega') sideIframe.src = "https://www.ketquadientoan.com/tat-ca-ky-xo-so-mega-6-45.html";
-            else if(type === 'power') sideIframe.src = "https://www.ketquadientoan.com/tat-ca-ky-xo-so-power-655.html";
+            if(type === 'lotto') sideIframe.src = "https://www.minhchinh.com/truc-tiep-xo-so-tu-chon-lotto-535.html";
+            else if(type === 'mega') sideIframe.src = "https://www.minhchinh.com/truc-tiep-xo-so-tu-chon-mega-645.html";
+            else if(type === 'power') sideIframe.src = "https://www.minhchinh.com/truc-tiep-xo-so-tu-chon-power-655.html";
             
             restoreTabState(type); 
             reloadCurrentMatrix();
@@ -1842,30 +1921,31 @@
             let maxMainCount = Math.max(...mainCounts); let maxSpecCount = Math.max(...specCounts);
             let headTr = document.createElement('tr'); headTr.className = 'header-nums'; headTr.innerHTML = `<th class="col-fixed-idx">Kỳ</th><th class="col-fixed-date">Ngày quay</th>`;
             for(let i = 1; i <= 35; i++) { let numStr = String(i).padStart(2, '0'); let bgColor = getHeatmapColor(mainCounts[i], maxMainCount); headTr.innerHTML += `<th class="main-num-head" style="background-color: ${bgColor};">${numStr}</th>`; }
-            headTr.innerHTML += `<th style="background:#07070a; width:4px;"></th>`;
+            headTr.innerHTML += `<th style="background:var(--custom-matrix-bg); width:4px;"></th>`;
             for(let i = 1; i <= 12; i++) { let numStr = String(i).padStart(2, '0'); let bgColor = getHeatmapColor(specCounts[i], maxSpecCount); headTr.innerHTML += `<th class="spec-num-head" style="background-color: ${bgColor};">${numStr}</th>`; }
             table.appendChild(headTr);
 
-            let limit = parseInt(document.getElementById('countLimitSelect').value); let limitRows = rows.slice(0, limit);
+            let bounds = getValidatedMatrixBounds();
+            let limitRows = rows.slice(bounds.top - 1, bounds.bottom);
             let freqMain = Array(36).fill(0); let freqSpec = Array(13).fill(0);
             limitRows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=35) freqMain[n]++; }); if(r.spec) { let s = parseInt(r.spec); if(s>=1 && s<=12) freqSpec[s]++; } });
-            let countTr = document.createElement('tr'); countTr.className = 'count-row'; countTr.innerHTML = `<td class="cell-idx">📊</td><td class="cell-date" style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; color:var(--accent-green); background:#13241a;">XUẤT HIỆN (${limit}K)</td>`;
+            let countTr = document.createElement('tr'); countTr.className = 'count-row'; countTr.innerHTML = `<td class="cell-idx">📊</td><td class="cell-date" style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; color:var(--accent-green); background:#13241a; font-size:0.55rem;">XUẤT HIỆN (${String(bounds.top).padStart(2, '0')}-${String(bounds.bottom).padStart(2, '0')})</td>`;
             for(let i = 1; i <= 35; i++) { countTr.innerHTML += `<td>${freqMain[i] > 0 ? freqMain[i] : ''}</td>`; }
-            countTr.innerHTML += `<td style="background:#07070a;"></td>`;
+            countTr.innerHTML += `<td style="background:var(--custom-matrix-bg);"></td>`;
             for(let i = 1; i <= 12; i++) { countTr.innerHTML += `<td>${freqSpec[i] > 0 ? freqSpec[i] : ''}</td>`; }
             table.appendChild(countTr);
 
             let testTr = document.createElement('tr'); testTr.className = 'test-row'; testTr.innerHTML = `<td class="cell-idx">🧪</td><td class="cell-date" style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; background:#081524;">THỬ NGHIỆM</td>`;
             let tSet = testSets.lotto;
             for(let i = 1; i <= 35; i++) { let numStr = String(i).padStart(2, '0'); let activeClass = tSet.main.includes(numStr) ? 'cell-test-active' : ''; testTr.innerHTML += `<td class="${activeClass}">${tSet.main.includes(numStr) ? numStr : ''}</td>`; }
-            testTr.innerHTML += `<td style="background:#07070a;"></td>`;
+            testTr.innerHTML += `<td style="background:var(--custom-matrix-bg);"></td>`;
             for(let i = 1; i <= 12; i++) { let numStr = String(i).padStart(2, '0'); let activeClass = (tSet.spec === numStr) ? 'cell-test-spec-active' : ''; testTr.innerHTML += `<td class="${activeClass}">${(tSet.spec === numStr) ? numStr : ''}</td>`; }
             table.appendChild(testTr);
 
             rows.forEach((row, idx) => {
                 let tr = document.createElement('tr'); let displayIdx = idx + 1; tr.innerHTML = `<td class="cell-idx">${String(displayIdx).padStart(2, '0')}</td><td class="cell-date">${row.date}</td>`;
                 for(let i = 1; i <= 35; i++) { let numStr = String(i).padStart(2, '0'); let isAct = row.main.includes(numStr); let isTestAct = tSet.main.includes(numStr); let cls = isAct ? 'cell-main-num active' : (isTestAct ? 'cell-main-num test-active' : 'cell-main-num'); tr.innerHTML += `<td class="${cls}">${isAct ? numStr : ''}</td>`; }
-                tr.innerHTML += `<td style="background:#07070a;"></td>`;
+                tr.innerHTML += `<td style="background:var(--custom-matrix-bg);"></td>`;
                 for(let i = 1; i <= 12; i++) { let numStr = String(i).padStart(2, '0'); let isAct = (row.spec === numStr); let isTestAct = (tSet.spec === numStr); let cls = isAct ? 'cell-spec-num active-spec' : (isTestAct ? 'cell-spec-num test-spec-active' : 'cell-spec-num'); tr.innerHTML += `<td class="${cls}">${isAct ? numStr : ''}</td>`; }
                 table.appendChild(tr);
             });
@@ -1881,9 +1961,10 @@
             for(let i = 1; i <= 45; i++) { let numStr = String(i).padStart(2, '0'); let bgColor = getHeatmapColor(mainCounts[i], maxMainCount); headTr.innerHTML += `<th class="main-num-head" style="background-color: ${bgColor};">${numStr}</th>`; }
             table.appendChild(headTr);
 
-            let limit = parseInt(document.getElementById('countLimitSelect').value); let limitRows = rows.slice(0, limit);
+            let bounds = getValidatedMatrixBounds();
+            let limitRows = rows.slice(bounds.top - 1, bounds.bottom);
             let freqMain = Array(46).fill(0); limitRows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=45) freqMain[n]++; }); });
-            let countTr = document.createElement('tr'); countTr.className = 'count-row'; countTr.innerHTML = `<td class="cell-idx">📊</td><td class="cell-date" style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; color:var(--accent-green); background:#13241a;">XUẤT HIỆN (${limit}K)</td>`;
+            let countTr = document.createElement('tr'); countTr.className = 'count-row'; countTr.innerHTML = `<td class="cell-idx">📊</td><td class="cell-date" style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; color:var(--accent-green); background:#13241a; font-size:0.55rem;">XUẤT HIỆN (${String(bounds.top).padStart(2, '0')}-${String(bounds.bottom).padStart(2, '0')})</td>`;
             for(let i = 1; i <= 45; i++) { countTr.innerHTML += `<td>${freqMain[i] > 0 ? freqMain[i] : ''}</td>`; }
             table.appendChild(countTr);
 
@@ -1909,10 +1990,11 @@
             for(let i = 1; i <= 55; i++) { let numStr = String(i).padStart(2, '0'); let bgColor = getHeatmapColor(combinedCounts[i], maxCount); headTr.innerHTML += `<th class="main-num-head" style="background-color: ${bgColor};">${numStr}</th>`; }
             table.appendChild(headTr);
 
-            let limit = parseInt(document.getElementById('countLimitSelect').value); let limitRows = rows.slice(0, limit);
+            let bounds = getValidatedMatrixBounds();
+            let limitRows = rows.slice(bounds.top - 1, bounds.bottom);
             let freqMain = Array(56).fill(0); let freqSpec = Array(56).fill(0);
             limitRows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=55) freqMain[n]++; }); if(r.spec) { let s = parseInt(r.spec); if(s>=1 && s<=55) freqSpec[s]++; } });
-            let countTr = document.createElement('tr'); countTr.className = 'count-row'; countTr.innerHTML = `<td class="cell-idx">📊</td><td class="cell-date" style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; color:var(--accent-green); background:#13241a;">XUẤT HIỆN (${limit}K)</td>`;
+            let countTr = document.createElement('tr'); countTr.className = 'count-row'; countTr.innerHTML = `<td class="cell-idx">📊</td><td class="cell-date" style="text-align:left; padding-left:5px; font-weight:bold; white-space:nowrap; color:var(--accent-green); background:#13241a; font-size:0.55rem;">XUẤT HIỆN (${String(bounds.top).padStart(2, '0')}-${String(bounds.bottom).padStart(2, '0')})</td>`;
             for(let i = 1; i <= 55; i++) { let totalCount = freqMain[i] + freqSpec[i]; countTr.innerHTML += `<td>${totalCount > 0 ? totalCount : ''}</td>`; }
             table.appendChild(countTr);
 
