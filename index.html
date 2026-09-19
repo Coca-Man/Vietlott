@@ -530,8 +530,8 @@
             <div class="panel" style="display: flex; flex-direction: column; flex: 1; min-height: 0; padding: 4px; height: 100%; position: relative;">
                 <div class="section-title" style="margin-bottom: 2px; flex-shrink: 0; display:flex; justify-content:space-between; align-items:center;" title="NGUYÊN TẮC HOẠT ĐỘNG:
 - Khoá số: Điền số cụ thể vào các ô 'Khoá số'.
-- Biên 5k: Điền giá trị biên độ xuất hiện 5 kỳ gần nhất.
-- Hàng: Điền số lượng cần lấy theo phân khúc hàng chục tương ứng với số mờ bên dưới ô.">
+- Hàng: Điền số lượng cần lấy theo phân khúc hàng chục tương ứng với số mờ bên dưới ô.
+- Biên 5k: Điền giá trị tần suất xuất hiện mong muốn trong 5 kỳ gần nhất.">
                     <span>🔮 Khóa số nuôi &amp; Chiến thuật ℹ️</span>
                     <div style="display:flex; gap:3px; align-items:center;">
                         <input type="color" id="pickerMatrixBg" class="color-picker-input" value="#07070a" onchange="updateThemeColors()" title="Màu nền biểu đồ ma trận">
@@ -554,18 +554,18 @@
                                 <div class="lock-inputs" id="specLockGroup"></div>
                             </div>
                         </div>
-                        
-                        <div class="lock-sub-row" title="Điền biên độ xuất hiện trong 5 kỳ gần nhất (Ví dụ: 1 2 2 1 1)">
-                            <div class="lock-sub-section">
-                                <span class="lock-sub-title" style="color:var(--accent-green);">BIÊN 5K:</span>
-                                <div class="lock-inputs" id="boundLockGroup"></div>
-                            </div>
-                        </div>
 
                         <div class="lock-sub-row" title="Điền số lượng cần lấy theo phân khúc hàng chục dựa vào số mờ hướng dẫn bên dưới ô">
                             <div class="lock-sub-section">
                                 <span class="lock-sub-title" style="color:var(--border-glow);">Hàng:</span>
                                 <div class="lock-inputs" id="rangeLockGroup"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="lock-sub-row" title="Điền tần suất xuất hiện mong muốn trong 5 kỳ gần nhất">
+                            <div class="lock-sub-section">
+                                <span class="lock-sub-title" style="color:var(--accent-green);">BIÊN 5K:</span>
+                                <div class="lock-inputs" id="boundLockGroup"></div>
                             </div>
                         </div>
                     </div>
@@ -588,11 +588,13 @@
                 </div>
 
 				<div style="display: flex; align-items: center; gap: 4px; margin-bottom: 3px; background: #12121a; padding: 3px 5px; border-radius: 5px; border: 1px solid #1f1f33;" title="NGUYÊN TẮC CHIẾN THUẬT:
-- Thuật toán dự đoán: Bốc số có kiểm soát theo cụm khoảng cách gan chuẩn.
-- Xáo trộn ngẫu nhiên: Xáo trộn toàn bộ dải số không phân biệt gan.">
+- Thuật toán dự đoán 1: Dự đoán tiêu chuẩn.
+- Thuật toán dự đoán 2: Kết hợp hoàn hảo tuần tự (Khóa số -> Hàng chục -> Khoá biên).
+- Xáo trộn ngẫu nhiên: Xáo trộn toàn bộ dải số không phân biệt.">
                     <span style="font-size: 0.62rem; font-weight: bold; color: var(--text-muted); white-space: nowrap;">Chiến thuật ℹ️:</span>
                     <select class="count-select" id="algoSelect" onchange="saveCurrentTabState()" style="flex: 1; font-size: 0.62rem; padding: 2px; height: 21px;">
-                        <option value="combined" selected>⚡ Thuật toán dự đoán</option>
+                        <option value="combined" selected>⚡ Thuật toán dự đoán 1</option>
+                        <option value="combined_v2">🚀 Thuật toán dự đoán 2 (Khóa + Hàng + Biên)</option>
                         <option value="random_mix">🎲 Xáo trộn ngẫu nhiên</option>
                     </select>
                 </div>
@@ -892,7 +894,7 @@
                 let convertedMain = r.main.map(num => convertNumberToGroup(num));
                 convertedMain.sort((a, b) => a - b);
                 
-                let fullResultStr = r.spec ? `${r.main.join(' ')} \u007c ${r.spec}` : r.main.join(' ');
+                let fullResultStr = r.spec ? `${r.main.join(' ')} \u007c${r.spec}` : r.main.join(' ');
                 
                 return {
                     date: r.date,
@@ -1212,7 +1214,7 @@
             let formattedList = validPreds.map((p, idx) => {
                 let rowLabel = String.fromCharCode(65 + (idx % 6)); 
                 let ticketNum = Math.floor(idx / 6) + 1;
-                let dataStr = p.spec ? `${p.main.join(' ')} \vert{} ĐB: ${p.spec}` : p.main.join(' ');
+                let dataStr = p.spec ? `${p.main.join(' ')} | ${p.spec}` : p.main.join(' ');
                 return `   + Tuyến ${ticketNum}-${rowLabel}: [${dataStr} ]`;
             });
 
@@ -1554,13 +1556,13 @@
                         if (rawNumbersText.includes('|')) {
                             let structures = rawNumbersText.split('|');
                             let mainPart = structures[0].trim().replace(/\s+/g, ' ');
-                            let specPart = structures[1].replace('ĐB:', '').trim();
+                            let specPart = structures[1].trim();
                             parsedNumbersPayload = `${mainPart}-${specPart}`;
                         } else {
                             parsedNumbersPayload = rawNumbersText.replace(/\s+/g, ' ');
                         }
                     } else {
-                        parsedNumbersPayload = rawNumbersText.replace('ĐB:', '').replace('|', '').trim().replace(/\s+/g, ' ');
+                        parsedNumbersPayload = rawNumbersText.replace('|', '').trim().replace(/\s+/g, ' ');
                     }
                     compiledSmsLinesArray.push(`S ${parsedNumbersPayload}`);
                 }
@@ -1757,7 +1759,7 @@
 
         function convertDataToText(rows) {
             return rows.map(r => {
-                let line = `${r.date} \vert{}${r.main.join(' ')}`;
+                let line = `${r.date} | ${r.main.join(' ')}`;
                 if (r.spec) line += ` | ${r.spec}`;
                 return line;
             }).join('\n');
@@ -1928,11 +1930,6 @@
                 specGroup.innerHTML += `<input type="text" maxlength="2" class="lock-input spec-lock lock-spec-val" oninput="saveCurrentTabState()" placeholder="-" value="${val}">`; 
             }
 
-            for(let i = 0; i < mainCount; i++) {
-                let val = state.boundLock[i] || '';
-                boundGroup.innerHTML += `<input type="text" maxlength="2" class="lock-input bound-input lock-bound-val" oninput="saveCurrentTabState()" placeholder="-" value="${val}">`;
-            }
-
             for(let i = 0; i < rangeCount; i++) {
                 let val = state.rangeLock[i] || '';
                 rangeGroup.innerHTML += `
@@ -1940,6 +1937,11 @@
                         <input type="text" maxlength="2" class="lock-input range-input lock-range-val" oninput="saveCurrentTabState()" placeholder="-" value="${val}">
                         <span class="range-ghost-label">${i}</span>
                     </div>`;
+            }
+
+            for(let i = 0; i < mainCount; i++) {
+                let val = state.boundLock[i] || '';
+                boundGroup.innerHTML += `<input type="text" maxlength="2" class="lock-input bound-input lock-bound-val" oninput="saveCurrentTabState()" placeholder="-" value="${val}">`;
             }
             
             document.getElementById('algoSelect').value = state.algo;
@@ -2264,43 +2266,93 @@
                 }
                 pool.sort(() => Math.random() - 0.5);
 
-                let pickedRangePool = [];
-                if (chosenAlgo === 'combined' && rangeConstraints && rangeConstraints.length > 0) {
-                    rangeConstraints.forEach((qty, groupIdx) => {
-                        if (qty > 0) {
-                            let minV = groupIdx * 10;
-                            let maxV = (groupIdx === 5) ? maxRange : (groupIdx * 10 + 9);
-                            let subPool = pool.filter(numStr => {
-                                let n = parseInt(numStr);
-                                return n >= minV && n <= maxV && !locked.includes(numStr);
-                            });
-                            subPool.sort(() => Math.random() - 0.5);
-                            for (let k = 0; k < qty && subPool.length > 0; k++) {
-                                let chosen = subPool.shift();
-                                pickedRangePool.push(chosen);
-                                pool = pool.filter(x => x !== chosen);
+                if (chosenAlgo === 'combined_v2') {
+                    // THUẬT TOÁN DỰ ĐOÁN 2: Ưu tiên tuần tự (Khóa số -> Hàng chục -> Khoá biên gần đúng)
+                    let pickedRangePool = [];
+                    if (rangeConstraints && rangeConstraints.length > 0) {
+                        rangeConstraints.forEach((qty, groupIdx) => {
+                            if (qty > 0) {
+                                let minV = groupIdx * 10;
+                                let maxV = (groupIdx === 5) ? maxRange : (groupIdx * 10 + 9);
+                                let subPool = pool.filter(numStr => {
+                                    let n = parseInt(numStr);
+                                    return n >= minV && n <= maxV && !locked.includes(numStr);
+                                });
+                                subPool.sort(() => Math.random() - 0.5);
+                                for (let k = 0; k < qty && subPool.length > 0; k++) {
+                                    let chosen = subPool.shift();
+                                    pickedRangePool.push(chosen);
+                                    pool = pool.filter(x => x !== chosen);
+                                }
                             }
-                        }
-                    });
-                }
+                        });
+                    }
 
-                let combinedPool = [...pickedRangePool, ...pool];
+                    let combinedPool = [...pickedRangePool, ...pool];
 
-                for (let pos = 0; pos < mainSize; pos++) {
-                    if (locked[pos] !== null && locked[pos] !== '') {
-                        resultSet.push(locked[pos]);
-                    } else {
-                        let targetBound = (chosenAlgo === 'combined') ? boundConstraints[pos] : null;
-                        if (targetBound !== undefined && targetBound !== null && targetBound !== '' && !isNaN(targetBound)) {
-                            let targetNum = parseInt(targetBound);
-                            let matchIdx = combinedPool.findIndex(numStr => freq5Map[numStr] === targetNum);
-                            if (matchIdx !== -1) {
-                                resultSet.push(combinedPool.splice(matchIdx, 1)[0]);
+                    for (let pos = 0; pos < mainSize; pos++) {
+                        if (locked[pos] !== null && locked[pos] !== '') {
+                            resultSet.push(locked[pos]);
+                        } else {
+                            let targetBound = boundConstraints[pos];
+                            if (targetBound !== undefined && targetBound !== null && targetBound !== '' && !isNaN(targetBound)) {
+                                let targetNum = parseInt(targetBound);
+                                // Tìm kiếm chính xác tần suất biên trước
+                                let matchIdx = combinedPool.findIndex(numStr => freq5Map[numStr] === targetNum);
+                                if (matchIdx !== -1) {
+                                    resultSet.push(combinedPool.splice(matchIdx, 1)[0]);
+                                } else {
+                                    // Nếu không có chính xác, tìm kiếm biên dung sai gần nhất (+/- 1)
+                                    let softMatchIdx = combinedPool.findIndex(numStr => Math.abs(freq5Map[numStr] - targetNum) <= 1);
+                                    if (softMatchIdx !== -1) {
+                                        resultSet.push(combinedPool.splice(softMatchIdx, 1)[0]);
+                                    } else {
+                                        resultSet.push(combinedPool.shift());
+                                    }
+                                }
                             } else {
                                 resultSet.push(combinedPool.shift());
                             }
+                        }
+                    }
+                } else if (chosenAlgo === 'combined') {
+                    // THUẬT TOÁN DỰ ĐOÁN 1: Cơ chế kết hợp tiêu chuẩn
+                    let pickedRangePool = [];
+                    if (rangeConstraints && rangeConstraints.length > 0) {
+                        rangeConstraints.forEach((qty, groupIdx) => {
+                            if (qty > 0) {
+                                let minV = groupIdx * 10;
+                                let maxV = (groupIdx === 5) ? maxRange : (groupIdx * 10 + 9);
+                                let subPool = pool.filter(numStr => {
+                                    let n = parseInt(numStr);
+                                    return n >= minV && n <= maxV && !locked.includes(numStr);
+                                });
+                                subPool.sort(() => Math.random() - 0.5);
+                                for (let k = 0; k < qty && subPool.length > 0; k++) {
+                                    let chosen = subPool.shift();
+                                    pickedRangePool.push(chosen);
+                                    pool = pool.filter(x => x !== chosen);
+                                }
+                            }
+                        });
+                    }
+
+                    let combinedPool = [...pickedRangePool, ...pool];
+
+                    for (let pos = 0; pos < mainSize; pos++) {
+                        if (locked[pos] !== null && locked[pos] !== '') {
+                            resultSet.push(locked[pos]);
                         } else {
                             resultSet.push(combinedPool.shift());
+                        }
+                    }
+                } else {
+                    // XÁO TRỘN NGẪU NHIÊN HOÀN TOÀN
+                    for (let pos = 0; pos < mainSize; pos++) {
+                        if (locked[pos] !== null && locked[pos] !== '') {
+                            resultSet.push(locked[pos]);
+                        } else {
+                            resultSet.push(pool.shift());
                         }
                     }
                 }
