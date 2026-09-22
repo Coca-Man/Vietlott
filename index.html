@@ -413,7 +413,17 @@
         .btn-floating-zoom-control:hover { transform: scale(1.1) rotate(5deg); box-shadow: 0 6px 20px rgba(255, 0, 127, 0.7); }
 
         .iframe-container { flex: 1; border-radius: 8px; overflow: hidden; border: 1px solid #232338; background: #0f0f17; position: relative; height: 100%; }
-        .iframe-container iframe { width: 100%; height: 100%; border: none; display: block; position: absolute; top:0; left:0; }
+.iframe-container iframe { 
+    width: 111.11% !important; 
+    height: 111.11% !important; 
+    transform: scale(0.9); 
+    transform-origin: top left;
+    border: none; 
+    display: block; 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+}
 
         #adminView td:hover, #adminView th:hover { background-color: initial !important; box-shadow: none !important; color: inherit !important; }
         #adminView td:hover::before, #adminView td:hover::after, #adminView th:hover::after { display: none !important; }
