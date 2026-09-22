@@ -262,13 +262,16 @@
         .predict-box { display: flex; flex-direction: column; gap: 3px; background: #060609; border: 1px solid #232338; padding: 4px; max-height: 220px; overflow-y: auto; flex-shrink: 0; border-radius: 6px; }
         .predict-ticket-group { border: 1px dashed var(--accent-pink); padding: 4px 6px; border-radius: 6px; margin-bottom: 4px; background: rgba(20,15,22,0.4); }
         .predict-ticket-title { font-size: 0.62rem; font-weight: 900; color: var(--accent-pink); margin-bottom: 3px; padding-left: 2px; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 3px; }
-        .predict-row { display: flex; align-items: center; gap: 5px; background: #12121a; padding: 2px 4px; border-radius: 5px; border: 1px solid #1c1c2b; margin-bottom: 2px; }
-        .predict-row-label { font-size: 0.72rem; font-weight: 900; color: var(--border-glow); width: 16px; text-align: center; }
+        .predict-row { display: flex; align-items: center; gap: 4px; background: #12121a; padding: 2px 4px; border-radius: 5px; border: 1px solid #1c1c2b; margin-bottom: 2px; }
+        .predict-row-label { font-size: 0.72rem; font-weight: 900; color: var(--border-glow); width: 14px; text-align: center; }
         .ball-predict { width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.62rem; font-weight: bold; color: var(--custom-text-color) !important; cursor: pointer; user-select: none; transition: transform 0.1s; }
         .ball-predict:hover { transform: scale(1.15); box-shadow: 0 0 8px var(--border-glow); }
         .ball-main-custom { background-color: var(--custom-main-color) !important; }
         .ball-spec-custom { background-color: var(--custom-spec-color) !important; }
         
+        .freq-stat-box { display: flex; gap: 1px; align-items: center; background: #0c0c14; padding: 1px 2px; border-radius: 3px; border: 1px solid #232338; }
+        .freq-stat-item { width: 13px; height: 14px; font-size: 0.5rem; font-weight: bold; color: var(--accent-green); background: #13241a; border: 1px solid #1f3a28; border-radius: 2px; display: flex; align-items: center; justify-content: center; }
+
         .action-inline-btn { background: #1d1d29; border: 1px solid #36364d; color: #a5a5bc; padding: 1px 4px; font-size: 0.58rem; font-weight: bold; border-radius: 3px; cursor: pointer; font-family: inherit; }
         .action-inline-btn:hover { background: #272738; color: #fff; }
         .btn-try { border-color: #004d99; color: #3399ff; }
@@ -294,11 +297,8 @@
         .lock-input { width: 20px; background: #09090f; border: 1px solid #36364d; color: #fff; text-align: center; border-radius: 4px; padding: 1px 0; font-size: 0.62rem; font-weight: bold; font-family: inherit; height: 20px; }
         .lock-input:focus { border-color: var(--border-glow); outline: none; }
         .lock-input.spec-lock { border-color: var(--accent-orange); color: #ff9900; }
+        .lock-input.range-input { border-color: var(--border-glow); color: var(--border-glow); }
         .lock-input.bound-input { border-color: var(--accent-green); color: var(--accent-green); }
-        .lock-input.range-input { border-color: var(--border-glow); color: var(--border-glow); position: relative; }
-        
-        .range-input-wrapper { position: relative; display: inline-block; }
-        .range-ghost-label { position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); font-size: 0.42rem; color: rgba(255,255,255,0.35); pointer-events: none; font-weight: 900; }
 
         .btn-vertical-predict { width: 100%; padding: 3px 2px; background: linear-gradient(135deg, var(--accent-pink) 0%, var(--accent-purple) 100%); border: none; color: #fff; font-weight: 900; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-size: 0.58rem; letter-spacing: 0.3px; text-align: center; box-shadow: 0 2px 6px rgba(255, 0, 127, 0.2); transition: all 0.2s; white-space: nowrap; font-family: inherit; }
         .btn-vertical-predict:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(255, 0, 127, 0.4); }
@@ -396,7 +396,18 @@
 
         .sidebar-iframe-container { flex: 1; min-height: 0; border: 1px solid #232338; border-radius: 8px; overflow: hidden; background: #0f0f17; height: 100%; position: relative; transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); z-index: 10; }
         .sidebar-iframe-container.zoomed-state { position: absolute; bottom: 4px; left: 4px; right: 4px; height: calc(100% - 15px); z-index: 850; box-shadow: 0 -15px 35px rgba(0,0,0,0.9), 0 0 20px rgba(0,242,254,0.3); border-color: var(--border-glow); }
-        .sidebar-iframe-container iframe { width: 100%; height: 100%; border: none; display: block; position: absolute; top:0; left:0; }
+        
+        .sidebar-iframe-container iframe { 
+            width: 111.11% !important; 
+            height: 111.11% !important; 
+            transform: scale(0.9); 
+            transform-origin: top left;
+            border: none; 
+            display: block; 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+        }
         
         .btn-floating-zoom-control { position: absolute; bottom: 12px; right: 12px; z-index: 950; background: linear-gradient(135deg, var(--accent-pink) 0%, #b30059 100%); color: #fff; border: 1px solid rgba(255, 255, 255, 0.2); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-weight: bold; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(255, 0, 127, 0.5), 0 0 8px rgba(0, 242, 254, 0.2); transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1); outline: none; }
         .btn-floating-zoom-control:hover { transform: scale(1.1) rotate(5deg); box-shadow: 0 6px 20px rgba(255, 0, 127, 0.7); }
@@ -445,7 +456,7 @@
         <div id="fw5" class="firework-cluster" style="position:absolute; left:75%; top:75%;"></div>
 
         <div class="login-box" onkeydown="if(event.key === 'Enter') handleSystemLogin()">
-            <img class="login-logo" src="logo.png" alt="CVN Logo" style="filter:none !important;">
+            <img class="login-logo" src="logo.png" alt="CVN Logo" style="filter:none !important;" onerror="this.style.display='none'">
             <div class="login-title">HỆ THỐNG PHÂN TÍCH &amp; DỰ ĐOÁN VIETLOTT</div>
             <div class="login-error" id="loginError">Mật khẩu xác thực không đúng thưa Đại ca!</div>
             <input type="text" id="loginUser" class="login-input" placeholder="Tên đăng nhập">
@@ -463,7 +474,7 @@
         <div id="lfw5" class="firework-cluster" style="position:absolute; left:75%; top:75%;"></div>
 
         <div class="login-box" onkeydown="if(event.key === 'Enter') handleUnlockSystem()">
-            <img class="login-logo" src="logo.png" alt="CVN Logo" style="filter:none !important;">
+            <img class="login-logo" src="logo.png" alt="CVN Logo" style="filter:none !important;" onerror="this.style.display='none'">
             <div class="login-title" id="lockTitleText" style="color:var(--border-glow); margin-bottom:8px;">Phiên làm việc đang khóa</div>
             
             <div class="lock-clock-display">
@@ -481,7 +492,7 @@
     </div>
 
     <div class="header-premium">
-        <img class="header-logo" src="logo.png" alt="CVN Logo" style="filter:none !important;">
+        <img class="header-logo" src="logo.png" alt="CVN Logo" style="filter:none !important;" onerror="this.style.display='none'">
         <div class="title-wrapper">
             <span class="cosmic-icon icon-sun">☀️</span>
             <span class="cosmic-icon icon-star">⭐</span>
@@ -529,9 +540,9 @@
 
             <div class="panel" style="display: flex; flex-direction: column; flex: 1; min-height: 0; padding: 4px; height: 100%; position: relative;">
                 <div class="section-title" style="margin-bottom: 2px; flex-shrink: 0; display:flex; justify-content:space-between; align-items:center;" title="NGUYÊN TẮC HOẠT ĐỘNG:
-- Khoá số: Điền số cụ thể vào các ô 'Khoá số'.
-- Hàng: Điền số lượng cần lấy theo phân khúc hàng chục tương ứng với số mờ bên dưới ô.
-- Biên 5k: Điền giá trị tần suất xuất hiện mong muốn trong 5 kỳ gần nhất.">
+- Hàng: Khóa số lượng theo phân khúc hàng chục.
+- Khóa số: Điền số cụ thể vào các ô.
+- Biên 5K: Màng lọc đối chiếu tần suất 5 kỳ gần nhất.">
                     <span>🔮 Khóa số nuôi &amp; Chiến thuật ℹ️</span>
                     <div style="display:flex; gap:3px; align-items:center;">
                         <input type="color" id="pickerMatrixBg" class="color-picker-input" value="#07070a" onchange="updateThemeColors()" title="Màu nền biểu đồ ma trận">
@@ -544,7 +555,7 @@
                 </div>
 
                 <div class="lock-container-grid">
-                    <div class="lock-left-panel" title="BẢNG ĐIỀU KHIỂN KHÓA SỐ &amp; ĐỊNH HƯỚNG THUẬT TOÁN">
+                    <div class="lock-left-panel" title="BẢNG ĐIỀU KHIỂN KHÓA SỐ &amp; BIÊN 5K">
                         <div class="lock-sub-row">
                             <div class="lock-sub-section">
                                 <span class="lock-sub-title">Khoá số:</span>
@@ -555,16 +566,16 @@
                             </div>
                         </div>
 
-                        <div class="lock-sub-row" title="Điền số lượng cần lấy theo phân khúc hàng chục dựa vào số mờ hướng dẫn bên dưới ô">
+                        <div class="lock-sub-row">
                             <div class="lock-sub-section">
                                 <span class="lock-sub-title" style="color:var(--border-glow);">Hàng:</span>
                                 <div class="lock-inputs" id="rangeLockGroup"></div>
                             </div>
                         </div>
-                        
-                        <div class="lock-sub-row" title="Điền tần suất xuất hiện mong muốn trong 5 kỳ gần nhất">
+
+                        <div class="lock-sub-row">
                             <div class="lock-sub-section">
-                                <span class="lock-sub-title" style="color:var(--accent-green);">BIÊN 5K:</span>
+                                <span class="lock-sub-title" style="color:var(--accent-green);">Biên 5K:</span>
                                 <div class="lock-inputs" id="boundLockGroup"></div>
                             </div>
                         </div>
@@ -587,15 +598,13 @@
                     </div>
                 </div>
 
-				<div style="display: flex; align-items: center; gap: 4px; margin-bottom: 3px; background: #12121a; padding: 3px 5px; border-radius: 5px; border: 1px solid #1f1f33;" title="NGUYÊN TẮC CHIẾN THUẬT:
-- Thuật toán dự đoán 1: Dự đoán tiêu chuẩn.
-- Thuật toán dự đoán 2: Kết hợp hoàn hảo tuần tự (Khóa số -> Hàng chục -> Khoá biên).
-- Xáo trộn ngẫu nhiên: Xáo trộn toàn bộ dải số không phân biệt.">
-                    <span style="font-size: 0.62rem; font-weight: bold; color: var(--text-muted); white-space: nowrap;">Chiến thuật ℹ️:</span>
+				<div style="display: flex; align-items: center; gap: 4px; margin-bottom: 3px; background: #12121a; padding: 3px 5px; border-radius: 5px; border: 1px solid #1f1f33;" title="CHỌN CHIẾN THUẬT DỰ ĐOÁN">
+                    <span style="font-size: 0.62rem; font-weight: bold; color: var(--text-muted); white-space: nowrap;">Thuật toán ℹ️:</span>
                     <select class="count-select" id="algoSelect" onchange="saveCurrentTabState()" style="flex: 1; font-size: 0.62rem; padding: 2px; height: 21px;">
-                        <option value="combined" selected>⚡ Thuật toán dự đoán 1</option>
-                        <option value="combined_v2">🚀 Thuật toán dự đoán 2 (Khóa + Hàng + Biên)</option>
-                        <option value="random_mix">🎲 Xáo trộn ngẫu nhiên</option>
+                        <option value="algo1" selected>⚡ Thuật toán 1: Thuật toán CVN</option>
+                        <option value="algo2">⚖️ Thuật toán 2: Cân bằng biên độ</option>
+                        <option value="algo3">📊 Thuật toán 3: Tần suất gan</option>
+                        <option value="algo4">🎲 Thuật toán 4: Ngẫu nhiên</option>
                     </select>
                 </div>
 
@@ -755,14 +764,14 @@
         let cachedLogSnapshotText = ""; 
         let currentHistoryCurrentPage = 1;
         let currentHistoryPaginationChunks = [];
-        let testSets = { lotto: { main: [], spec: null }, mega: { main: [] }, power: { main: [], spec: null } };
+        let testSets = { lotto: { main: [], spec: null }, mega: { main: [] }, power: { main: [] } };
         let activePredictions = [];
         let isIframeZoomed = false;
 
         let tabStatesStorage = {
-            lotto: { mainLock: [], specLock: '', boundLock: [], rangeLock: [], algo: 'combined', size: '1', html: '', activePreds: [] },
-            mega: { mainLock: [], specLock: '', boundLock: [], rangeLock: [], algo: 'combined', size: '1', html: '', activePreds: [] },
-            power: { mainLock: [], specLock: '', boundLock: [], rangeLock: [], algo: 'combined', size: '1', html: '', activePreds: [] }
+            lotto: { mainLock: [], specLock: '', rangeLock: [], boundLock: [], algo: 'algo1', size: '1', html: '', activePreds: [] },
+            mega: { mainLock: [], specLock: '', rangeLock: [], boundLock: [], algo: 'algo1', size: '1', html: '', activePreds: [] },
+            power: { mainLock: [], specLock: '', rangeLock: [], boundLock: [], algo: 'algo1', size: '1', html: '', activePreds: [] }
         };
 
         let isConversionDragging = false;
@@ -881,6 +890,10 @@
 
         function openConversionModal() {
             let rows = globalOnlineData[currentType] || [];
+            if (rows.length === 0) {
+                alert("Dữ liệu đài hiện tại chưa được tải về hoặc đang trống!");
+                return;
+            }
             let bounds = getValidatedMatrixBounds();
             let startIndex = bounds.top - 1;
             let endIndex = bounds.bottom;
@@ -894,7 +907,7 @@
                 let convertedMain = r.main.map(num => convertNumberToGroup(num));
                 convertedMain.sort((a, b) => a - b);
                 
-                let fullResultStr = r.spec ? `${r.main.join(' ')} \u007c${r.spec}` : r.main.join(' ');
+                let fullResultStr = r.spec ? `${r.main.join(' ')} | ${r.spec}` : r.main.join(' ');
                 
                 return {
                     date: r.date,
@@ -1247,13 +1260,12 @@
             let mainSize = currentType === 'lotto' ? 5 : 6;
             
             for (let i = 0; i < totalNeededRows; i++) {
-                let resultSet = computeResultSet(maxRange, mainSize, 'combined', Array(mainSize).fill(null), [], [], i, rows);
+                let resultSet = computeResultSet(maxRange, mainSize, 'algo1', Array(mainSize).fill(null), [], [], i, rows);
                 let sNum = "";
-                if (currentType !== 'mega') {
-                    let maxSpec = currentType === 'lotto' ? 12 : 55;
-                    sNum = String(Math.floor(Math.random() * maxSpec) + 1).padStart(2, '0');
+                if (currentType === 'lotto') {
+                    sNum = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
                 }
-                activePredictions[i] = (currentType === 'mega') ? { main: resultSet } : { main: resultSet, spec: sNum };
+                activePredictions[i] = (currentType === 'mega' || currentType === 'power') ? { main: resultSet } : { main: resultSet, spec: sNum };
             }
         }
 
@@ -1523,7 +1535,8 @@
                 htmlContainerContent += `
                     <div class="history-chunk-right-action">
                         <button class="btn-chunk-master-rebuy" onclick="triggerBatchLinesRebuy(${absoluteBlockIndex}, '${targetBroadcastingPlatform}')">MUA LẠI 🛒</button>
-                    </div>`;
+                    `;
+                htmlContainerContent += `</div>`;
                 htmlContainerContent += `</div>`;
                 htmlContainerContent += `</div>`;
             });
@@ -1564,7 +1577,7 @@
                     } else {
                         parsedNumbersPayload = rawNumbersText.replace('|', '').trim().replace(/\s+/g, ' ');
                     }
-                    compiledSmsLinesArray.push(`S ${parsedNumbersPayload}`);
+                    compiledSmsLinesArray.push(` S ${parsedNumbersPayload}`);
                 }
             });
 
@@ -1627,6 +1640,14 @@
             } else {
                 viewLogSnapshot(encodeURIComponent(cachedLogSnapshotText));
             }
+        }
+
+        function copyIndividualSmsAndLog(elementId) { 
+            let text = document.getElementById(elementId).innerText; 
+            navigator.clipboard.writeText(text).then(() => { 
+                alert("Đã sao chép phôi tin nhắn và ghi nhận lịch sử phiên thành công!"); 
+            }); 
+            pushCurrentPredictionsToSessionLog("Sao chép phôi tin nhắn SMS");
         }
 
         function addNewAccountOnline() {
@@ -1863,13 +1884,13 @@
             let specInp = document.querySelector('.lock-spec-val');
             state.specLock = specInp ? specInp.value.trim() : '';
 
-            let boundInputs = document.querySelectorAll('.lock-bound-val');
-            state.boundLock = [];
-            boundInputs.forEach(inp => state.boundLock.push(inp.value.trim()));
-
             let rangeInputs = document.querySelectorAll('.lock-range-val');
             state.rangeLock = [];
             rangeInputs.forEach(inp => state.rangeLock.push(inp.value.trim()));
+
+            let boundInputs = document.querySelectorAll('.lock-bound-val');
+            state.boundLock = [];
+            boundInputs.forEach(inp => state.boundLock.push(inp.value.trim()));
 
             state.algo = document.getElementById('algoSelect').value;
             state.size = document.getElementById('predictSizeSelect').value;
@@ -1894,9 +1915,9 @@
             let state = tabStatesStorage[currentType];
             state.mainLock = [];
             state.specLock = '';
-            state.boundLock = [];
             state.rangeLock = [];
-            state.algo = 'combined';
+            state.boundLock = [];
+            state.algo = 'algo1';
             state.size = '1';
             state.html = '';
             state.activePreds = [];
@@ -1909,11 +1930,11 @@
             let state = tabStatesStorage[type];
             let mainGroup = document.getElementById('mainLockGroup'); 
             let specGroup = document.getElementById('specLockGroup'); 
-            let boundGroup = document.getElementById('boundLockGroup');
             let rangeGroup = document.getElementById('rangeLockGroup');
+            let boundGroup = document.getElementById('boundLockGroup');
             let specSection = document.getElementById('specLockSection');
             
-            mainGroup.innerHTML = ''; specGroup.innerHTML = ''; boundGroup.innerHTML = ''; rangeGroup.innerHTML = '';
+            mainGroup.innerHTML = ''; specGroup.innerHTML = ''; rangeGroup.innerHTML = ''; boundGroup.innerHTML = '';
             let mainCount = type === 'lotto' ? 5 : 6;
             let rangeCount = type === 'lotto' ? 4 : (type === 'mega' ? 5 : 6);
             
@@ -1922,7 +1943,7 @@
                 mainGroup.innerHTML += `<input type="text" maxlength="2" class="lock-input lock-main-val" oninput="saveCurrentTabState()" placeholder="-" value="${val}">`; 
             }
 
-            if(type === 'mega') { 
+            if(type === 'mega' || type === 'power') { 
                 specSection.style.display = 'none'; 
             } else { 
                 specSection.style.display = 'flex'; 
@@ -1932,16 +1953,12 @@
 
             for(let i = 0; i < rangeCount; i++) {
                 let val = state.rangeLock[i] || '';
-                rangeGroup.innerHTML += `
-                    <div class="range-input-wrapper">
-                        <input type="text" maxlength="2" class="lock-input range-input lock-range-val" oninput="saveCurrentTabState()" placeholder="-" value="${val}">
-                        <span class="range-ghost-label">${i}</span>
-                    </div>`;
+                rangeGroup.innerHTML += `<input type="text" maxlength="2" class="lock-input range-input lock-range-val" oninput="saveCurrentTabState()" placeholder="-" value="${val}">`;
             }
 
             for(let i = 0; i < mainCount; i++) {
                 let val = state.boundLock[i] || '';
-                boundGroup.innerHTML += `<input type="text" maxlength="2" class="lock-input bound-input lock-bound-val" oninput="saveCurrentTabState()" placeholder="-" value="${val}">`;
+                boundGroup.innerHTML += `<input type="text" maxlength="1" class="lock-input bound-input lock-bound-val" oninput="saveCurrentTabState()" placeholder="-" value="${val}">`;
             }
             
             document.getElementById('algoSelect').value = state.algo;
@@ -1963,7 +1980,7 @@
         function tryOnMatrix(type, mainNumsStr, specNumStr) { 
             let arr = mainNumsStr.split(','); 
             testSets[type].main = arr; 
-            testSets[type].spec = specNumStr ? specNumStr : null; 
+            if(type !== 'power') testSets[type].spec = specNumStr ? specNumStr : null; 
             reloadCurrentMatrix(); 
         }
 
@@ -1971,11 +1988,18 @@
             let pred = activePredictions[index];
             if (!pred) return;
             testSets[currentType].main = [...pred.main];
-            testSets[currentType].spec = pred.spec || null;
+            if (currentType === 'lotto') {
+                testSets[currentType].spec = pred.spec || null;
+            }
             reloadCurrentMatrix();
         }
 
-        function clearTestMatrix(type) { testSets[type].main = []; testSets[type].spec = null; reloadCurrentMatrix(); }
+        function clearTestMatrix(type) { 
+            testSets[type].main = []; 
+            if (testSets[type].spec !== undefined) testSets[type].spec = null; 
+            reloadCurrentMatrix(); 
+        }
+
         function reloadCurrentMatrix() { 
             let rows = globalOnlineData[currentType] || []; 
             if(currentType === 'lotto') renderMatrix(rows); 
@@ -2021,7 +2045,12 @@
         }
 
         function renderMatrix(rows) {
-            let table = document.getElementById('matrixTable'); table.innerHTML = ''; if (rows.length === 0) return;
+            let table = document.getElementById('matrixTable'); 
+            table.innerHTML = ''; 
+            if (rows.length === 0) {
+                table.innerHTML = `<tr><td colspan="45" style="padding:40px; color:var(--text-muted); text-align:center;">Đang đồng bộ dữ liệu đám mây hoặc chưa có kết quả đài Lotto 5/35...</td></tr>`;
+                return;
+            }
             let mainCounts = Array(36).fill(0); let specCounts = Array(13).fill(0);
             rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=35) mainCounts[n]++; }); if(r.spec) { let s = parseInt(r.spec); if(s>=1 && s<=12) specCounts[s]++; } });
             let maxMainCount = Math.max(...mainCounts); let maxSpecCount = Math.max(...specCounts);
@@ -2060,7 +2089,12 @@
         }
 
         function renderMegaMatrix(rows) {
-            let table = document.getElementById('matrixTable'); table.innerHTML = ''; if (rows.length === 0) return;
+            let table = document.getElementById('matrixTable'); 
+            table.innerHTML = ''; 
+            if (rows.length === 0) {
+                table.innerHTML = `<tr><td colspan="45" style="padding:40px; color:var(--text-muted); text-align:center;">Đang đồng bộ dữ liệu đám mây hoặc chưa có kết quả đài Mega 6/45...</td></tr>`;
+                return;
+            }
             let mainCounts = Array(46).fill(0); rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=45) mainCounts[n]++; }); });
             let maxMainCount = Math.max(...mainCounts);
             let headTr = document.createElement('tr'); headTr.className = 'header-nums'; headTr.innerHTML = `<th class="col-fixed-idx">Kỳ</th><th class="col-fixed-date">Ngày quay</th>`;
@@ -2089,7 +2123,12 @@
         }
 
         function renderPowerMatrix(rows) {
-            let table = document.getElementById('matrixTable'); table.innerHTML = ''; if (rows.length === 0) return;
+            let table = document.getElementById('matrixTable'); 
+            table.innerHTML = ''; 
+            if (rows.length === 0) {
+                table.innerHTML = `<tr><td colspan="55" style="padding:40px; color:var(--text-muted); text-align:center;">Đang đồng bộ dữ liệu đám mây hoặc chưa có kết quả đài Power 6/55...</td></tr>`;
+                return;
+            }
             let combinedCounts = Array(56).fill(0); rows.forEach(r => { r.main.forEach(num => { let n = parseInt(num); if(n>=1 && n<=55) combinedCounts[n]++; }); if(r.spec) { let s = parseInt(r.spec); if(s>=1 && s<=55) combinedCounts[s]++; } });
             let maxCount = Math.max(...combinedCounts);
             let headTr = document.createElement('tr'); headTr.className = 'header-nums'; headTr.innerHTML = `<th class="col-fixed-idx">Kỳ</th><th class="col-fixed-date">Ngày quay</th>`;
@@ -2109,33 +2148,25 @@
             for(let i = 1; i <= 55; i++) { 
                 let numStr = String(i).padStart(2, '0'); 
                 let isTestMain = tSet.main.includes(numStr);
-                let isTestSpec = (tSet.spec === numStr);
-                let activeClass = '';
-                let cellText = '';
-                if (isTestMain) { activeClass = 'cell-test-active'; cellText = numStr; }
-                else if (isTestSpec) { activeClass = 'cell-test-spec-active'; cellText = numStr; }
-                
-                let verticalLightStyle = (isTestMain || isTestSpec) ? 'position:relative;' : '';
-                let lightColorBg = isTestSpec ? 'rgba(204, 92, 0, 0.3)' : 'var(--custom-hover-color)';
-                let pseudoAfterHtml = (isTestMain || isTestSpec) ? `<div style="position:absolute; top:21px; bottom:-15000px; left:0; width:100%; background-color:${lightColorBg}; pointer-events:none; z-index:50;"></div>` : '';
-                
-                testTr.innerHTML += `<td class="${activeClass}" style="${verticalLightStyle}">${cellText}${pseudoAfterHtml}</td>`; 
+                let activeClass = isTestMain ? 'cell-test-active' : '';
+                let cellText = isTestMain ? numStr : '';
+                testTr.innerHTML += `<td class="${activeClass}">${cellText}</td>`; 
             }
             table.appendChild(testTr);
 
             rows.forEach((row, idx) => {
-                let tr = document.createElement('tr'); let displayIdx = idx + 1; tr.innerHTML = `<td class="cell-idx">${String(displayIdx).padStart(2, '0')}</td><td class="cell-date">${row.date}</td>`;
-                for(let i = 1; i <= 55; i++) { 
-                    let numStr = String(i).padStart(2, '0'); 
-                    let isAct = row.main.includes(numStr); 
-                    let isSpecAct = (row.spec === numStr); 
-                    let cls = 'cell-main-num'; 
-                    if (isAct) cls = 'cell-main-num active'; 
-                    else if (isSpecAct) cls = 'cell-main-num active-spec-in-main'; 
-                    tr.innerHTML += `<td class="${cls}">${(isAct || isSpecAct) ? numStr : ''}</td>`; 
-                }
-                table.appendChild(tr);
-            });
+    let tr = document.createElement('tr'); 
+    let displayIdx = idx + 1; 
+    tr.innerHTML = `<td class="cell-idx">${String(displayIdx).padStart(2, '0')}</td><td class="cell-date">${row.date}</td>`;
+    for(let i = 1; i <= 55; i++) { 
+        let numStr = String(i).padStart(2, '0'); 
+        let isAct = row.main.includes(numStr); 
+        let isTestAct = tSet.main.includes(numStr); // ✅ Đã thêm kiểm tra số thử nghiệm
+        let cls = isAct ? 'cell-main-num active' : (isTestAct ? 'cell-main-num test-active' : 'cell-main-num'); // ✅ Đã gán class rọi sáng
+        tr.innerHTML += `<td class="${cls}">${isAct ? numStr : ''}</td>`; 
+    }
+    table.appendChild(tr);
+});
 
             updateFloatingHeaderContent();
         }
@@ -2166,8 +2197,8 @@
                     if (globalIdx < validPreds.length) {
                         let pred = validPreds[globalIdx];
                         if (pred && pred.main && pred.main.length > 0) {
-                            let lineStr = `S `;
-                            if (currentType === 'lotto') lineStr += `${pred.main.join(' ')} -${pred.spec}`;
+                            let lineStr = ` S `;
+                            if (currentType === 'lotto') lineStr += `${pred.main.join(' ')}-${pred.spec}`;
                             else lineStr += `${pred.main.join(' ')}`;
                             currentSmsLines.push(lineStr);
                         }
@@ -2186,14 +2217,6 @@
             document.getElementById('composeModal').style.display = 'flex';
         }
         
-        function copyIndividualSmsAndLog(elementId) { 
-            let text = document.getElementById(elementId).innerText; 
-            navigator.clipboard.writeText(text).then(() => { 
-                alert("Đã sao chép phôi tin nhắn và ghi nhận lịch sử phiên thành công!"); 
-            }); 
-            pushCurrentPredictionsToSessionLog("Sao chép phôi tin nhắn SMS");
-        }
-
         function closeComposeModal() { document.getElementById('composeModal').style.display = 'none'; }
 
         function promptEditBallNumber(predIndex, isSpec, subIndex) {
@@ -2201,7 +2224,7 @@
             if (!pred) return;
             let currentVal = isSpec ? pred.spec : pred.main[subIndex];
             let maxRange = currentType === 'lotto' ? 35 : (currentType === 'mega' ? 45 : 55);
-            if (isSpec) maxRange = currentType === 'lotto' ? 12 : 55;
+            if (isSpec) maxRange = 12;
 
             let inputStr = prompt(`Đại ca hãy nhập số mới (từ 01 đến ${String(maxRange).padStart(2, '0')}):`, currentVal);
             if (inputStr === null) return;
@@ -2229,22 +2252,37 @@
         function refreshSingleRowDom(index, label) {
             let pred = activePredictions[index];
             if (!pred) return;
-            let ballsArea = document.getElementById(`ballsArea_${index}`);
-            if (!ballsArea) return;
+            let rowDiv = document.getElementById(`predictRow_${index}`);
+            if (!rowDiv) return;
 
-            let rowInner = ``;
-            pred.main.forEach((num, sIdx) => {
-                rowInner += `<div class="ball-predict ball-main-custom" onclick="promptEditBallNumber(${index}, false, ${sIdx})" title="Bấm để sửa số">${num}</div>`;
+            let rows = globalOnlineData[currentType] || [];
+            let recent5Rows = rows.slice(0, 5);
+
+            let rowInner = `<div class="predict-row-label">${label}</div><div style="display:flex; gap:4px; align-items:center;">`;
+            pred.main.forEach((num, sIdx) => { 
+                rowInner += `<div class="ball-predict ball-main-custom" onclick="promptEditBallNumber(${index}, false, ${sIdx})" title="Bấm để sửa số">${num}</div>`; 
             });
-            if (currentType !== 'mega' && pred.spec) {
+            if (currentType === 'lotto' && pred.spec) {
                 rowInner += `<div style="color:#3a3a52; font-weight:bold;">|</div><div class="ball-predict ball-spec-custom" onclick="promptEditBallNumber(${index}, true, 0)" title="Bấm để sửa số ĐB">${pred.spec}</div>`;
             }
-            ballsArea.innerHTML = rowInner;
+            rowInner += `</div>`;
+
+            rowInner += `<div class="freq-stat-box" title="Số lần xuất hiện của từng số chính trong 5 kỳ gần nhất">`;
+            pred.main.forEach(num => {
+                let cnt = 0;
+                recent5Rows.forEach(r => { if (r.main.includes(num)) cnt++; });
+                rowInner += `<div class="freq-stat-item">${cnt}</div>`;
+            });
+            rowInner += `</div>`;
+
+            rowInner += `<div style="flex:1;"></div><div id="actionsArea_${index}" style="display:flex; gap:2px; align-items:center;">`;
+            rowInner += `<button class="action-inline-btn btn-try" onclick="tryPredictionOnMatrix(${index})">Thử</button><button class="action-inline-btn btn-del" onclick="clearTestMatrix('${currentType}')">Bỏ</button><button class="action-inline-btn" style="border-color:#4e4e66; color:#a5a5bc;" onclick="clearSinglePrediction(${index}, '${label}')">🗑️</button></div>`;
+            
+            rowDiv.innerHTML = rowInner;
         }
 
-        function computeResultSet(maxRange, mainSize, chosenAlgo, locked, boundConstraints, rangeConstraints, index, rows) {
+        function computeResultSet(maxRange, mainSize, chosenAlgo, locked, rangeConstraints, boundConstraints, index, rows) {
             let resultSet = [];
-            let attempts = 0;
 
             let recent5Rows = rows.slice(0, 5);
             let freq5Map = {};
@@ -2252,121 +2290,198 @@
                 let s = String(j).padStart(2, '0');
                 let count = 0;
                 recent5Rows.forEach(r => {
-                    if (r.main.includes(s) || r.spec === s) count++;
+                    if (r.main.includes(s)) count++;
                 });
                 freq5Map[s] = count;
             }
 
-            do {
-                resultSet = [];
-                let pool = []; 
-                for(let j = 1; j <= maxRange; j++) { 
-                    let s = String(j).padStart(2, '0'); 
-                    if(!locked.includes(s)) pool.push(s); 
+            let ganMap = {};
+            for (let j = 1; j <= maxRange; j++) {
+                let s = String(j).padStart(2, '0');
+                let gan = rows.length;
+                for (let rIdx = 0; rIdx < rows.length; rIdx++) {
+                    if (rows[rIdx].main.includes(s)) {
+                        gan = rIdx;
+                        break;
+                    }
                 }
-                pool.sort(() => Math.random() - 0.5);
+                ganMap[s] = gan;
+            }
 
-                if (chosenAlgo === 'combined_v2') {
-                    // THUẬT TOÁN DỰ ĐOÁN 2: Ưu tiên tuần tự (Khóa số -> Hàng chục -> Khoá biên gần đúng)
-                    let pickedRangePool = [];
-                    if (rangeConstraints && rangeConstraints.length > 0) {
-                        rangeConstraints.forEach((qty, groupIdx) => {
+            let basePool = [];
+            for (let j = 1; j <= maxRange; j++) {
+                let s = String(j).padStart(2, '0');
+                basePool.push(s);
+            }
+
+            let attempts = 0;
+            while (attempts < 12000) {
+                attempts++;
+                let poolCopy = [...basePool];
+                poolCopy.sort(() => Math.random() - 0.5);
+
+                let candidate = Array(mainSize).fill(null);
+
+                // --- 1. THUẬT TOÁN 1 (CVN): Phân khúc Hàng chục & Biên 5K, Khóa số áp dụng sau cùng ---
+                if (chosenAlgo === 'algo1') {
+                    let currentRangeCounts = [...rangeConstraints];
+                    while (currentRangeCounts.length < 6) currentRangeCounts.push(0);
+                    let chosenRangePool = [];
+                    let hasRangeConstraints = currentRangeCounts.some(val => val > 0);
+
+                    if (hasRangeConstraints) {
+                        for (let groupIdx = 0; groupIdx < currentRangeCounts.length; groupIdx++) {
+                            let qty = currentRangeCounts[groupIdx] || 0;
                             if (qty > 0) {
                                 let minV = groupIdx * 10;
                                 let maxV = (groupIdx === 5) ? maxRange : (groupIdx * 10 + 9);
-                                let subPool = pool.filter(numStr => {
+                                let subPool = poolCopy.filter(numStr => {
                                     let n = parseInt(numStr);
-                                    return n >= minV && n <= maxV && !locked.includes(numStr);
+                                    return n >= minV && n <= maxV;
                                 });
                                 subPool.sort(() => Math.random() - 0.5);
-                                for (let k = 0; k < qty && subPool.length > 0; k++) {
-                                    let chosen = subPool.shift();
-                                    pickedRangePool.push(chosen);
-                                    pool = pool.filter(x => x !== chosen);
-                                }
-                            }
-                        });
-                    }
-
-                    let combinedPool = [...pickedRangePool, ...pool];
-
-                    for (let pos = 0; pos < mainSize; pos++) {
-                        if (locked[pos] !== null && locked[pos] !== '') {
-                            resultSet.push(locked[pos]);
-                        } else {
-                            let targetBound = boundConstraints[pos];
-                            if (targetBound !== undefined && targetBound !== null && targetBound !== '' && !isNaN(targetBound)) {
-                                let targetNum = parseInt(targetBound);
-                                // Tìm kiếm chính xác tần suất biên trước
-                                let matchIdx = combinedPool.findIndex(numStr => freq5Map[numStr] === targetNum);
-                                if (matchIdx !== -1) {
-                                    resultSet.push(combinedPool.splice(matchIdx, 1)[0]);
-                                } else {
-                                    // Nếu không có chính xác, tìm kiếm biên dung sai gần nhất (+/- 1)
-                                    let softMatchIdx = combinedPool.findIndex(numStr => Math.abs(freq5Map[numStr] - targetNum) <= 1);
-                                    if (softMatchIdx !== -1) {
-                                        resultSet.push(combinedPool.splice(softMatchIdx, 1)[0]);
-                                    } else {
-                                        resultSet.push(combinedPool.shift());
+                                for (let k = 0; k < qty; k++) {
+                                    if (subPool.length > 0) {
+                                        let chosen = subPool.shift();
+                                        chosenRangePool.push(chosen);
+                                        poolCopy = poolCopy.filter(x => x !== chosen);
                                     }
                                 }
-                            } else {
-                                resultSet.push(combinedPool.shift());
                             }
                         }
+                        poolCopy = [...chosenRangePool, ...poolCopy];
                     }
-                } else if (chosenAlgo === 'combined') {
-                    // THUẬT TOÁN DỰ ĐOÁN 1: Cơ chế kết hợp tiêu chuẩn
-                    let pickedRangePool = [];
-                    if (rangeConstraints && rangeConstraints.length > 0) {
-                        rangeConstraints.forEach((qty, groupIdx) => {
-                            if (qty > 0) {
-                                let minV = groupIdx * 10;
-                                let maxV = (groupIdx === 5) ? maxRange : (groupIdx * 10 + 9);
-                                let subPool = pool.filter(numStr => {
-                                    let n = parseInt(numStr);
-                                    return n >= minV && n <= maxV && !locked.includes(numStr);
-                                });
-                                subPool.sort(() => Math.random() - 0.5);
-                                for (let k = 0; k < qty && subPool.length > 0; k++) {
-                                    let chosen = subPool.shift();
-                                    pickedRangePool.push(chosen);
-                                    pool = pool.filter(x => x !== chosen);
-                                }
-                            }
-                        });
-                    }
-
-                    let combinedPool = [...pickedRangePool, ...pool];
 
                     for (let pos = 0; pos < mainSize; pos++) {
-                        if (locked[pos] !== null && locked[pos] !== '') {
-                            resultSet.push(locked[pos]);
-                        } else {
-                            resultSet.push(combinedPool.shift());
+                        if (poolCopy.length > 0) {
+                            candidate[pos] = poolCopy.shift();
                         }
                     }
-                } else {
-                    // XÁO TRỘN NGẪU NHIÊN HOÀN TOÀN
+                } 
+                // --- THUẬT TOÁN 2: CÂN BẰNG BIÊN ĐỘ ---
+                else if (chosenAlgo === 'algo2') {
+                    poolCopy.sort((a, b) => freq5Map[a] - freq5Map[b]);
+                    if (attempts % 2 === 0) poolCopy.reverse();
+
                     for (let pos = 0; pos < mainSize; pos++) {
-                        if (locked[pos] !== null && locked[pos] !== '') {
-                            resultSet.push(locked[pos]);
+                        if (poolCopy.length > 0) {
+                            candidate[pos] = poolCopy.shift();
+                        }
+                    }
+                } 
+                // --- THUẬT TOÁN 3: TẦN SUẤT GAN ---
+                else if (chosenAlgo === 'algo3') {
+                    let subPoolA = [], subPoolB = [], subPoolC = [];
+                    poolCopy.forEach(numStr => {
+                        let g = ganMap[numStr];
+                        if (currentType === 'lotto') {
+                            if (g >= 0 && g <= 4) subPoolA.push(numStr);
+                            else if (g >= 5 && g <= 10) subPoolB.push(numStr);
+                            else subPoolC.push(numStr);
                         } else {
-                            resultSet.push(pool.shift());
+                            if (g >= 0 && g <= 6) subPoolA.push(numStr);
+                            else if (g >= 7 && g <= 15) subPoolB.push(numStr);
+                            else subPoolC.push(numStr);
+                        }
+                    });
+                    subPoolA.sort(() => Math.random() - 0.5);
+                    subPoolB.sort(() => Math.random() - 0.5);
+                    subPoolC.sort(() => Math.random() - 0.5);
+                    poolCopy = [...subPoolA, ...subPoolB, ...subPoolC];
+
+                    for (let pos = 0; pos < mainSize; pos++) {
+                        if (poolCopy.length > 0) {
+                            candidate[pos] = poolCopy.shift();
+                        }
+                    }
+                }
+                // --- THUẬT TOÁN 4: NGẪU NHIÊN HOÀN TOÀN ---
+                else {
+                    poolCopy.sort(() => Math.random() - 0.5);
+                    for (let pos = 0; pos < mainSize; pos++) {
+                        if (poolCopy.length > 0) {
+                            candidate[pos] = poolCopy.shift();
                         }
                     }
                 }
 
-                resultSet.sort((a, b) => parseInt(a) - parseInt(b));
-                attempts++;
+                if (candidate.includes(null)) continue;
+                
+                // Sắp xếp dãy số tăng dần
+                candidate.sort((a, b) => parseInt(a) - parseInt(b));
 
-                var isDuplicate = activePredictions.some((p, pIdx) => {
+                // Kiểm tra điều kiện Hàng chục
+                let counts = [0, 0, 0, 0, 0, 0];
+                candidate.forEach(numStr => {
+                    let n = parseInt(numStr);
+                    let gIdx = Math.min(Math.floor(n / 10), 5);
+                    counts[gIdx]++;
+                });
+
+                let currentRangeCounts = [...rangeConstraints];
+                while (currentRangeCounts.length < 6) currentRangeCounts.push(0);
+                let hasRangeConstraints = currentRangeCounts.some(val => val > 0);
+                
+                let isRangeValid = true;
+                if (hasRangeConstraints) {
+                    for (let i = 0; i < rangeConstraints.length; i++) {
+                        let requiredQty = rangeConstraints[i] || 0;
+                        if (counts[i] !== requiredQty) {
+                            isRangeValid = false;
+                            break;
+                        }
+                    }
+                }
+                if (!isRangeValid) continue;
+
+                // Kiểm tra màng lọc đối chiếu Biên 5K
+                let isBoundValid = true;
+                for (let pos = 0; pos < mainSize; pos++) {
+                    let targetBound = boundConstraints[pos];
+                    if (targetBound !== undefined && targetBound !== null && targetBound !== '' && !isNaN(targetBound)) {
+                        let requiredFreq = parseInt(targetBound);
+                        let numStr = candidate[pos];
+                        if (freq5Map[numStr] !== requiredFreq) {
+                            isBoundValid = false;
+                            break;
+                        }
+                    }
+                }
+                if (!isBoundValid) continue;
+
+                // --- KIỂM TRA KHÓA SỐ SAU CÙNG (NẾU CÓ ĐIỀN) ---
+                let isLockValid = true;
+                let activeLocks = locked.filter(l => l !== null && l !== '');
+                if (activeLocks.length > 0) {
+                    let hasAtLeastOneLock = activeLocks.some(lockNum => candidate.includes(lockNum));
+                    if (!hasAtLeastOneLock) {
+                        isLockValid = false;
+                    }
+                }
+                if (!isLockValid) continue;
+
+                let isDuplicate = activePredictions.some((p, pIdx) => {
                     if (pIdx !== index && p && p.main) {
-                        return p.main.join(',') === resultSet.join(',');
+                        return p.main.join(',') === candidate.join(',');
                     }
                     return false;
                 });
-            } while (isDuplicate && attempts < 50);
+
+                if (!isDuplicate || attempts > 10000) {
+                    resultSet = candidate;
+                    break;
+                }
+            }
+
+            if (resultSet.length === 0 || resultSet.includes(null)) {
+                let fallbackPool = [...basePool];
+                fallbackPool.sort(() => Math.random() - 0.5);
+                resultSet = [];
+                for (let pos = 0; pos < mainSize; pos++) {
+                    resultSet.push(fallbackPool.shift());
+                }
+                resultSet.sort((a, b) => parseInt(a) - parseInt(b));
+            }
 
             return resultSet;
         }
@@ -2404,13 +2519,6 @@
                 }
             });
 
-            let boundInputs = document.querySelectorAll('.lock-bound-val');
-            let boundConstraints = [];
-            boundInputs.forEach(input => {
-                let v = input.value.trim();
-                boundConstraints.push(v !== "" ? parseInt(v) : null);
-            });
-
             let rangeInputs = document.querySelectorAll('.lock-range-val');
             let rangeConstraints = [];
             rangeInputs.forEach(input => {
@@ -2418,34 +2526,50 @@
                 rangeConstraints.push(isNaN(v) ? 0 : v);
             });
 
-            let resultSet = computeResultSet(maxRange, mainSize, chosenAlgo, locked, boundConstraints, rangeConstraints, index, rows);
+            let boundInputs = document.querySelectorAll('.lock-bound-val');
+            let boundConstraints = [];
+            boundInputs.forEach(input => {
+                let v = input.value.trim();
+                boundConstraints.push(v === "" ? null : parseInt(v));
+            });
+
+            let resultSet = computeResultSet(maxRange, mainSize, chosenAlgo, locked, rangeConstraints, boundConstraints, index, rows);
 
             let sNum = ""; 
-            if (currentType !== 'mega') { 
+            if (currentType === 'lotto') { 
                 let specInput = document.querySelector('.lock-spec-val'); 
                 if (specInput && specInput.value.trim() !== "") { 
                     let val = parseInt(specInput.value.trim()); 
-                    let maxSpec = currentType === 'lotto' ? 12 : 55; 
-                    if (val >= 1 && val <= maxSpec) sNum = String(val).padStart(2, '0'); 
+                    if (val >= 1 && val <= 12) sNum = String(val).padStart(2, '0'); 
                 } 
                 if (!sNum) { 
-                    let maxSpec = currentType === 'lotto' ? 12 : 55; 
-                    sNum = String(Math.floor(Math.random() * maxSpec) + 1).padStart(2, '0'); 
+                    sNum = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0'); 
                 } 
             }
 
-            activePredictions[index] = (currentType === 'mega') ? { main: resultSet } : { main: resultSet, spec: sNum };
+            activePredictions[index] = (currentType === 'mega' || currentType === 'power') ? { main: resultSet } : { main: resultSet, spec: sNum };
+            let recent5Rows = rows.slice(0, 5);
 
             let rowDiv = document.createElement('div'); rowDiv.className = 'predict-row'; rowDiv.id = `predictRow_${index}`; ticketContainer.appendChild(rowDiv);
-            let rowInner = `<div class="predict-row-label">${label}</div><div id="ballsArea_${index}" style="display:flex; gap:4px; align-items:center;">`;
+            let rowInner = `<div class="predict-row-label">${label}</div><div style="display:flex; gap:4px; align-items:center;">`;
             resultSet.forEach((num, sIdx) => { rowInner += `<div class="ball-predict ball-main-custom" onclick="promptEditBallNumber(${index}, false, ${sIdx})" title="Bấm để sửa số">${num}</div>`; }); 
-            if (currentType !== 'mega') rowInner += `<div style="color:#3a3a52; font-weight:bold;">|</div><div class="ball-predict ball-spec-custom" onclick="promptEditBallNumber(${index}, true, 0)" title="Bấm để sửa số ĐB">${sNum}</div>`;
-            rowInner += `</div><div style="flex:1;"></div><div id="actionsArea_${index}" style="display:flex; gap:2px; align-items:center;">`;
+            if (currentType === 'lotto' && sNum) rowInner += `<div style="color:#3a3a52; font-weight:bold;">|</div><div class="ball-predict ball-spec-custom" onclick="promptEditBallNumber(${index}, true, 0)" title="Bấm để sửa số ĐB">${sNum}</div>`;
+            rowInner += `</div>`;
+
+            rowInner += `<div class="freq-stat-box" title="Số lần xuất hiện của từng số chính trong 5 kỳ gần nhất">`;
+            resultSet.forEach(num => {
+                let cnt = 0;
+                recent5Rows.forEach(r => { if (r.main.includes(num)) cnt++; });
+                rowInner += `<div class="freq-stat-item">${cnt}</div>`;
+            });
+            rowInner += `</div>`;
+
+            rowInner += `<div style="flex:1;"></div><div id="actionsArea_${index}" style="display:flex; gap:2px; align-items:center;">`;
             rowInner += `<button class="action-inline-btn btn-try" onclick="tryPredictionOnMatrix(${index})">Thử</button><button class="action-inline-btn btn-del" onclick="clearTestMatrix('${currentType}')">Bỏ</button><button class="action-inline-btn" style="border-color:#4e4e66; color:#a5a5bc;" onclick="clearSinglePrediction(${index}, '${label}')">🗑️</button></div>`;
             rowDiv.innerHTML = rowInner;
         }
 
-        function clearSinglePrediction(index, label) { activePredictions[index] = null; document.getElementById(`ballsArea_${index}`).innerHTML = `<div style="font-size:0.62rem; color:#4a4a66; font-style:italic; padding-left:4px;">Bộ số trống...</div>`; document.getElementById(`actionsArea_${index}`).innerHTML = `<button class="action-inline-btn btn-try" style="border-color:var(--accent-green); color:var(--accent-green);" onclick="reGenerateSingleRow(${index}, '${label}')">🔄 Thử lại</button>`; saveCurrentTabState(); }
+        function clearSinglePrediction(index, label) { activePredictions[index] = null; document.getElementById(`predictRow_${index}`).querySelector('div[style*="display:flex; gap:4px"]').innerHTML = `<div style="font-size:0.62rem; color:#4a4a66; font-style:italic; padding-left:4px;">Bộ số trống...</div>`; document.getElementById(`actionsArea_${index}`).innerHTML = `<button class="action-inline-btn btn-try" style="border-color:var(--accent-green); color:var(--accent-green);" onclick="reGenerateSingleRow(${index}, '${label}')">🔄 Thử lại</button>`; saveCurrentTabState(); }
 
         function reGenerateSingleRow(index, label) {
             let rows = globalOnlineData[currentType] || [];
@@ -2465,13 +2589,6 @@
                 }
             });
 
-            let boundInputs = document.querySelectorAll('.lock-bound-val');
-            let boundConstraints = [];
-            boundInputs.forEach(input => {
-                let v = input.value.trim();
-                boundConstraints.push(v !== "" ? parseInt(v) : null);
-            });
-
             let rangeInputs = document.querySelectorAll('.lock-range-val');
             let rangeConstraints = [];
             rangeInputs.forEach(input => {
@@ -2479,32 +2596,29 @@
                 rangeConstraints.push(isNaN(v) ? 0 : v);
             });
 
-            let resultSet = computeResultSet(maxRange, mainSize, chosenAlgo, locked, boundConstraints, rangeConstraints, index, rows);
+            let boundInputs = document.querySelectorAll('.lock-bound-val');
+            let boundConstraints = [];
+            boundInputs.forEach(input => {
+                let v = input.value.trim();
+                boundConstraints.push(v === "" ? null : parseInt(v));
+            });
+
+            let resultSet = computeResultSet(maxRange, mainSize, chosenAlgo, locked, rangeConstraints, boundConstraints, index, rows);
 
             let sNum = ""; 
-            if (currentType !== 'mega') { 
+            if (currentType === 'lotto') { 
                 let specInput = document.querySelector('.lock-spec-val'); 
                 if (specInput && specInput.value.trim() !== "") { 
                     let val = parseInt(specInput.value.trim()); 
-                    let maxSpec = currentType === 'lotto' ? 12 : 55; 
-                    if (val >= 1 && val <= maxSpec) sNum = String(val).padStart(2, '0'); 
+                    if (val >= 1 && val <= 12) sNum = String(val).padStart(2, '0'); 
                 } 
                 if (!sNum) { 
-                    let maxSpec = currentType === 'lotto' ? 12 : 55; 
-                    sNum = String(Math.floor(Math.random() * maxSpec) + 1).padStart(2, '0'); 
+                    sNum = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0'); 
                 } 
             }
 
-            activePredictions[index] = (currentType === 'mega') ? { main: resultSet } : { main: resultSet, spec: sNum };
-
-            let ballsInner = ''; 
-            resultSet.forEach((num, sIdx) => { ballsInner += `<div class="ball-predict ball-main-custom" onclick="promptEditBallNumber(${index}, false, ${sIdx})" title="Bấm để sửa số">${num}</div>`; }); 
-            if (currentType !== 'mega') ballsInner += `<div style="color:#3a3a52; font-weight:bold;">|</div><div class="ball-predict ball-spec-custom" onclick="promptEditBallNumber(${index}, true, 0)" title="Bấm để sửa số ĐB">${sNum}</div>`;
-            document.getElementById(`ballsArea_${index}`).innerHTML = ballsInner;
-            
-            let actionsInner = `<button class="action-inline-btn btn-try" onclick="tryPredictionOnMatrix(${index})">Thử</button><button class="action-inline-btn btn-del" onclick="clearTestMatrix('${currentType}')">Bỏ</button><button class="action-inline-btn" style="border-color:#4e4e66; color:#a5a5bc;" onclick="clearSinglePrediction(${index}, '${label}')">🗑️</button>`;
-            document.getElementById(`actionsArea_${index}`).innerHTML = actionsInner;
-            
+            activePredictions[index] = (currentType === 'mega' || currentType === 'power') ? { main: resultSet } : { main: resultSet, spec: sNum };
+            refreshSingleRowDom(index, label);
             saveCurrentTabState();
         }
 
