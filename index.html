@@ -413,17 +413,17 @@
         .btn-floating-zoom-control:hover { transform: scale(1.1) rotate(5deg); box-shadow: 0 6px 20px rgba(255, 0, 127, 0.7); }
 
         .iframe-container { flex: 1; border-radius: 8px; overflow: hidden; border: 1px solid #232338; background: #0f0f17; position: relative; height: 100%; }
-.iframe-container iframe { 
-    width: 111.11% !important; 
-    height: 111.11% !important; 
-    transform: scale(0.9); 
-    transform-origin: top left;
-    border: none; 
-    display: block; 
-    position: absolute; 
-    top: 0; 
-    left: 0; 
-}
+        .iframe-container iframe { 
+            width: 111.11% !important; 
+            height: 111.11% !important; 
+            transform: scale(0.9); 
+            transform-origin: top left;
+            border: none; 
+            display: block; 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+        }
 
         #adminView td:hover, #adminView th:hover { background-color: initial !important; box-shadow: none !important; color: inherit !important; }
         #adminView td:hover::before, #adminView td:hover::after, #adminView th:hover::after { display: none !important; }
@@ -611,10 +611,10 @@
 				<div style="display: flex; align-items: center; gap: 4px; margin-bottom: 3px; background: #12121a; padding: 3px 5px; border-radius: 5px; border: 1px solid #1f1f33;" title="CHỌN CHIẾN THUẬT DỰ ĐOÁN">
                     <span style="font-size: 0.62rem; font-weight: bold; color: var(--text-muted); white-space: nowrap;">Thuật toán ℹ️:</span>
                     <select class="count-select" id="algoSelect" onchange="saveCurrentTabState()" style="flex: 1; font-size: 0.62rem; padding: 2px; height: 21px;">
-                        <option value="algo1" selected>⚡ Thuật toán 1: Thuật toán CVN</option>
+                        <option value="algo1" selected>⚡ Thuật toán 1: Thuật toán CVN (Khóa hàng chục & Biên 5K)</option>
                         <option value="algo2">⚖️ Thuật toán 2: Cân bằng biên độ</option>
-                        <option value="algo3">📊 Thuật toán 3: Tần suất gan</option>
-                        <option value="algo4">🎲 Thuật toán 4: Ngẫu nhiên</option>
+                        <option value="algo3">📊 Thuật toán 3: Tần suất gan (Phân tầng gan)</option>
+                        <option value="algo4">🎲 Thuật toán 4: Ngẫu nhiên hoàn toàn</option>
                     </select>
                 </div>
 
@@ -765,7 +765,10 @@
 
         let currentType = 'lotto';
         let currentView = 'matrix';
-        let globalOnlineData = { lotto: [], mega: [], power: [] };
+        
+        let localCachedData = localStorage.getItem('vietlott_offline_matrix_data');
+        let globalOnlineData = localCachedData ? JSON.parse(localCachedData) : { lotto: [], mega: [], power: [] };
+
         let currentUserRole = 'member'; 
         let currentUserName = '';
         let currentLogSessionKey = null; 
@@ -909,6 +912,8 @@
             let endIndex = bounds.bottom;
             let targetRows = rows.slice(startIndex, endIndex);
 
+            let mainSize = currentType === 'lotto' ? 5 : 6;
+
             document.getElementById('conversionModalTypeTitle').innerText = currentType === 'lotto' ? 'Lotto 5/35' : (currentType === 'mega' ? 'Mega 6/45' : 'Power 6/55');
             document.getElementById('conversionModalTopText').innerText = String(bounds.top).padStart(2, '0');
             document.getElementById('conversionModalBottomText').innerText = String(bounds.bottom).padStart(2, '0');
@@ -922,11 +927,23 @@
                 return {
                     date: r.date,
                     resultStr: fullResultStr,
-                    convertedStr: convertedMain.join(' ')
+                    convertedStr: convertedMain.join(' '),
+                    convertedArr: convertedMain
                 };
             });
 
-            let html = `<table class="conversion-table">
+            let interactiveInputsHTML = `<div style="display: flex; gap: 6px; align-items: center; margin: 8px 0; background: #141420; padding: 6px; border-radius: 6px; border: 1px solid #28283d;">
+                <span style="font-size:0.68rem; color:var(--border-glow); font-weight:bold;">Tra cứu dãy:</span>`;
+            
+            for (let i = 0; i < mainSize; i++) {
+                interactiveInputsHTML += `<input type="text" maxlength="1" class="conv-custom-input" id="convInput_${i}" value="0" style="width:24px; height:24px; background:#0a0a0f; color:#fff; border:1px solid #36364d; text-align:center; font-weight:bold; font-size:0.75rem; border-radius:4px;" onfocus="this.select()" oninput="recalculateCustomConversionSearch(${mainSize})">`;
+            }
+
+            interactiveInputsHTML += `<span style="font-size:0.75rem; color:#8a8a9e; font-weight:bold; margin-left:4px;">➔ Tần suất:</span>`;
+            interactiveInputsHTML += `<input type="text" id="convResultFreqOutput" readonly value="0" style="width:35px; height:24px; background:#08151a; color:var(--accent-green); border:1px solid var(--accent-green); text-align:center; font-weight:900; font-size:0.8rem; border-radius:4px;">`;
+            interactiveInputsHTML += `</div>`;
+
+            let html = interactiveInputsHTML + `<table class="conversion-table">
                 <tr>
                     <th style="width: 22%;">Ngày / Kỳ</th>
                     <th style="width: 35%;">Kết quả xổ</th>
@@ -955,6 +972,27 @@
             box.style.left = '50%';
             box.style.top = '50%';
             box.style.transform = 'translate(-50%, -50%)';
+
+            window._currentConversionRecords = convertedRecords;
+            recalculateCustomConversionSearch(mainSize);
+        }
+
+        function recalculateCustomConversionSearch(mainSize) {
+            let customArr = [];
+            for (let i = 0; i < mainSize; i++) {
+                let val = document.getElementById(`convInput_${i}`).value.trim();
+                customArr.push(val === "" ? 0 : parseInt(val));
+            }
+            customArr.sort((a, b) => a - b);
+            let customStr = customArr.join(' ');
+
+            let records = window._currentConversionRecords || [];
+            let matchFreq = records.filter(item => item.convertedStr === customStr).length;
+
+            let outputEl = document.getElementById('convResultFreqOutput');
+            if (outputEl) {
+                outputEl.value = matchFreq;
+            }
         }
 
         function closeConversionModal() {
@@ -1095,11 +1133,6 @@
                 return;
             }
 
-            if ((u === 'daica' && p === '123') || (u === 'admin' && p === '123')) {
-                executeLoginSuccess(u, 'admin');
-                return;
-            }
-
             db.ref('system_accounts').once('value', (snapshot) => {
                 let accounts = snapshot.val() || {};
                 if (accounts[u] && accounts[u].password === p) {
@@ -1110,11 +1143,9 @@
                     errBox.style.display = 'block';
                 }
             }).catch(() => {
-                if (u === 'daica' || u === 'admin') {
-                    executeLoginSuccess(u, 'admin');
-                } else {
-                    executeLoginSuccess(u, 'member');
-                }
+                let errBox = document.getElementById('loginError');
+                errBox.innerText = "Lỗi kết nối cơ sở dữ liệu xác thực!";
+                errBox.style.display = 'block';
             });
         }
 
@@ -1179,11 +1210,6 @@
             let pass = document.getElementById('lockPassInput').value.trim();
             if (!pass) return;
 
-            if ((currentUserName === 'daica' || currentUserName === 'admin') && pass === '123') {
-                document.getElementById('lockOverlay').style.display = 'none';
-                return;
-            }
-
             db.ref(`system_accounts/${currentUserName}`).once('value', (snapshot) => {
                 let data = snapshot.val() || {};
                 if (data.password === pass) {
@@ -1193,12 +1219,8 @@
                     err.style.display = 'block';
                 }
             }).catch(() => {
-                if (pass === '123') {
-                    document.getElementById('lockOverlay').style.display = 'none';
-                } else {
-                    let err = document.getElementById('lockError');
-                    err.style.display = 'block';
-                }
+                let err = document.getElementById('lockError');
+                err.style.display = 'block';
             });
         }
 
@@ -1708,6 +1730,8 @@
                 globalOnlineData.mega = data.mega || [];
                 globalOnlineData.power = data.power || [];
 
+                localStorage.setItem('vietlott_offline_matrix_data', JSON.stringify(globalOnlineData));
+
                 let hasLotto = globalOnlineData.lotto.length > 0;
                 let hasMega = globalOnlineData.mega.length > 0;
                 let hasPower = globalOnlineData.power.length > 0;
@@ -2165,18 +2189,31 @@
             table.appendChild(testTr);
 
             rows.forEach((row, idx) => {
-    let tr = document.createElement('tr'); 
-    let displayIdx = idx + 1; 
-    tr.innerHTML = `<td class="cell-idx">${String(displayIdx).padStart(2, '0')}</td><td class="cell-date">${row.date}</td>`;
-    for(let i = 1; i <= 55; i++) { 
-        let numStr = String(i).padStart(2, '0'); 
-        let isAct = row.main.includes(numStr); 
-        let isTestAct = tSet.main.includes(numStr); // ✅ Đã thêm kiểm tra số thử nghiệm
-        let cls = isAct ? 'cell-main-num active' : (isTestAct ? 'cell-main-num test-active' : 'cell-main-num'); // ✅ Đã gán class rọi sáng
-        tr.innerHTML += `<td class="${cls}">${isAct ? numStr : ''}</td>`; 
-    }
-    table.appendChild(tr);
-});
+                let tr = document.createElement('tr'); let displayIdx = idx + 1; tr.innerHTML = `<td class="cell-idx">${String(displayIdx).padStart(2, '0')}</td><td class="cell-date">${row.date}</td>`;
+                for(let i = 1; i <= 55; i++) { 
+                    let numStr = String(i).padStart(2, '0'); 
+                    let isMainAct = row.main.includes(numStr);
+                    let isSpecAct = (row.spec === numStr);
+                    let isTestAct = tSet.main.includes(numStr); 
+
+                    let cls = 'cell-main-num';
+                    let cellText = '';
+
+                    if (isSpecAct) {
+                        cls = 'cell-spec-num active-spec';
+                        cellText = numStr;
+                    } else if (isMainAct) {
+                        cls = 'cell-main-num active';
+                        cellText = numStr;
+                    } else if (isTestAct) {
+                        cls = 'cell-main-num test-active';
+                        cellText = '';
+                    }
+
+                    tr.innerHTML += `<td class="${cls}">${cellText}</td>`; 
+                }
+                table.appendChild(tr);
+            });
 
             updateFloatingHeaderContent();
         }
@@ -2277,10 +2314,13 @@
             }
             rowInner += `</div>`;
 
-            rowInner += `<div class="freq-stat-box" title="Số lần xuất hiện của từng số chính trong 5 kỳ gần nhất">`;
+            rowInner += `<div class="freq-stat-box" title="Số lần xuất hiện của từng số trong 5 kỳ gần nhất (Tính cả số đặc biệt nếu có)">`;
             pred.main.forEach(num => {
                 let cnt = 0;
-                recent5Rows.forEach(r => { if (r.main.includes(num)) cnt++; });
+                recent5Rows.forEach(r => { 
+                    if (r.main && r.main.includes(num)) cnt++; 
+                    if (currentType === 'power' && r.spec === num) cnt++;
+                });
                 rowInner += `<div class="freq-stat-item">${cnt}</div>`;
             });
             rowInner += `</div>`;
@@ -2300,7 +2340,8 @@
                 let s = String(j).padStart(2, '0');
                 let count = 0;
                 recent5Rows.forEach(r => {
-                    if (r.main.includes(s)) count++;
+                    if (r.main && r.main.includes(s)) count++;
+                    if (currentType === 'power' && r.spec === s) count++;
                 });
                 freq5Map[s] = count;
             }
@@ -2310,7 +2351,7 @@
                 let s = String(j).padStart(2, '0');
                 let gan = rows.length;
                 for (let rIdx = 0; rIdx < rows.length; rIdx++) {
-                    if (rows[rIdx].main.includes(s)) {
+                    if ((rows[rIdx].main && rows[rIdx].main.includes(s)) || (currentType === 'power' && rows[rIdx].spec === s)) {
                         gan = rIdx;
                         break;
                     }
@@ -2332,7 +2373,6 @@
 
                 let candidate = Array(mainSize).fill(null);
 
-                // --- 1. THUẬT TOÁN 1 (CVN): Phân khúc Hàng chục & Biên 5K, Khóa số áp dụng sau cùng ---
                 if (chosenAlgo === 'algo1') {
                     let currentRangeCounts = [...rangeConstraints];
                     while (currentRangeCounts.length < 6) currentRangeCounts.push(0);
@@ -2368,7 +2408,6 @@
                         }
                     }
                 } 
-                // --- THUẬT TOÁN 2: CÂN BẰNG BIÊN ĐỘ ---
                 else if (chosenAlgo === 'algo2') {
                     poolCopy.sort((a, b) => freq5Map[a] - freq5Map[b]);
                     if (attempts % 2 === 0) poolCopy.reverse();
@@ -2379,7 +2418,6 @@
                         }
                     }
                 } 
-                // --- THUẬT TOÁN 3: TẦN SUẤT GAN ---
                 else if (chosenAlgo === 'algo3') {
                     let subPoolA = [], subPoolB = [], subPoolC = [];
                     poolCopy.forEach(numStr => {
@@ -2405,7 +2443,6 @@
                         }
                     }
                 }
-                // --- THUẬT TOÁN 4: NGẪU NHIÊN HOÀN TOÀN ---
                 else {
                     poolCopy.sort(() => Math.random() - 0.5);
                     for (let pos = 0; pos < mainSize; pos++) {
@@ -2417,10 +2454,8 @@
 
                 if (candidate.includes(null)) continue;
                 
-                // Sắp xếp dãy số tăng dần
                 candidate.sort((a, b) => parseInt(a) - parseInt(b));
 
-                // Kiểm tra điều kiện Hàng chục
                 let counts = [0, 0, 0, 0, 0, 0];
                 candidate.forEach(numStr => {
                     let n = parseInt(numStr);
@@ -2444,7 +2479,6 @@
                 }
                 if (!isRangeValid) continue;
 
-                // Kiểm tra màng lọc đối chiếu Biên 5K
                 let isBoundValid = true;
                 for (let pos = 0; pos < mainSize; pos++) {
                     let targetBound = boundConstraints[pos];
@@ -2459,7 +2493,6 @@
                 }
                 if (!isBoundValid) continue;
 
-                // --- KIỂM TRA KHÓA SỐ SAU CÙNG (NẾU CÓ ĐIỀN) ---
                 let isLockValid = true;
                 let activeLocks = locked.filter(l => l !== null && l !== '');
                 if (activeLocks.length > 0) {
@@ -2566,10 +2599,13 @@
             if (currentType === 'lotto' && sNum) rowInner += `<div style="color:#3a3a52; font-weight:bold;">|</div><div class="ball-predict ball-spec-custom" onclick="promptEditBallNumber(${index}, true, 0)" title="Bấm để sửa số ĐB">${sNum}</div>`;
             rowInner += `</div>`;
 
-            rowInner += `<div class="freq-stat-box" title="Số lần xuất hiện của từng số chính trong 5 kỳ gần nhất">`;
+            rowInner += `<div class="freq-stat-box" title="Số lần xuất hiện của từng số trong 5 kỳ gần nhất (Tính cả số đặc biệt nếu có)">`;
             resultSet.forEach(num => {
                 let cnt = 0;
-                recent5Rows.forEach(r => { if (r.main.includes(num)) cnt++; });
+                recent5Rows.forEach(r => { 
+                    if (r.main && r.main.includes(num)) cnt++; 
+                    if (currentType === 'power' && r.spec === num) cnt++;
+                });
                 rowInner += `<div class="freq-stat-item">${cnt}</div>`;
             });
             rowInner += `</div>`;
