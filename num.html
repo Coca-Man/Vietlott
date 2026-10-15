@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trạm Phân Tích Số Khả Thi - CVN</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #0d0d14; color: #fff; padding: 15px; margin: 0; }
+        .container { max-width: 100%; margin: 0 auto; background: rgba(20, 20, 30, 0.85); padding: 15px; border-radius: 8px; border: 1px solid #28283d; box-sizing: border-box; }
+        h2 { color: #00f2fe; text-align: center; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; }
+        
+        .control-bar { display: flex; gap: 10px; align-items: center; justify-content: space-between; background: #141420; padding: 10px; border-radius: 6px; border: 1px solid #36364d; margin-bottom: 12px; }
+        .control-bar select { background: #0a0a0f; color: #00f2fe; border: 1px solid #36364d; padding: 6px 10px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; outline: none; font-family: inherit; cursor: pointer; }
+        
+        textarea { width: 100%; height: 130px; padding: 8px; box-sizing: border-box; background: #0a0a0f; color: #ffab00; border: 1px solid #36364d; border-radius: 4px; font-family: monospace; font-size: 11px; margin-top: 5px; resize: none; outline: none; }
+        
+        button { display: block; width: 100%; padding: 12px; background: linear-gradient(135deg, #00ff66 0%, #1abc9c 100%); color: #000; border: none; border-radius: 4px; font-size: 0.85rem; cursor: pointer; margin-top: 10px; font-weight: 900; text-transform: uppercase; font-family: inherit; }
+        button:hover { filter: brightness(1.15); box-shadow: 0 0 10px rgba(0,255,102,0.4); }
+        
+        .result-box { margin-top: 12px; padding: 10px; background: rgba(10, 20, 15, 0.6); border-left: 4px solid #00ff66; border-radius: 4px; border: 1px solid #1f3a28; }
+        .number-ball { display: inline-block; width: 34px; height: 34px; line-height: 34px; text-align: center; background: linear-gradient(135deg, #ff007f 0%, #7928ca 100%); color: white; border-radius: 50%; font-weight: bold; margin-right: 8px; font-size: 0.85rem; box-shadow: 0 0 8px rgba(255,0,127,0.4); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Trạm Phân Tích Dữ Liệu Tự Động (Cloud & Local)</h2>
+    
+    <div class="control-bar">
+        <div>
+            <label style="font-size: 0.75rem; color: #8a8a9e; font-weight: bold; margin-right: 5px;">Loại đài hiện tại:</label>
+            <select id="typeSelector" disabled>
+                <option value="lotto">Lotto 5/35</option>
+                <option value="mega">Mega 6/45</option>
+                <option value="power">Power 6/55</option>
+            </select>
+        </div>
+        <button onclick="requestSyncFromParent()" style="width: auto; padding: 6px 12px; margin: 0; font-size: 0.7rem; background: #161622; color: #00f2fe; border: 1px solid #36364d;">🔄 Đồng bộ lại dữ liệu</button>
+    </div>
+
+    <div style="font-size: 0.72rem; color: #8a8a9e; margin-bottom: 3px;">Dữ liệu hệ thống đã tự động nạp từ trang chính:</div>
+    <textarea id="dataInput" placeholder="Đang chờ đồng bộ dữ liệu từ hệ thống..."></textarea>
+    
+    <button onclick="runAlgorithm()">Khởi Chạy Lọc Số Khả Thi</button>
+
+    <div class="result-box" id="resultArea" style="display: none;">
+        <h3 style="font-size: 0.8rem; color: #00ff66; margin-top: 0;">Dãy Số Đề Xuất (Trộn ngẫu nhiên từ nhóm Hot):</h3>
+        <div id="predictedNumbers" style="margin-bottom: 8px;"></div>
+        <hr style="border-color: #1f3a28;">
+        <h4 style="font-size: 0.75rem; color: #b0b0c2; margin-bottom: 3px;">Nhóm Số Hot (Làm cơ sở lọc):</h4>
+        <pre id="statsDetails" style="font-family: monospace; color: #00f2fe; font-size: 0.72rem; margin: 0;"></pre>
+    </div>
+</div>
+
+<script>
+    // Lắng nghe dữ liệu truyền từ trang index.html sang
+    window.addEventListener('message', function(event) {
+        if (event.data && event.data.type === 'SYNC_VIETLOTT_DATA') {
+            let rows = event.data.rows || [];
+            let lottoType = event.data.lottoType || 'lotto';
+            
+            document.getElementById('typeSelector').value = lottoType;
+
+            let textLines = rows.map(r => {
+                let line = `${r.date} | ${r.main.join(' ')}`;
+                if (r.spec) line += ` | ${r.spec}`;
+                return line;
+            });
+
+            document.getElementById('dataInput').value = textLines.join('\n');
+            
+            if (textLines.length > 0) {
+                runAlgorithm();
+            }
+        }
+    });
+
+    function requestSyncFromParent() {
+        if (window.parent && window.parent !== window) {
+            // Yêu cầu trang cha gửi lại dữ liệu mới nhất
+            let parentWindow = window.parent;
+            if (parentWindow.globalOnlineData && parentWindow.currentType) {
+                let type = parentWindow.currentType;
+                let rows = parentWindow.globalOnlineData[type] || [];
+                
+                document.getElementById('typeSelector').value = type;
+                let textLines = rows.map(r => {
+                    let line = `${r.date} | ${r.main.join(' ')}`;
+                    if (r.spec) line += ` | ${r.spec}`;
+                    return line;
+                });
+                document.getElementById('dataInput').value = textLines.join('\n');
+                if (textLines.length > 0) runAlgorithm();
+            }
+        }
+    }
+
+    window.onload = function() {
+        requestSyncFromParent();
+    };
+
+    function getRandomHot(arr, topN) {
+        if(arr.length === 0) return null;
+        let pool = arr.slice(0, topN);
+        return pool[Math.floor(Math.random() * pool.length)].num;
+    }
+
+    function runAlgorithm() {
+        const textData = document.getElementById("dataInput").value.trim().split('\n');
+        let allNumbers = [];
+        
+        textData.forEach(line => {
+            if(line.includes('|')) {
+                const parts = line.split('|');
+                if(parts.length >= 2) {
+                    let numMatches = parts[1].match(/\d+/g);
+                    if (numMatches) {
+                        const mainNums = numMatches.map(Number);
+                        allNumbers = allNumbers.concat(mainNums);
+                    }
+                }
+            }
+        });
+
+        if(allNumbers.length === 0 || allNumbers.includes(NaN)) {
+            alert("Dữ liệu trống hoặc chưa đúng định dạng!");
+            return;
+        }
+
+        let freq = {};
+        allNumbers.forEach(num => {
+            freq[num] = (freq[num] || 0) + 1;
+        });
+
+        let heads = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [] };
+        for (let num in freq) {
+            let n = parseInt(num);
+            let val = { num: n, count: freq[n] };
+            if (n < 10) heads[0].push(val);
+            else if (n < 20) heads[1].push(val);
+            else if (n < 30) heads[2].push(val);
+            else if (n < 40) heads[3].push(val);
+            else if (n < 50) heads[4].push(val);
+            else heads[5].push(val);
+        }
+
+        for (let i in heads) {
+            heads[i].sort((a, b) => b.count - a.count);
+        }
+
+        let prediction = new Set();
+        while (prediction.size < 5) {
+            let n0 = getRandomHot(heads[0], 3);
+            let n1 = getRandomHot(heads[1], 4);
+            let n2 = getRandomHot(heads[2], 3);
+            let n3 = getRandomHot(heads[3], 3);
+            
+            if(n0) prediction.add(n0);
+            if(n1) prediction.add(n1);
+            if(n2) prediction.add(n2);
+            if(n3) prediction.add(n3);
+            
+            if(prediction.size > 5) {
+                let arr = Array.from(prediction).slice(0, 5);
+                prediction = new Set(arr);
+            }
+        }
+
+        let finalArr = Array.from(prediction).sort((a, b) => a - b);
+
+        const resultArea = document.getElementById("resultArea");
+        const predDiv = document.getElementById("predictedNumbers");
+        const statsPre = document.getElementById("statsDetails");
+        
+        resultArea.style.display = "block";
+        predDiv.innerHTML = finalArr.map(n => `<span class="number-ball">${n < 10 ? '0'+n : n}</span>`).join('');
+
+        let statsHtml = `Top Đầu 0: ${heads[0].slice(0,3).map(x => x.num).join(', ')}\n`;
+        statsHtml += `Top Đầu 1: ${heads[1].slice(0,4).map(x => x.num).join(', ')}\n`;
+        statsHtml += `Top Đầu 2: ${heads[2].slice(0,3).map(x => x.num).join(', ')}\n`;
+        statsHtml += `Top Đầu 3: ${heads[3].slice(0,3).map(x => x.num).join(', ')}`;
+        
+        statsPre.innerText = statsHtml;
+    }
+</script>
+
+</body>
+</html>
