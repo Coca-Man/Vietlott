@@ -1440,7 +1440,6 @@
     let oldPass = document.getElementById('pwdOldPass').value.trim();
     let newUser = document.getElementById('pwdNewUser').value.trim().toLowerCase();
     let newPass = document.getElementById('pwdNewPass').value.trim();
-    // ... (các đoạn code phía sau giữ nguyên)
 
             if (!userCheck || !oldPass) { alert("Vui lòng nhập Tên đăng nhập cũ và Mật khẩu hiện tại để xác thực!"); return; }
             if (userCheck !== currentUserName) { alert("Tên đăng nhập cũ xác nhận không khớp!"); return; }
@@ -2341,8 +2340,14 @@
             document.getElementById('modalTitleText').innerText = "Nhật ký lưu trữ các lần dự đoán của phiên";
             let topActionContainer = document.getElementById('modalTopActionContainer');
             // NÚT XOÁ VĨNH VIỄN
-            topActionContainer.innerHTML = `
-    <button class="btn-clear-premium" onclick="clearCurrentSessionHistoryOnly()" style="height:22px; padding:0 6px; font-size:0.6rem; background:var(--accent-pink); color:#fff;" title="Xoá vĩnh viễn dòng nhật ký này">⚠️ XOÁ VĨNH VIỄN</button>
+           // CHỈ HIỆN NÚT XOÁ CHO ĐẠI CA/ADMIN, CẤM HIỆN NÚT XOÁ CHO TÀI KHOẢN XEMCHUNG
+let deleteButtonHtml = "";
+if ((currentUserRole === 'superadmin' || currentUserRole === 'admin' || currentUserName === 'daica') && currentUserName !== 'xemchung') {
+    deleteButtonHtml = `<button class="btn-clear-premium" onclick="clearCurrentSessionHistoryOnly()" style="height:22px; padding:0 6px; font-size:0.6rem; background:var(--accent-pink); color:#fff;" title="Xoá vĩnh viễn dòng nhật ký này">⚠️ XOÁ VĨNH VIỄN</button>`;
+}
+
+topActionContainer.innerHTML = `
+    ${deleteButtonHtml}
     <button class="modal-close" onclick="closeComposeModal()">✕</button>
 `;
 
