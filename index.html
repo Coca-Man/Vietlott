@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Phân tích & Dự đoán CVN</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <style>
         /* =========================================
@@ -1093,37 +1094,58 @@
 
         // --- 3. ĐĂNG NHẬP, KHÓA & AUTHENTICATION ---
         function handleSystemLogin() {
-            let u = document.getElementById('loginUser').value.trim().toLowerCase();
-            let p = document.getElementById('loginPass').value.trim();
+    let u = document.getElementById('loginUser').value.trim().toLowerCase();
+    let p = document.getElementById('loginPass').value.trim();
+    
+    if(!u || !p) {
+        let errBox = document.getElementById('loginError');
+        errBox.innerText = "Vui lòng nhập đầy đủ Tên đăng nhập và Mật khẩu!";
+        errBox.style.display = 'block';
+        return;
+    }
+
+    // Luôn kiểm tra trong CSDL nội bộ trước để lấy Vai trò (Role)
+    db.ref('system_accounts/' + u).once('value', (snapshot) => {
+        let userData = snapshot.val();
+        if (userData && userData.password === p) {
             
-            if(!u || !p) {
+            if(userData.status === 'locked' && u !== 'daica') {
                 let errBox = document.getElementById('loginError');
-                errBox.innerText = "Vui lòng nhập đầy đủ Tên đăng nhập và Mật khẩu!";
+                errBox.innerText = "Tài khoản này đã bị khóa bởi quản trị viên!";
                 errBox.style.display = 'block';
                 return;
             }
+            
+            let verifiedRole = userData.role || 'member';
 
-            db.ref('system_accounts').once('value', (snapshot) => {
-                let accounts = snapshot.val() || {};
-                if (accounts[u] && accounts[u].password === p) {
-                    if(accounts[u].status === 'locked' && u !== 'daica') {
-                        let errBox = document.getElementById('loginError');
-                        errBox.innerText = "Tài khoản này đã bị khóa bởi quản trị viên!";
-                        errBox.style.display = 'block';
-                        return;
-                    }
-                    executeLoginSuccess(u, accounts[u].role || 'member');
-                } else {
+            // NẾU LÀ ĐẠI CA HOẶC ADMIN -> Bắt buộc quẹt "Thẻ an ninh" Firebase Auth
+            if (verifiedRole === 'superadmin' || verifiedRole === 'admin' || u === 'daica') {
+                // Tự động ghép tên đăng nhập với @cvn.com để quét thẻ
+                firebase.auth().signInWithEmailAndPassword(u + '@cvn.com', p)
+                .then(() => {
+                    executeLoginSuccess(u, verifiedRole);
+                })
+                .catch((err) => {
                     let errBox = document.getElementById('loginError');
-                    errBox.innerText = "Mật khẩu hoặc tên đăng nhập không đúng thưa Đại ca!";
+                    errBox.innerText = "Tài khoản Quản trị này chưa được kích hoạt thẻ an ninh (Firebase Auth)!";
                     errBox.style.display = 'block';
-                }
-            }).catch(() => {
-                let errBox = document.getElementById('loginError');
-                errBox.innerText = "Lỗi kết nối cơ sở dữ liệu xác thực!";
-                errBox.style.display = 'block';
-            });
+                });
+            } else {
+                // NẾU LÀ THÀNH VIÊN HOẶC KHÁCH (xemchung) -> Cho vào thẳng, chỉ có quyền ĐỌC
+                executeLoginSuccess(u, verifiedRole);
+            }
+
+        } else {
+            let errBox = document.getElementById('loginError');
+            errBox.innerText = "Mật khẩu hoặc tên đăng nhập không đúng!";
+            errBox.style.display = 'block';
         }
+    }).catch(() => {
+        let errBox = document.getElementById('loginError');
+        errBox.innerText = "Lỗi kết nối cơ sở dữ liệu xác thực!";
+        errBox.style.display = 'block';
+    });
+}
 
         function executeLoginSuccess(username, role) {
             currentUserRole = role;
@@ -1407,10 +1429,18 @@
         }
 
         function executeSelfProfileMutation() {
-            let userCheck = document.getElementById('pwdConfirmUser').value.trim().toLowerCase();
-            let oldPass = document.getElementById('pwdOldPass').value.trim();
-            let newUser = document.getElementById('pwdNewUser').value.trim().toLowerCase();
-            let newPass = document.getElementById('pwdNewPass').value.trim();
+    let userCheck = document.getElementById('pwdConfirmUser').value.trim().toLowerCase();
+    
+    // THÊM ĐOẠN CHẶN NÀY ĐỂ BẢO VỆ TÀI KHOẢN DÙNG CHUNG
+    if (userCheck === 'xemchung') {
+        alert("Cảnh báo: Tài khoản dùng chung cho cộng đồng không được phép tự thay đổi thông tin tại đây!");
+        return;
+    }
+    
+    let oldPass = document.getElementById('pwdOldPass').value.trim();
+    let newUser = document.getElementById('pwdNewUser').value.trim().toLowerCase();
+    let newPass = document.getElementById('pwdNewPass').value.trim();
+    // ... (các đoạn code phía sau giữ nguyên)
 
             if (!userCheck || !oldPass) { alert("Vui lòng nhập Tên đăng nhập cũ và Mật khẩu hiện tại để xác thực!"); return; }
             if (userCheck !== currentUserName) { alert("Tên đăng nhập cũ xác nhận không khớp!"); return; }
@@ -1559,11 +1589,18 @@
         }
         
         function clearCurrentData() { 
-            if (currentUserName !== 'daica' && currentUserRole !== 'admin') return; 
-            if (confirm(`Bạn có chắc muốn xóa dữ liệu đám mây đài ${currentType.toUpperCase()}?`)) { 
-                db.ref('vietlott_matrix_data/' + currentType).remove(); alert("Đã giải phóng dữ liệu đám mây!"); 
-            } 
-        }
+    // Bắt buộc check lại quyền từ biến hệ thống đã được xác thực qua Database
+    if (currentUserRole !== 'superadmin' && currentUserRole !== 'admin' && currentUserName !== 'daica') { 
+        alert("Cảnh báo: Hành vi bất hợp pháp! Bạn không có quyền thực hiện thao tác này."); 
+        return; 
+    } 
+
+    if (confirm(`Bạn có chắc muốn xóa dữ liệu đám mây đài ${currentType.toUpperCase()}?`)) { 
+        db.ref('vietlott_matrix_data/' + currentType).remove()
+          .then(() => alert("Đã giải phóng dữ liệu đám mây!"))
+          .catch(err => alert("Lỗi bảo mật: Cơ sở dữ liệu từ chối quyền ghi/xóa của bạn!")); 
+    } 
+}
 
         // --- 5. RENDER MA TRẬN & HIỂN THỊ ---
         function getValidatedMatrixBounds() {
@@ -2305,9 +2342,9 @@
             let topActionContainer = document.getElementById('modalTopActionContainer');
             // NÚT XOÁ VĨNH VIỄN
             topActionContainer.innerHTML = `
-                <button class="btn-clear-premium" onclick="clearCurrentSessionHistoryOnly()" style="height:22px; padding:0 6px; font-size:0.6rem; background:var(--accent-pink); color:#fff;" title="Xoá vĩnh viễn dòng nhật ký này">⚠️ XOÁ VĨNH VIỄN</button>
-                <button class="modal-close" onclick="closeComposeModal()">✕</button>
-            `;
+    <button class="btn-clear-premium" onclick="clearCurrentSessionHistoryOnly()" style="height:22px; padding:0 6px; font-size:0.6rem; background:var(--accent-pink); color:#fff;" title="Xoá vĩnh viễn dòng nhật ký này">⚠️ XOÁ VĨNH VIỄN</button>
+    <button class="modal-close" onclick="closeComposeModal()">✕</button>
+`;
 
             let bottomActionContainer = document.getElementById('modalBottomActionsContainer');
             bottomActionContainer.innerHTML = `<button class="modal-btn-cancel" onclick="closeComposeModal()">Đóng hộp thoại</button>`;
