@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Phân tích & Dự đoán CVN</title>
+    <!-- THƯ VIỆN FIREBASE -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <style>
         /* =========================================
@@ -28,11 +29,13 @@
             --custom-matrix-bg: #07070a;
         }
 
+        /* Tùy chỉnh thanh cuộn (Scrollbar) */
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: rgba(10, 10, 15, 0.8); }
         ::-webkit-scrollbar-thumb { background: #2a2a40; border-radius: 4px; border: 1px solid rgba(0, 242, 254, 0.2); }
         ::-webkit-scrollbar-thumb:hover { background: var(--border-glow); box-shadow: 0 0 8px var(--border-glow); }
 
+        /* Khung body và hiệu ứng Watermark */
         html, body { 
             height: 100vh; min-height: 100vh; max-height: 100vh; 
             margin: 0; padding: 0; overflow: hidden; box-sizing: border-box; 
@@ -40,11 +43,10 @@
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             -webkit-font-smoothing: antialiased;
         }
-
         body::before { content: "CVN PREMIUM SYSTEMS"; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg); font-size: 8vw; font-weight: 900; color: rgba(0, 242, 254, 0.005); z-index: -1; pointer-events: none; white-space: nowrap; letter-spacing: 15px; font-family: 'Arial Black', sans-serif; }
         
         /* =========================================
-           2. HIỆU ỨNG OVERLAY (MƯA TIỀN, PHÁO HOA, CẦU XOAY)
+           2. HIỆU ỨNG OVERLAY (MƯA TIỀN, PHÁO HOA, ANIMATION)
            ========================================= */
         #loginOverlay, #lockOverlay { 
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
@@ -53,40 +55,22 @@
         }
         #lockOverlay { display: none; }
         
-        .falling-dollar {
-            position: absolute; top: -50px; font-size: 20px; user-select: none; pointer-events: none;
-            animation: dollarFall linear infinite; z-index: 9990; opacity: 0.9;
-        }
-        @keyframes dollarFall {
-            0% { transform: translateY(-50px) rotate(0deg); opacity: 0; }
-            15% { opacity: 0.95; }
-            100% { transform: translateY(105vh) rotate(360deg); opacity: 0; }
-        }
+        .falling-dollar { position: absolute; top: -50px; font-size: 20px; user-select: none; pointer-events: none; animation: dollarFall linear infinite; z-index: 9990; opacity: 0.9; }
+        @keyframes dollarFall { 0% { transform: translateY(-50px) rotate(0deg); opacity: 0; } 15% { opacity: 0.95; } 100% { transform: translateY(105vh) rotate(360deg); opacity: 0; } }
 
-        .firework-particle {
-            position: absolute; width: 6px; height: 6px; border-radius: 50%; pointer-events: none; z-index: 9992;
-            animation: fireworkExplode 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
-        }
-        @keyframes fireworkExplode {
-            0% { transform: translate(0, 0) scale(1.2); opacity: 1; }
-            100% { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; }
-        }
+        .firework-particle { position: absolute; width: 6px; height: 6px; border-radius: 50%; pointer-events: none; z-index: 9992; animation: fireworkExplode 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) infinite; }
+        @keyframes fireworkExplode { 0% { transform: translate(0, 0) scale(1.2); opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; } }
         
         @keyframes spinBall { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes slideNumbers { 0% { transform: translateX(0); } 100% { transform: translateX(-104px); } }
         @keyframes blinkText { 0% { opacity: 0.3; text-shadow: none; } 100% { opacity: 1; text-shadow: 0 0 8px #00ff66; } }
-        
-        @keyframes marqueeText {
-            from { transform: translateX(200px); }
-            to { transform: translateX(-120%); }
-        }
+        @keyframes marqueeText { from { transform: translateX(200px); } to { transform: translateX(-120%); } }
 
         /* =========================================
-           3. ĐĂNG NHẬP & HEADER CHÍNH
+           3. GIAO DIỆN ĐĂNG NHẬP & HEADER CHÍNH
            ========================================= */
         .login-box { 
-            background: #0d0d14; 
-            border: 2px solid transparent; 
+            background: #0d0d14; border: 2px solid transparent; 
             background-image: linear-gradient(#0d0d14, #0d0d14), linear-gradient(90deg, #ff007f, #00f2fe, #ffab00, #7928ca, #ff007f);
             background-origin: border-box; background-clip: padding-box, border-box;
             box-shadow: 0 0 35px rgba(0, 242, 254, 0.25), inset 0 0 15px rgba(255, 0, 127, 0.15); 
@@ -100,44 +84,25 @@
             100% { box-shadow: 0 0 35px rgba(0, 242, 254, 0.25), inset 0 0 15px rgba(255, 0, 127, 0.15); }
         }
         .login-logo { height: 60px; width: auto; margin-bottom: 8px; opacity: 1; border-radius: 6px; display: inline-block; filter: drop-shadow(0 0 8px var(--border-glow)); }
-        .login-title { 
-            font-size: 0.9rem; font-weight: 900; color: #fff;
-            text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px; line-height: 1.4;
-            text-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
-        }
+        .login-title { font-size: 0.9rem; font-weight: 900; color: #fff; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px; line-height: 1.4; text-shadow: 0 0 10px rgba(0, 242, 254, 0.4); }
         .login-input { width: 100%; background: var(--bg-input); border: 1px solid #32324d; color: #fff; padding: 9px 12px; border-radius: 6px; margin-bottom: 10px; font-size: 0.8rem; font-weight: bold; box-sizing: border-box; outline: none; transition: border-color 0.2s; font-family: inherit; }
         .login-input:focus { border-color: var(--border-glow); box-shadow: 0 0 10px rgba(0, 242, 254, 0.2); }
         .btn-login { width: 100%; padding: 10px; background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); border: none; color: #000; font-weight: 900; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; font-family: inherit; }
         .btn-login:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(0, 242, 254, 0.4); }
         .login-error { color: var(--accent-pink); font-size: 0.7rem; font-weight: bold; margin-bottom: 10px; display: none; }
 
-        .lock-clock-display {
-            background: #08080f; border: 1px solid var(--border-glow); border-radius: 6px;
-            padding: 6px; margin-bottom: 12px; box-shadow: inset 0 0 10px rgba(0,242,254,0.15);
-        }
+        .lock-clock-display { background: #08080f; border: 1px solid var(--border-glow); border-radius: 6px; padding: 6px; margin-bottom: 12px; box-shadow: inset 0 0 10px rgba(0,242,254,0.15); }
         .lock-clock-time { font-family: 'Consolas', monospace; font-size: 1.3rem; font-weight: 900; color: var(--accent-green); text-shadow: 0 0 10px rgba(0,255,102,0.4); }
         .lock-clock-date { font-size: 0.65rem; font-weight: bold; color: var(--text-muted); text-transform: uppercase; margin-top: 2px; }
 
         .header-premium { 
-            background: rgba(13, 13, 22, 0.9); 
-            padding: 5px 20px; 
-            border-radius: 8px; 
-            box-shadow: 0 0 20px rgba(0, 242, 254, 0.15); 
-            margin-bottom: 4px; 
-            border: 1px solid #1f1f33; 
-            position: relative; 
-            overflow: hidden; 
-            flex-shrink: 0; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between;
-            gap: 10px;
+            background: rgba(13, 13, 22, 0.9); padding: 5px 20px; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 242, 254, 0.15); margin-bottom: 4px; border: 1px solid #1f1f33; 
+            position: relative; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 10px;
         }
         .header-premium::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent-pink), var(--accent-purple), var(--border-glow), #ffab00, var(--accent-pink)); background-size: 300% 100%; animation: premiumNeonBar 4s linear infinite; }
         @keyframes premiumNeonBar { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }
         
         .header-logo { height: 30px; width: auto; border-radius: 4px; filter: drop-shadow(0 0 6px var(--border-glow)); flex-shrink: 0; }
-        
         .title-wrapper { display: flex; align-items: center; gap: 10px; margin: 0; flex-shrink: 0; }
         .header-premium h1 { margin: 0; font-size: 1.15rem; font-weight: 900; text-transform: uppercase; color: #fff; letter-spacing: 1.5px; text-shadow: 0 0 8px var(--border-glow), 0 0 15px var(--accent-purple); }
         
@@ -170,77 +135,54 @@
         .status-item.active { color: #fff; }
         .status-item.active span.tick { color: var(--accent-pink); text-shadow: 0 0 8px var(--accent-pink); }
         
-        .btn-clear-premium { height: 28px; background: #140d12; color: var(--accent-pink); border: 1.5px solid var(--accent-pink); padding: 0 8px; border-radius: 6px; cursor: pointer; font-weight: 900; font-size: 0.6rem; display: flex; align-items: center; justify-content: center; gap: 2px; box-shadow: 0 0 6px rgba(255, 0, 85, 0.1); transition: all 0.2s; white-space: nowrap; font-family: inherit; }
+        .btn-clear-premium, .btn-export-premium { height: 28px; padding: 0 8px; border-radius: 6px; cursor: pointer; font-weight: 900; font-size: 0.6rem; display: flex; align-items: center; justify-content: center; gap: 2px; transition: all 0.2s; white-space: nowrap; font-family: inherit; }
+        .btn-clear-premium { background: #140d12; color: var(--accent-pink); border: 1.5px solid var(--accent-pink); box-shadow: 0 0 6px rgba(255, 0, 85, 0.1); }
         .btn-clear-premium:hover { background: var(--accent-pink); color: #fff; box-shadow: 0 0 12px var(--accent-pink); }
-        .btn-export-premium { height: 28px; background: #0d151a; color: var(--border-glow); border: 1.5px solid var(--border-glow); padding: 0 8px; border-radius: 6px; cursor: pointer; font-weight: 900; font-size: 0.6rem; display: flex; align-items: center; justify-content: center; gap: 2px; box-shadow: 0 0 6px rgba(0, 242, 254, 0.1); transition: all 0.2s; white-space: nowrap; font-family: inherit; }
+        .btn-export-premium { background: #0d151a; color: var(--border-glow); border: 1.5px solid var(--border-glow); box-shadow: 0 0 6px rgba(0, 242, 254, 0.1); }
         .btn-export-premium:hover { background: var(--border-glow); color: #000; box-shadow: 0 0 12px var(--border-glow); }
 
-        .color-picker-input {
-            -webkit-appearance: none; -moz-appearance: none; appearance: none;
-            width: 15px; height: 15px; border: 1px solid #36364d; border-radius: 3px; cursor: pointer; background: none; padding: 0; overflow: hidden;
-        }
+        .color-picker-input { -webkit-appearance: none; -moz-appearance: none; appearance: none; width: 15px; height: 15px; border: 1px solid #36364d; border-radius: 3px; cursor: pointer; background: none; padding: 0; overflow: hidden; }
         .color-picker-input::-webkit-color-swatch-wrapper { padding: 0; }
         .color-picker-input::-webkit-color-swatch { border: none; border-radius: 2px; }
-        .btn-color-reset {
-            background: #161622; border: 1px solid #36364d; color: var(--border-glow);
-            width: 17px; height: 17px; border-radius: 3px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; font-size: 0.7rem; transition: all 0.25s ease; padding: 0;
-        }
+        .btn-color-reset { background: #161622; border: 1px solid #36364d; color: var(--border-glow); width: 17px; height: 17px; border-radius: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; transition: all 0.25s ease; padding: 0; }
         .btn-color-reset:hover { transform: rotate(180deg); background: var(--border-glow); color: #000; box-shadow: 0 0 8px var(--border-glow); }
 
         /* =========================================
-           5. MA TRẬN & HIỂN THỊ
+           5. MA TRẬN & HIỂN THỊ BẢNG
            ========================================= */
         .matrix-viewport { flex: 1; overflow: auto; border: 1px solid #222233; border-radius: 8px; background: var(--custom-matrix-bg); max-height: calc(100% - 35px); position: relative; }
-        
         table { border-collapse: separate; border-spacing: 1px; width: 100%; font-size: 0.7rem; text-align: center; overflow: hidden; position: relative; }
         th, td { padding: 2px 0; width: 19px; height: 19px; min-height: 19px; max-height: 19px; box-sizing: border-box; font-weight: 600; position: relative; }
         
         th { background: #141420; color: #9595a8; font-size: 0.65rem; height: 21px; border-bottom: 1px solid #232338; }
         tr.count-row td { background: #13241a !important; height: 21px; font-size: 0.55rem !important; }
-        
-        tr.test-row td { 
-            background: #081524 !important; 
-            color: var(--border-glow); 
-            font-weight: bold; 
-            border-bottom: 1px solid #1f1f33 !important; 
-            font-size: 0.65rem; 
-        }
+        tr.test-row td { background: #081524 !important; color: var(--border-glow); font-weight: bold; border-bottom: 1px solid #1f1f33 !important; font-size: 0.65rem; }
 
-        #floatingHeaderTable {
-            position: absolute; top: 0; left: 0; z-index: 2000; display: none; background: var(--custom-matrix-bg); box-shadow: 0 6px 20px rgba(0,0,0,0.85); pointer-events: none;
-        }
+        #floatingHeaderTable { position: absolute; top: 0; left: 0; z-index: 2000; display: none; background: var(--custom-matrix-bg); box-shadow: 0 6px 20px rgba(0,0,0,0.85); pointer-events: none; }
         #floatingHeaderTable th, #floatingHeaderTable tr.count-row td { pointer-events: auto; }
 
         th.col-fixed-idx { width: 30px !important; min-width: 30px; }
         th.col-fixed-date { width: 80px !important; min-width: 80px; }
-        
         td.cell-idx { background: #141420; color: #5f5f73; position: sticky; left: 0; z-index: 900; font-size: 0.6rem; font-weight: bold; }
         td.cell-date { background: #0f0f17; color: #9595a8; position: sticky; left: 30px; z-index: 900; text-align: left; padding-left: 5px; font-size: 0.6rem; white-space: nowrap; border-right: 1px solid #232338; }
         
-        th, #floatingHeaderTable th { transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease; }
+        /* Hiệu ứng Hover Ma trận */
         th:hover, #floatingHeaderTable th:hover { background-color: var(--accent-pink) !important; color: #fff !important; box-shadow: 0 0 10px var(--accent-pink); }
         th:hover::after, #floatingHeaderTable th:hover::after { content: ""; position: absolute; left: 0; top: 0; height: 15000px; width: 100%; background-color: var(--custom-hover-color); z-index: -1; pointer-events: none; transition: background-color 0.15s ease; }
-
-        tr.count-row td, #floatingHeaderTable tr.count-row td { transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease; }
         tr.count-row td:hover, #floatingHeaderTable tr.count-row td:hover { background-color: var(--accent-pink) !important; color: #fff !important; font-weight: 900; box-shadow: 0 0 12px var(--accent-pink), inset 0 0 6px #fff !important; z-index: 100; }
-        tr.count-row td:not(.cell-idx):not(.cell-date):hover::after,
-        #floatingHeaderTable tr.count-row td:not(.cell-idx):not(.cell-date):hover::after { content: ""; position: absolute; background-color: var(--custom-hover-color); top: 0; bottom: -15000px; left: 0; width: 100%; z-index: -1; pointer-events: none; }
-
-        td, td.cell-idx, td.cell-date { transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease; }
+        tr.count-row td:not(.cell-idx):not(.cell-date):hover::after, #floatingHeaderTable tr.count-row td:not(.cell-idx):not(.cell-date):hover::after { content: ""; position: absolute; background-color: var(--custom-hover-color); top: 0; bottom: -15000px; left: 0; width: 100%; z-index: -1; pointer-events: none; }
         td.cell-idx:hover, td.cell-date:hover { background-color: var(--accent-pink) !important; color: #fff !important; font-weight: 900; box-shadow: 0 0 12px var(--accent-pink), inset 0 0 6px #fff !important; transform: none !important; z-index: 100; }
         td.cell-idx:hover::before, td.cell-date:hover::before { content: ""; position: absolute; background-color: var(--custom-hover-color); left: -5000px; right: -5000px; top: 0; height: 100%; z-index: -1; pointer-events: none; }
-
         td:not(.cell-idx):not(.cell-date):hover::before { content: ""; position: absolute; background-color: var(--custom-hover-color); left: -5000px; right: -5000px; top: 0; height: 100%; z-index: 50; pointer-events: none; }
         td:not(.cell-idx):not(.cell-date):hover::after { content: ""; position: absolute; background-color: var(--custom-hover-color); top: -5000px; bottom: -5000px; left: 0; width: 100%; z-index: 50; pointer-events: none; }
         td:not(.cell-idx):not(.cell-date):hover { background-color: var(--accent-pink) !important; box-shadow: 0 0 12px var(--accent-pink), inset 0 0 6px #fff !important; color: #fff !important; transform: none !important; z-index: 100; }
 
+        /* Tùy biến màu Ô Số */
         .cell-main-num { background: #0c0c12; color: #22222e; font-weight: 400; }
         .cell-main-num.active { background: var(--custom-main-color) !important; color: var(--custom-text-color) !important; font-weight: bold; box-shadow: inset 0 0 4px rgba(255,255,255,0.3); }
         .cell-main-num.active-spec-in-main { background: var(--custom-spec-color) !important; color: var(--custom-text-color) !important; font-weight: bold; box-shadow: inset 0 0 4px rgba(255,255,255,0.3); }
         .cell-main-num.test-active { background: #003b73 !important; color: #00ffff !important; font-weight: bold; }
         .cell-main-num.test-spec-active { background: #803300 !important; color: #ffcc00 !important; font-weight: bold; }
-        
         .cell-spec-num { background: #140e0b; color: #291a13; }
         .cell-spec-num.active-spec { background: var(--custom-spec-color) !important; color: var(--custom-text-color) !important; font-weight: bold; }
         .cell-spec-num.test-spec-active { background: #803300 !important; color: #ffcc00 !important; font-weight: bold; }
@@ -252,7 +194,7 @@
         tr.count-row td { background: #13241a; color: var(--accent-green); font-weight: bold; font-size: 0.55rem; border-bottom: 1px solid #232338; }
 
         /* =========================================
-           6. BẢNG DỰ ĐOÁN & KHÓA SỐ
+           6. BẢNG DỰ ĐOÁN & KHÓA SỐ TÙY CHỈNH
            ========================================= */
         .predict-box { display: flex; flex-direction: column; gap: 3px; background: #060609; border: 1px solid #232338; padding: 4px; max-height: 220px; overflow-y: auto; flex-shrink: 0; border-radius: 6px; }
         .predict-ticket-group { border: 1px dashed var(--accent-pink); padding: 4px 6px; border-radius: 6px; margin-bottom: 4px; background: rgba(20,15,22,0.4); }
@@ -278,12 +220,7 @@
 
         .lock-container-grid { display: flex; gap: 4px; margin-bottom: 2px; flex-shrink: 0; width: 100%; align-items: stretch; }
         .lock-left-panel { flex: 1; display: flex; flex-direction: column; gap: 3px; background: #12121a; padding: 4px 6px; border-radius: 6px; border: 1px solid #1f1f33; min-width: 0; }
-        
-        .lock-right-panel { 
-            width: 125px; background: #12121a; border: 1px solid #1f1f33; border-radius: 6px; 
-            display: flex; flex-direction: column; align-items: stretch; justify-content: center; 
-            padding: 4px; flex-shrink: 0; gap: 3px; 
-        }
+        .lock-right-panel { width: 125px; background: #12121a; border: 1px solid #1f1f33; border-radius: 6px; display: flex; flex-direction: column; align-items: stretch; justify-content: center; padding: 4px; flex-shrink: 0; gap: 3px; }
         
         .lock-sub-row { display: flex; align-items: center; gap: 4px; width: 100%; justify-content: flex-start; }
         .lock-sub-section { display: flex; align-items: center; gap: 3px; }
@@ -300,19 +237,13 @@
 
         .vertical-row-flex { display: flex; gap: 3px; align-items: center; width: 100%; }
         .predict-size-select-v { width: 50px; height: 22px; background: #141420; color: var(--accent-pink); border: 1px solid #28283d; font-size: 0.62rem; font-weight: 900; border-radius: 4px; padding: 0; cursor: pointer; outline: none; text-align: center; font-family: inherit; }
-        
-        .btn-vertical-reset {
-            background: #161622; border: 1px solid #36364d; color: var(--border-glow);
-            width: 22px; height: 22px; border-radius: 4px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; font-size: 0.65rem; transition: all 0.25s ease; padding: 0; flex-shrink: 0;
-        }
+        .btn-vertical-reset { background: #161622; border: 1px solid #36364d; color: var(--border-glow); width: 22px; height: 22px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; transition: all 0.25s ease; padding: 0; flex-shrink: 0; }
         .btn-vertical-reset:hover { transform: rotate(180deg); background: var(--border-glow); color: #000; box-shadow: 0 0 8px var(--border-glow); }
-
         .btn-vertical-compose { width: 100%; padding: 3px 2px; background: linear-gradient(135deg, #7c00e6 0%, #b366ff 100%); border: none; color: #fff; font-weight: 900; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-size: 0.58rem; letter-spacing: 0.3px; text-align: center; box-shadow: 0 2px 6px rgba(124, 0, 230, 0.2); transition: all 0.2s; white-space: nowrap; font-family: inherit; }
         .btn-vertical-compose:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(124, 0, 230, 0.4); }
 
         /* =========================================
-           7. CÔNG CỤ ADMIN & QUẢN TRỊ
+           7. CÔNG CỤ ADMIN & THÀNH VIÊN
            ========================================= */
         #adminUpdateBoard { display: flex; gap: 5px; background: rgba(20, 20, 30, 0.8); border: 1px solid #27273d; border-radius: 8px; padding: 4px; box-sizing: border-box; width: 100%; margin-top: 2px; }
         .board-left-panel { flex: 1; min-width: 0; display: flex; }
@@ -334,11 +265,9 @@
         .admin-actions-flex-cell { display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; height: 100%; }
         .btn-table-action { border: none; padding: 3px 6px; font-size: 0.55rem; font-weight: bold; border-radius: 3px; cursor: pointer; color: #fff; display: inline-block; white-space: nowrap; font-family: inherit; transition: all 0.2s ease; }
         .btn-table-action:hover { transform: translateY(-1px); filter: brightness(1.25); box-shadow: 0 0 10px currentColor; }
-        
         .btn-lock-action { background:#444; border:none; padding:3px 5px; font-size:0.6rem; border-radius:3px; cursor:pointer; color:#fff; transition:all 0.2s;}
         .btn-lock-action.locked { background:var(--accent-orange); color:#000; box-shadow: 0 0 8px var(--accent-orange);}
         .btn-lock-action:hover { filter: brightness(1.3); }
-
         .btn-grant-action { background: var(--accent-green); color: #000; border: none; padding: 0 12px; height: 24px; font-weight: 900; border-radius: 4px; font-size: 0.65rem; cursor: pointer; white-space: nowrap; font-family: inherit; transition: all 0.2s ease; }
         .btn-grant-action:hover { transform: translateY(-1px); filter: brightness(1.2); box-shadow: 0 0 12px var(--accent-green); }
 
@@ -352,8 +281,7 @@
            ========================================= */
         .modal-overlay { 
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
-            background: transparent; 
-            display: none; align-items: center; justify-content: center; 
+            background: transparent; display: none; align-items: center; justify-content: center; 
             z-index: 9000; pointer-events: none; 
         }
         .modal-box { 
@@ -372,18 +300,6 @@
         .modal-close { color: var(--text-muted); font-size: 1.2rem; cursor: pointer; border: none; background: none; }
         .modal-content-area { background: rgba(5, 5, 8, 0.15); border: 1px solid #232338; border-radius: 8px; padding: 12px; font-family: monospace; font-size: 0.8rem; max-height: 360px; overflow-y: auto; margin-bottom: 10px; line-height: 1.4; }
         
-        #conversionModalOverlay, #feasibleModalOverlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.3); display: none; align-items: center; justify-content: center;
-            z-index: 8900; pointer-events: auto;
-        }
-        #conversionModalBox, #feasibleModalBox {
-            position: absolute; background: rgba(20, 20, 32, 0.96);
-            border: 2px solid var(--border-glow); box-shadow: 0 0 35px rgba(0, 242, 254, 0.4);
-            border-radius: 14px; width: 460px; max-width: 95vw; padding: 16px;
-            box-sizing: border-box; backdrop-filter: blur(12px); pointer-events: auto;
-        }
-
         .feasible-num-ball {
             display: inline-flex; align-items: center; justify-content: center;
             width: 22px; height: 22px; border-radius: 4px; font-size: 0.65rem; font-weight: 900;
@@ -407,7 +323,6 @@
         .history-ticket-line { display: flex; align-items: center; justify-content: space-between; background: rgba(10, 10, 15, 0.25); padding: 4px 8px; border-radius: 4px; border: 1px solid #171726; font-size: 0.7rem; }
         .history-line-data { color: #00ff66; font-family: monospace; font-weight: bold; }
         .history-rebuy-checkbox { cursor: pointer; accent-color: var(--accent-pink); width: 14px; height: 14px; margin-left: 10px; vertical-align: middle; }
-        
         .history-chunk-right-action { width: 110px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border-left: 1px solid #23233c; padding-left: 8px; }
         .btn-chunk-master-rebuy { background: linear-gradient(135deg, var(--accent-pink) 0%, #b30059 100%); color: #fff; border: none; font-size: 0.65rem; font-weight: 900; width: 100%; padding: 8px 4px; border-radius: 6px; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 8px rgba(255,0,127,0.3); text-align: center; white-space: nowrap; font-family: inherit; display: inline-flex; flex-direction: row; align-items: center; justify-content: center; gap: 4px; }
         .btn-chunk-master-rebuy:hover { box-shadow: 0 0 12px var(--accent-pink); transform: translateY(-1px); }
@@ -424,7 +339,7 @@
         .modal-btn-cancel { padding: 6px 14px; font-size: 0.75rem; font-weight: bold; border-radius: 5px; cursor: pointer; background: rgba(31, 31, 46, 0.3); border: 1px solid #36364d; color: var(--text-muted); font-family: inherit; display: inline-flex; align-items: center; gap: 4px; }
 
         /* =========================================
-           9. IFRAME & ZOOM
+           9. IFRAME & TÍNH NĂNG MỞ RỘNG (ZOOM)
            ========================================= */
         .sidebar-iframe-container { flex: 1; min-height: 0; border: 1px solid #232338; border-radius: 8px; overflow: hidden; background: #0f0f17; height: 100%; position: relative; transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); z-index: 10; }
         .sidebar-iframe-container.zoomed-state { position: absolute; bottom: 4px; left: 4px; right: 4px; height: calc(100% - 15px); z-index: 850; box-shadow: 0 -15px 35px rgba(0,0,0,0.9), 0 0 20px rgba(0,242,254,0.3); border-color: var(--border-glow); }
@@ -436,16 +351,13 @@
         .iframe-container { flex: 1; border-radius: 8px; overflow: hidden; border: 1px solid #232338; background: #0f0f17; position: relative; height: 100%; }
         .iframe-container iframe { width: 111.11% !important; height: 111.11% !important; transform: scale(0.9); transform-origin: top left; border: none; display: block; position: absolute; top: 0; left: 0; }
 
-        .bound-grid-btn {
-            background: #f2f2f7; border: 1px solid #d1d1d6; color: #1c1c1e; font-size: 0.7rem; font-weight: bold;
-            height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 4px; cursor: pointer;
-            transition: all 0.15s ease;
-        }
+        .bound-grid-btn { background: #f2f2f7; border: 1px solid #d1d1d6; color: #1c1c1e; font-size: 0.7rem; font-weight: bold; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 4px; cursor: pointer; transition: all 0.15s ease; }
         .bound-grid-btn:hover { background: var(--accent-pink); color: #fff; border-color: var(--accent-pink); box-shadow: 0 0 8px var(--accent-pink); }
     </style>
 </head>
 <body>
 
+    <!-- OVERLAY ĐĂNG NHẬP -->
     <div id="loginOverlay">
         <div id="dollarRainContainer"></div>
         <div id="fw1" class="firework-cluster" style="position:absolute; left:15%; top:25%;"></div>
@@ -464,6 +376,7 @@
         </div>
     </div>
 
+    <!-- OVERLAY KHÓA PHIÊN LÀM VIỆC -->
     <div id="lockOverlay">
         <div id="lockDollarRainContainer"></div>
         <div id="lfw1" class="firework-cluster" style="position:absolute; left:15%; top:25%;"></div>
@@ -475,12 +388,10 @@
         <div class="login-box" onkeydown="if(event.key === 'Enter') handleUnlockSystem()">
             <img class="login-logo" src="logo.png" alt="CVN Logo" style="filter:none !important;" onerror="this.style.display='none'">
             <div class="login-title" id="lockTitleText" style="color:var(--border-glow); margin-bottom:8px;">Phiên làm việc đang khóa</div>
-            
             <div class="lock-clock-display">
                 <div class="lock-clock-time" id="realtimeClockDisplay">00:00:00</div>
                 <div class="lock-clock-date" id="realtimeDateDisplay">--/--/----</div>
             </div>
-
             <div class="login-error" id="lockError" style="display:none;">Mật khẩu chưa chính xác!</div>
             <input type="password" id="lockPassInput" class="login-input" placeholder="Nhập mật khẩu để mở khóa">
             <button class="btn-login" onclick="handleUnlockSystem()" style="margin-bottom:8px;">MỞ KHÓA NGAY</button>
@@ -490,6 +401,7 @@
         </div>
     </div>
 
+    <!-- HEADER CHÍNH (PREMIUM) -->
     <div class="header-premium">
         <img class="header-logo" src="logo.png" alt="CVN Logo" style="filter:none !important;" onerror="this.style.display='none'">
         
@@ -536,13 +448,15 @@
         </div>
     </div>
     
+    <!-- KHUNG GIAO DIỆN CHÍNH (MAIN CONTAINER) -->
     <div class="container">
+        
+        <!-- CỘT BÊN TRÁI (SIDEBAR) -->
         <div class="sidebar">
             <div class="tabs">
                 <button class="tab-btn active" onclick="switchType('lotto')">Lotto 5/35</button>
                 <button class="tab-btn" onclick="switchType('mega')">Mega 6/45</button>
                 <button class="tab-btn" onclick="switchType('power')">Power 6/55</button>
-                <button class="tab-btn" onclick="openFeasibleModalDirect()" style="background: #1f141a; color: #ff007f; border-color: #ff007f;" title="Chạy thuật toán tìm số khả năng cao">Số khả thi</button>
             </div>
             
             <div class="panel" style="padding: 4px; flex-shrink: 0; display: flex; flex-direction: column; gap: 4px;">
@@ -625,7 +539,7 @@
                     </div>
                 </div>
 
-				<div style="display: flex; align-items: center; gap: 4px; margin-bottom: 3px; background: #12121a; padding: 3px 5px; border-radius: 5px; border: 1px solid #1f1f33;">
+                <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 3px; background: #12121a; padding: 3px 5px; border-radius: 5px; border: 1px solid #1f1f33;">
                     <span style="font-size: 0.62rem; font-weight: bold; color: var(--text-muted); white-space: nowrap;" title="Hãy lựa chọn thuật toán phù hợp nhé">Thuật toán ℹ️:</span>
                     <select class="count-select" id="algoSelect" onchange="saveCurrentTabState()" style="flex: 1; font-size: 0.62rem; padding: 2px; height: 21px;">
                         <option value="algo1" selected>⚡ Thuật toán CVN</option>
@@ -646,10 +560,11 @@
             </div>
         </div>
         
+        <!-- VÙNG NỘI DUNG CHÍNH (MAIN CONTENT) -->
         <div class="main-content">
             <div class="tabs" style="margin-bottom: 5px; align-items: center;">
                 <button class="tab-btn active" id="viewMatrixBtn" onclick="switchView('matrix')">Biểu đồ dòng chảy</button>
-                <button class="tab-btn" id="viewConversionBtn" onclick="openConversionModal()">📊 Bảng quy đổi</button>
+                <button class="tab-btn" id="viewFilterBtn" onclick="openFilterModal()" style="background: #1f141a; color: var(--accent-pink); border-color: var(--accent-pink); font-weight: 900;">📊 LỌC SỐ</button>
                 <div style="display: flex; align-items: center; gap: 4px; padding: 0 4px; position: relative;">
                     <span style="font-size: 0.62rem; font-weight: bold; color: var(--text-muted); white-space: nowrap;">Từ:</span>
                     <input type="text" id="boundTopInput" readonly onclick="openBoundPicker('top', event)" value="01" style="width:32px; height:22px; background:#0f0f17; color:var(--border-glow); border:1px solid #232338; font-size:0.68rem; font-weight:bold; border-radius:4px; text-align:center; cursor:pointer;">
@@ -743,62 +658,57 @@
         </div>
     </div>
 
+    <!-- ========================================================================================= -->
+    <!-- DANH SÁCH CÁC MODALS (BẢNG NỔI) -->
+    <!-- ========================================================================================= -->
+
     <!-- MODAL CHỌN KỲ BIÊN -->
     <div id="boundPickerModal" style="position:fixed; display:none; background:#ffffff; color:#000; border:2px solid #00f2fe; padding:8px; border-radius:8px; z-index:99999; box-shadow:0 6px 25px rgba(0,0,0,0.5); width:230px;">
         <div style="font-weight:900; font-size:0.7rem; margin-bottom:6px; text-align:center; color:#111; text-transform:uppercase;">Chọn kỳ biên (1 - 100)</div>
         <div id="boundPickerGrid" style="display:grid; grid-template-columns:repeat(10, 1fr); gap:3px;"></div>
     </div>
 
-    <!-- BẢNG NỔI SỐ KHẢ THI TRỰC TIẾP TRÊN TRANG -->
-    <div id="feasibleModalOverlay">
-        <div id="feasibleModalBox">
-            <div class="modal-title" id="draggableFeasibleTitle" style="cursor: move;">
-                <span style="color:var(--accent-pink); font-size:0.85rem;" id="feasibleModalHeaderTitle">PHÂN TÍCH SỐ KHẢ THI</span>
-                <button class="modal-close" onclick="closeFeasibleModalDirect()">✕</button>
+    <!-- BẢNG NỔI GỘP: PHÂN TÍCH & LỌC SỐ -->
+    <div id="filterModalOverlay" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: transparent; display: none; align-items: center; justify-content: center; z-index: 8900; pointer-events: none;">
+        <div id="filterModalBox" style="position: absolute; background: rgba(20, 20, 32, 0.96); border: 2px solid var(--border-glow); box-shadow: 0 0 35px rgba(0, 242, 254, 0.4); border-radius: 14px; width: 560px; max-width: 95vw; padding: 16px; box-sizing: border-box; backdrop-filter: blur(12px); pointer-events: auto; display: flex; flex-direction: column; max-height: 90vh;">
+            
+            <div class="modal-title" id="draggableFilterTitle" style="cursor: move; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;">
+                <span style="color:var(--accent-pink); font-size:0.85rem; font-weight: 900; text-shadow: 0 0 10px rgba(255, 0, 127, 0.5);" id="filterModalHeaderTitle">PHÂN TÍCH & LỌC SỐ</span>
+                <button class="modal-close" onclick="closeFilterModal()" title="Đóng bảng">✕</button>
             </div>
             
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:#141420; padding:6px; border-radius:6px; border:1px solid #28283d;">
-                <div style="display:flex; gap:6px; align-items:center;">
-                    <span style="font-size:0.68rem; color:#8a8a9e; font-weight:bold;">Tần suất từ:</span>
-                    <select id="feasibleMinSelect" style="background:#0a0a0f; color:var(--border-glow); border:1px solid #36364d; font-size:0.75rem; font-weight:bold; border-radius:4px; padding:2px 4px; outline:none;">
-                        <option value="1">1 kỳ</option>
-                        <option value="2">2 kỳ</option>
-                        <option value="3">3 kỳ</option>
-                        <option value="4">4 kỳ</option>
-                        <option value="5">5 kỳ</option>
-                        <option value="6">6 kỳ</option>
-                    </select>
-                    <span style="font-size:0.68rem; color:#8a8a9e; font-weight:bold;">đến</span>
-                    <select id="feasibleMaxSelect" style="background:#0a0a0f; color:var(--border-glow); border:1px solid #36364d; font-size:0.75rem; font-weight:bold; border-radius:4px; padding:2px 4px; outline:none;">
-                        <option value="5">5 kỳ</option>
-                        <option value="10">10 kỳ</option>
-                        <option value="20">20 kỳ</option>
-                        <option value="30">30 kỳ</option>
-                        <option value="40">40 kỳ</option>
-                        <option value="100" selected>100 kỳ</option>
-                    </select>
+            <div style="overflow-y: auto; flex: 1; padding-right: 5px;" id="filterModalScrollArea">
+                <!-- PHẦN 1: SỐ KHẢ THI -->
+                <div style="margin-bottom: 12px; border-bottom: 1px dashed #3b3b54; padding-bottom: 12px;">
+                    <div style="font-size:0.75rem; color:var(--border-glow); font-weight:bold; margin-bottom: 6px; text-transform: uppercase;">1. Phân tích Số khả thi</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:#141420; padding:6px; border-radius:6px; border:1px solid #28283d;">
+                        <div style="display:flex; gap:6px; align-items:center;">
+                            <span style="font-size:0.68rem; color:#8a8a9e; font-weight:bold;">Tần suất từ:</span>
+                            <select id="feasibleMinSelect" style="background:#0a0a0f; color:var(--border-glow); border:1px solid #36364d; font-size:0.75rem; font-weight:bold; border-radius:4px; padding:2px 4px; outline:none;">
+                                <option value="1">1 kỳ</option><option value="2">2 kỳ</option><option value="3">3 kỳ</option><option value="4">4 kỳ</option><option value="5">5 kỳ</option><option value="6">6 kỳ</option>
+                            </select>
+                            <span style="font-size:0.68rem; color:#8a8a9e; font-weight:bold;">đến</span>
+                            <select id="feasibleMaxSelect" style="background:#0a0a0f; color:var(--border-glow); border:1px solid #36364d; font-size:0.75rem; font-weight:bold; border-radius:4px; padding:2px 4px; outline:none;">
+                                <option value="5">5 kỳ</option><option value="10">10 kỳ</option><option value="20">20 kỳ</option><option value="30">30 kỳ</option><option value="40">40 kỳ</option><option value="100" selected>100 kỳ</option>
+                            </select>
+                        </div>
+                        <div style="display:flex; gap:3px;">
+                            <button class="btn-clear-premium" onclick="calcFeasibleNumbersDirect()" style="height:22px; padding:0 6px; font-size:0.6rem; background:#140d12; color:var(--accent-pink); border-color:var(--accent-pink);" title="Lọc danh sách số khả thi theo tần suất">⚡ LỌC</button>
+                            <button class="btn-export-premium" onclick="applySelectedFeasibleToLockControls()" style="height:22px; padding:0 6px; font-size:0.6rem; background:#0d151a; color:var(--border-glow); border-color:var(--border-glow);" title="Nạp các số đã chọn vào ô khoá số">📥 NẠP</button>
+                        </div>
+                    </div>
+                    <div id="feasibleContentArea"></div>
                 </div>
-                <div style="display:flex; flex-direction:column; gap:3px; align-items:stretch; width:90px;">
-                    <button class="btn-clear-premium" onclick="calcFeasibleNumbersDirect()" style="height:22px; padding:0 6px; font-size:0.6rem; background:#140d12; color:var(--accent-pink); border-color:var(--accent-pink);" title="Lọc danh sách số khả thi theo tần suất">⚡ LỌC NGAY</button>
-                    <button class="btn-export-premium" onclick="applySelectedFeasibleToLockControls()" style="height:22px; padding:0 6px; font-size:0.6rem; background:#0d151a; color:var(--border-glow); border-color:var(--border-glow);" title="Nạp các số đã chọn vào ô khoá số">📥 NẠP</button>
+
+                <!-- PHẦN 2: BẢNG QUY ĐỔI -->
+                <div>
+                    <div style="font-size:0.75rem; color:var(--border-glow); font-weight:bold; margin-bottom: 6px; text-transform: uppercase;">2. Bảng quy đổi chục & Tần suất (<span id="conversionModalTypeTitle"></span>)</div>
+                    <div style="font-size:0.7rem; color:#b0b0c2; margin-bottom:8px;">
+                        Quy tắc: 0-9(0), 10-19(1), 20-29(2), 30-39(3), 40-49(4), 50-55(5). Căn cứ theo kỳ biên <span id="conversionModalTopText">01</span> - <span id="conversionModalBottomText">10</span>.
+                    </div>
+                    <div id="conversionTableContainer"></div>
                 </div>
             </div>
-
-            <div style="max-height: 420px; overflow-y: auto;" id="feasibleContentArea"></div>
-        </div>
-    </div>
-
-    <!-- BẢNG QUY ĐỔI -->
-    <div id="conversionModalOverlay" onclick="if(event.target === this) closeConversionModal()">
-        <div id="conversionModalBox">
-            <div class="modal-title" id="draggableConversionTitle">
-                <span style="color:var(--border-glow); font-size:0.85rem;">Bảng quy đổi chục &amp; Tần suất (<span id="conversionModalTypeTitle">5/35</span>)</span>
-                <button class="modal-close" onclick="closeConversionModal()">✕</button>
-            </div>
-            <div style="font-size:0.7rem; color:#b0b0c2; margin-bottom:8px;">
-                Quy tắc: 0-9(0), 10-19(1), 20-29(2), 30-39(3), 40-49(4), 50-55(5). So khớp trong khoảng biên kỳ từ <span id="conversionModalTopText">01</span> đến <span id="conversionModalBottomText">10</span>.
-            </div>
-            <div style="max-height: 420px; overflow-y: auto;" id="conversionTableContainer"></div>
         </div>
     </div>
 
@@ -903,13 +813,13 @@
             power: { mainLock: [], specLock: '', rangeLock: [], boundLock: [], algo: 'algo1', size: '1', html: '', activePreds: [] }
         };
 
-        let isConversionDragging = false;
+        // Các biến phục vụ Bảng Lọc Số
         let activeBoundTarget = null;
         let calculatedFeasibleMainNums = [];
         let selectedFeasibleMainNums = [];
         let selectedFeasibleSpecNums = [];
 
-        // --- 2. CÔNG CỤ UI & HIỆU ỨNG ---
+        // --- 2. CÔNG CỤ UI & HIỆU ỨNG (ANIMATIONS & MODALS) ---
         function openBoundPicker(targetType, event) {
             activeBoundTarget = targetType;
             let modal = document.getElementById('boundPickerModal');
@@ -989,8 +899,7 @@
             setInterval(updateRealtimeClock, 1000);
             updateRealtimeClock();
             makeDraggable('draggableModalBox', 'draggableModalTitle');
-            makeDraggable('feasibleModalBox', 'draggableFeasibleTitle');
-            makeDraggable('conversionModalBox', 'draggableConversionTitle');
+            makeDraggable('filterModalBox', 'draggableFilterTitle');
             makeDraggable('extractorModalBox', 'draggableExtractorTitle');
         }
 
@@ -1092,60 +1001,60 @@
             }
         }
 
-        // --- 3. ĐĂNG NHẬP, KHÓA & AUTHENTICATION ---
+        // --- 3. ĐĂNG NHẬP, KHÓA & BẢO MẬT (AUTHENTICATION) ---
         function handleSystemLogin() {
-    let u = document.getElementById('loginUser').value.trim().toLowerCase();
-    let p = document.getElementById('loginPass').value.trim();
-    
-    if(!u || !p) {
-        let errBox = document.getElementById('loginError');
-        errBox.innerText = "Vui lòng nhập đầy đủ Tên đăng nhập và Mật khẩu!";
-        errBox.style.display = 'block';
-        return;
-    }
-
-    // Luôn kiểm tra trong CSDL nội bộ trước để lấy Vai trò (Role)
-    db.ref('system_accounts/' + u).once('value', (snapshot) => {
-        let userData = snapshot.val();
-        if (userData && userData.password === p) {
+            let u = document.getElementById('loginUser').value.trim().toLowerCase();
+            let p = document.getElementById('loginPass').value.trim();
             
-            if(userData.status === 'locked' && u !== 'daica') {
+            if(!u || !p) {
                 let errBox = document.getElementById('loginError');
-                errBox.innerText = "Tài khoản này đã bị khóa bởi quản trị viên!";
+                errBox.innerText = "Vui lòng nhập đầy đủ Tên đăng nhập và Mật khẩu!";
                 errBox.style.display = 'block';
                 return;
             }
-            
-            let verifiedRole = userData.role || 'member';
 
-            // NẾU LÀ ĐẠI CA HOẶC ADMIN -> Bắt buộc quẹt "Thẻ an ninh" Firebase Auth
-            if (verifiedRole === 'superadmin' || verifiedRole === 'admin' || u === 'daica') {
-                // Tự động ghép tên đăng nhập với @cvn.com để quét thẻ
-                firebase.auth().signInWithEmailAndPassword(u + '@cvn.com', p)
-                .then(() => {
-                    executeLoginSuccess(u, verifiedRole);
-                })
-                .catch((err) => {
+            // Luôn kiểm tra trong CSDL nội bộ trước để lấy Vai trò (Role)
+            db.ref('system_accounts/' + u).once('value', (snapshot) => {
+                let userData = snapshot.val();
+                if (userData && userData.password === p) {
+                    
+                    if(userData.status === 'locked' && u !== 'daica') {
+                        let errBox = document.getElementById('loginError');
+                        errBox.innerText = "Tài khoản này đã bị khóa bởi quản trị viên!";
+                        errBox.style.display = 'block';
+                        return;
+                    }
+                    
+                    let verifiedRole = userData.role || 'member';
+
+                    // NẾU LÀ ĐẠI CA HOẶC ADMIN -> Bắt buộc quẹt "Thẻ an ninh" Firebase Auth
+                    if (verifiedRole === 'superadmin' || verifiedRole === 'admin' || u === 'daica') {
+                        // Tự động ghép tên đăng nhập với @cvn.com để quét thẻ
+                        firebase.auth().signInWithEmailAndPassword(u + '@cvn.com', p)
+                        .then(() => {
+                            executeLoginSuccess(u, verifiedRole);
+                        })
+                        .catch((err) => {
+                            let errBox = document.getElementById('loginError');
+                            errBox.innerText = "Tài khoản Quản trị này chưa được kích hoạt thẻ an ninh (Firebase Auth)!";
+                            errBox.style.display = 'block';
+                        });
+                    } else {
+                        // NẾU LÀ THÀNH VIÊN HOẶC KHÁCH (xemchung) -> Cho vào thẳng, chỉ có quyền ĐỌC
+                        executeLoginSuccess(u, verifiedRole);
+                    }
+
+                } else {
                     let errBox = document.getElementById('loginError');
-                    errBox.innerText = "Tài khoản Quản trị này chưa được kích hoạt thẻ an ninh (Firebase Auth)!";
+                    errBox.innerText = "Mật khẩu hoặc tên đăng nhập không đúng!";
                     errBox.style.display = 'block';
-                });
-            } else {
-                // NẾU LÀ THÀNH VIÊN HOẶC KHÁCH (xemchung) -> Cho vào thẳng, chỉ có quyền ĐỌC
-                executeLoginSuccess(u, verifiedRole);
-            }
-
-        } else {
-            let errBox = document.getElementById('loginError');
-            errBox.innerText = "Mật khẩu hoặc tên đăng nhập không đúng!";
-            errBox.style.display = 'block';
+                }
+            }).catch(() => {
+                let errBox = document.getElementById('loginError');
+                errBox.innerText = "Lỗi kết nối cơ sở dữ liệu xác thực!";
+                errBox.style.display = 'block';
+            });
         }
-    }).catch(() => {
-        let errBox = document.getElementById('loginError');
-        errBox.innerText = "Lỗi kết nối cơ sở dữ liệu xác thực!";
-        errBox.style.display = 'block';
-    });
-}
 
         function executeLoginSuccess(username, role) {
             currentUserRole = role;
@@ -1429,17 +1338,16 @@
         }
 
         function executeSelfProfileMutation() {
-    let userCheck = document.getElementById('pwdConfirmUser').value.trim().toLowerCase();
-    
-    // THÊM ĐOẠN CHẶN NÀY ĐỂ BẢO VỆ TÀI KHOẢN DÙNG CHUNG
-    if (userCheck === 'xemchung') {
-        alert("Cảnh báo: Tài khoản dùng chung cho cộng đồng không được phép tự thay đổi thông tin tại đây!");
-        return;
-    }
-    
-    let oldPass = document.getElementById('pwdOldPass').value.trim();
-    let newUser = document.getElementById('pwdNewUser').value.trim().toLowerCase();
-    let newPass = document.getElementById('pwdNewPass').value.trim();
+            let userCheck = document.getElementById('pwdConfirmUser').value.trim().toLowerCase();
+            
+            if (userCheck === 'xemchung') {
+                alert("Cảnh báo: Tài khoản dùng chung cho cộng đồng không được phép tự thay đổi thông tin tại đây!");
+                return;
+            }
+            
+            let oldPass = document.getElementById('pwdOldPass').value.trim();
+            let newUser = document.getElementById('pwdNewUser').value.trim().toLowerCase();
+            let newPass = document.getElementById('pwdNewPass').value.trim();
 
             if (!userCheck || !oldPass) { alert("Vui lòng nhập Tên đăng nhập cũ và Mật khẩu hiện tại để xác thực!"); return; }
             if (userCheck !== currentUserName) { alert("Tên đăng nhập cũ xác nhận không khớp!"); return; }
@@ -1588,20 +1496,19 @@
         }
         
         function clearCurrentData() { 
-    // Bắt buộc check lại quyền từ biến hệ thống đã được xác thực qua Database
-    if (currentUserRole !== 'superadmin' && currentUserRole !== 'admin' && currentUserName !== 'daica') { 
-        alert("Cảnh báo: Hành vi bất hợp pháp! Bạn không có quyền thực hiện thao tác này."); 
-        return; 
-    } 
+            if (currentUserRole !== 'superadmin' && currentUserRole !== 'admin' && currentUserName !== 'daica') { 
+                alert("Cảnh báo: Hành vi bất hợp pháp! Bạn không có quyền thực hiện thao tác này."); 
+                return; 
+            } 
 
-    if (confirm(`Bạn có chắc muốn xóa dữ liệu đám mây đài ${currentType.toUpperCase()}?`)) { 
-        db.ref('vietlott_matrix_data/' + currentType).remove()
-          .then(() => alert("Đã giải phóng dữ liệu đám mây!"))
-          .catch(err => alert("Lỗi bảo mật: Cơ sở dữ liệu từ chối quyền ghi/xóa của bạn!")); 
-    } 
-}
+            if (confirm(`Bạn có chắc muốn xóa dữ liệu đám mây đài ${currentType.toUpperCase()}?`)) { 
+                db.ref('vietlott_matrix_data/' + currentType).remove()
+                  .then(() => alert("Đã giải phóng dữ liệu đám mây!"))
+                  .catch(err => alert("Lỗi bảo mật: Cơ sở dữ liệu từ chối quyền ghi/xóa của bạn!")); 
+            } 
+        }
 
-        // --- 5. RENDER MA TRẬN & HIỂN THỊ ---
+        // --- 5. RENDER MA TRẬN & ĐIỀU KHIỂN GIAO DIỆN CHÍNH ---
         function getValidatedMatrixBounds() {
             let topInput = document.getElementById('boundTopInput');
             let bottomInput = document.getElementById('boundBottomInput');
@@ -1874,7 +1781,7 @@
             updateFloatingHeaderContent();
         }
 
-        // --- 6. CÁC HÀM XỬ LÝ TRẠNG THÁI & DỰ ĐOÁN TẠI FRONTEND ---
+        // --- 6. CÁC HÀM XỬ LÝ KHÓA SỐ, TRẠNG THÁI & DỰ ĐOÁN CHUỖI ---
         function setupPredictPanel() { restoreTabState(currentType); }
 
         function saveCurrentTabState() {
@@ -2239,7 +2146,7 @@
             refreshSingleRowDom(index, label); saveCurrentTabState();
         }
 
-        // --- 7. CÔNG CỤ SMS & XUẤT NHẬT KÝ VÉ ---
+        // --- 7. CÔNG CỤ SMS CHUẨN MỰC & NHẬT KÝ ĐÁM MÂY ---
         function pushCurrentPredictionsToSessionLog(triggerContextName) {
             let targetSessionKey = currentLogSessionKey;
             if (!targetSessionKey) {
@@ -2339,17 +2246,16 @@
 
             document.getElementById('modalTitleText').innerText = "Nhật ký lưu trữ các lần dự đoán của phiên";
             let topActionContainer = document.getElementById('modalTopActionContainer');
-            // NÚT XOÁ VĨNH VIỄN
-           // CHỈ HIỆN NÚT XOÁ CHO ĐẠI CA/ADMIN, CẤM HIỆN NÚT XOÁ CHO TÀI KHOẢN XEMCHUNG
-let deleteButtonHtml = "";
-if ((currentUserRole === 'superadmin' || currentUserRole === 'admin' || currentUserName === 'daica') && currentUserName !== 'xemchung') {
-    deleteButtonHtml = `<button class="btn-clear-premium" onclick="clearCurrentSessionHistoryOnly()" style="height:22px; padding:0 6px; font-size:0.6rem; background:var(--accent-pink); color:#fff;" title="Xoá vĩnh viễn dòng nhật ký này">⚠️ XOÁ VĨNH VIỄN</button>`;
-}
+            
+            let deleteButtonHtml = "";
+            if ((currentUserRole === 'superadmin' || currentUserRole === 'admin' || currentUserName === 'daica') && currentUserName !== 'xemchung') {
+                deleteButtonHtml = `<button class="btn-clear-premium" onclick="clearCurrentSessionHistoryOnly()" style="height:22px; padding:0 6px; font-size:0.6rem; background:var(--accent-pink); color:#fff;" title="Xoá vĩnh viễn dòng nhật ký này">⚠️ XOÁ VĨNH VIỄN</button>`;
+            }
 
-topActionContainer.innerHTML = `
-    ${deleteButtonHtml}
-    <button class="modal-close" onclick="closeComposeModal()">✕</button>
-`;
+            topActionContainer.innerHTML = `
+                ${deleteButtonHtml}
+                <button class="modal-close" onclick="closeComposeModal()">✕</button>
+            `;
 
             let bottomActionContainer = document.getElementById('modalBottomActionsContainer');
             bottomActionContainer.innerHTML = `<button class="modal-btn-cancel" onclick="closeComposeModal()">Đóng hộp thoại</button>`;
@@ -2495,18 +2401,61 @@ topActionContainer.innerHTML = `
             if (activeViewingSessionKey) { viewLogSnapshotSpecific(activeViewingSessionKey); } else { viewLogSnapshot(encodeURIComponent(cachedLogSnapshotText)); }
         }
 
-        // --- 8. CÔNG CỤ LỌC SỐ KHẢ THI ---
-        function openFeasibleModalDirect() {
-            let overlay = document.getElementById('feasibleModalOverlay');
-            let box = document.getElementById('feasibleModalBox');
-            document.getElementById('feasibleModalHeaderTitle').innerText = `SỐ KHẢ THI - ĐÀI ${currentType.toUpperCase()}`;
-            overlay.style.display = 'flex';
-            if (!box.style.left || box.style.left === '50%') { box.style.left = '50%'; box.style.top = '50%'; box.style.transform = 'translate(-50%, -50%)'; }
+        // --- 8. CÔNG CỤ TÍNH TOÁN AI: LỌC SỐ KHẢ THI ---
+        function openFilterModal() {
+            let rows = globalOnlineData[currentType] || [];
+            if (rows.length === 0) { alert("Dữ liệu đài hiện tại chưa được tải về hoặc đang trống!"); return; }
+            
+            let overlay = document.getElementById('filterModalOverlay');
+            let box = document.getElementById('filterModalBox');
+            
+            // Cập nhật tiêu đề theo Đài
+            document.getElementById('filterModalHeaderTitle').innerText = `PHÂN TÍCH & LỌC SỐ - ĐÀI ${currentType.toUpperCase()}`;
+            
+            // 1. Chạy xuất dữ liệu cho Số khả thi
             calcFeasibleNumbersDirect();
+            
+            // 2. Chạy xuất dữ liệu cho Bảng quy đổi
+            let bounds = getValidatedMatrixBounds();
+            let startIndex = bounds.top - 1; let endIndex = bounds.bottom;
+            let targetRows = rows.slice(startIndex, endIndex);
+            let mainSize = currentType === 'lotto' ? 5 : 6;
+
+            document.getElementById('conversionModalTypeTitle').innerText = currentType === 'lotto' ? 'Lotto 5/35' : (currentType === 'mega' ? 'Mega 6/45' : 'Power 6/55');
+            document.getElementById('conversionModalTopText').innerText = String(bounds.top).padStart(2, '0');
+            document.getElementById('conversionModalBottomText').innerText = String(bounds.bottom).padStart(2, '0');
+
+            let convertedRecords = targetRows.map(r => {
+                let convertedMain = r.main.map(num => convertNumberToGroup(num));
+                convertedMain.sort((a, b) => a - b);
+                let fullResultStr = r.spec ? `${r.main.join(' ')} | ${r.spec}` : r.main.join(' ');
+                return { date: r.date, resultStr: fullResultStr, convertedStr: convertedMain.join(' '), convertedArr: convertedMain };
+            });
+
+            let interactiveInputsHTML = `<div style="display: flex; gap: 6px; align-items: center; margin: 8px 0; background: #141420; padding: 6px; border-radius: 6px; border: 1px solid #28283d;"><span style="font-size:0.68rem; color:var(--border-glow); font-weight:bold;">Tra cứu dãy:</span>`;
+            for (let i = 0; i < mainSize; i++) { interactiveInputsHTML += `<input type="text" maxlength="1" class="conv-custom-input" id="convInput_${i}" value="0" style="width:24px; height:24px; background:#0a0a0f; color:#fff; border:1px solid #36364d; text-align:center; font-weight:bold; font-size:0.75rem; border-radius:4px;" onfocus="this.select()" oninput="recalculateCustomConversionSearch(${mainSize})">`; }
+            interactiveInputsHTML += `<span style="font-size:0.75rem; color:#8a8a9e; font-weight:bold; margin-left:4px;">➔ Tần suất:</span><input type="text" id="convResultFreqOutput" readonly value="0" style="width:35px; height:24px; background:#08151a; color:var(--accent-green); border:1px solid var(--accent-green); text-align:center; font-weight:900; font-size:0.8rem; border-radius:4px;"></div>`;
+
+            let html = interactiveInputsHTML + `<table class="conversion-table"><tr><th style="width: 22%;">Ngày / Kỳ</th><th style="width: 35%;">Kết quả xổ</th><th style="width: 23%;">Dãy quy đổi</th><th style="width: 20%;">Số lần trùng</th></tr>`;
+            
+            convertedRecords.forEach((rec) => {
+                let matchCount = convertedRecords.filter(item => item.convertedStr === rec.convertedStr).length;
+                html += `<tr><td style="color:#ffcc00; font-weight:bold; font-size:0.68rem; white-space:nowrap;">${rec.date}</td><td style="color:#ffffff; font-family:monospace; font-weight:bold; font-size:0.72rem; white-space:nowrap;">${rec.resultStr}</td><td style="color:var(--border-glow); font-family:monospace; font-weight:bold; font-size:0.75rem; white-space:nowrap;">[ ${rec.convertedStr} ]</td><td style="color:var(--accent-green); font-weight:bold; font-size:0.8rem;">${matchCount}</td></tr>`;
+            });
+            html += `</table>`;
+            
+            document.getElementById('conversionTableContainer').innerHTML = html;
+            window._currentConversionRecords = convertedRecords; 
+            
+            // Hiện overlay
+            overlay.style.display = 'flex';
+            if (!box.style.left || box.style.left === '50%') { 
+                box.style.left = '50%'; box.style.top = '50%'; box.style.transform = 'translate(-50%, -50%)'; 
+            }
+            
+            recalculateCustomConversionSearch(mainSize);
         }
-
-        function closeFeasibleModalDirect() { document.getElementById('feasibleModalOverlay').style.display = 'none'; }
-
+        
         function toggleSelectFeasibleBall(el, num, isSpec) {
             if (isSpec) {
                 let idx = selectedFeasibleSpecNums.indexOf(num);
@@ -2536,182 +2485,172 @@ topActionContainer.innerHTML = `
         }
 
         function calcFeasibleNumbersDirect() {
-    selectedFeasibleMainNums = []; selectedFeasibleSpecNums = [];
-    let rows = globalOnlineData[currentType] || [];
-    let container = document.getElementById('feasibleContentArea');
-    if (rows.length === 0) { 
-        container.innerHTML = `<div style="color:var(--accent-pink); padding:20px; text-align:center;">Trống dữ liệu phân tích đài ${currentType.toUpperCase()}!</div>`; 
-        return; 
-    }
-
-    // 1. Khoanh vùng ranh giới kỳ chuẩn: Lấy từ kỳ mới nhất (0) cho đến mốc Max kỳ Đại ca chọn trên giao diện
-    let maxIdx = parseInt(document.getElementById('feasibleMaxSelect').value) || 50;
-    let minFreqLimit = parseInt(document.getElementById('feasibleMinSelect').value) || 0;
-
-    let targetRows = rows.slice(0, maxIdx);
-    if (targetRows.length === 0) targetRows = rows.slice(0, 50);
-
-    let maxNum = currentType === 'lotto' ? 35 : (currentType === 'mega' ? 45 : 55);
-    let mainScores = {}; let specScores = {}; 
-
-    for (let i = 1; i <= maxNum; i++) mainScores[String(i).padStart(2, '0')] = { freq: 0, score: 0 };
-    if (currentType === 'lotto') { 
-        for (let i = 1; i <= 12; i++) specScores[String(i).padStart(2, '0')] = { freq: 0, score: 0 }; 
-    }
-
-    // Đếm tần suất thực tế trong khoảng kỳ quét
-    targetRows.forEach(r => {
-        if (r.main) { 
-            r.main.forEach(num => { 
-                let formatted = String(parseInt(num)).padStart(2, '0'); 
-                if (mainScores[formatted]) mainScores[formatted].freq++; 
-            }); 
-        }
-        if (r.spec) {
-            let formattedSpec = String(parseInt(r.spec)).padStart(2, '0');
-            if (currentType === 'power' && mainScores[formattedSpec]) { mainScores[formattedSpec].freq++; } 
-            else if (currentType === 'lotto' && specScores[formattedSpec]) { specScores[formattedSpec].freq++; }
-        }
-    });
-
-    let lastRow = rows[0];
-    let prevRow = rows[1];
-    let prev2Row = rows[2];
-
-    // A. Phân tích Dãy Quy đổi nhóm chục theo Tần suất trùng lặp chuỗi
-    let getLastRowConversionStr = (rowObj) => {
-        if (!rowObj || !rowObj.main) return "";
-        let groups = rowObj.main.map(numStr => {
-            let n = parseInt(numStr);
-            if (isNaN(n)) return 0; if (n <= 9) return 0; if (n <= 19) return 1; if (n <= 29) return 2; if (n <= 39) return 3; if (n <= 49) return 4; return 5;
-        });
-        groups.sort((a, b) => a - b);
-        return groups.join(' ');
-    };
-
-    let lastRowConvStr = getLastRowConversionStr(lastRow);
-    let conversionMatchCount = 0;
-    targetRows.forEach(r => {
-        if (getLastRowConversionStr(r) === lastRowConvStr) {
-            conversionMatchCount++;
-        }
-    });
-
-    // B. Trọng số theo đài cho Điểm Rơi và Kề nhau
-    let weightRơi = currentType === 'lotto' ? 4 : (currentType === 'mega' ? 2 : 1);
-    let weightKe = currentType === 'lotto' ? 3 : (currentType === 'mega' ? 1.5 : 1);
-
-    for (let i = 1; i <= maxNum; i++) {
-        let nStr = String(i).padStart(2, '0');
-        let data = mainScores[nStr];
-        
-        // Lọc kiên quyết theo điều kiện tần suất Min đã chọn
-        if (data.freq >= minFreqLimit) { 
-            data.score += 10; 
-            
-            // + Điểm Rơi lại
-            if (lastRow && lastRow.main && lastRow.main.includes(nStr)) data.score += weightRơi;
-            
-            // + Điểm Kề nhau (Liền tiếp sát vách)
-            if (lastRow && lastRow.main) {
-                let prevNum = String(i - 1).padStart(2, '0');
-                let nextNum = String(i + 1).padStart(2, '0');
-                if (lastRow.main.includes(prevNum) || lastRow.main.includes(nextNum)) data.score += weightKe;
+            selectedFeasibleMainNums = []; selectedFeasibleSpecNums = [];
+            let rows = globalOnlineData[currentType] || [];
+            let container = document.getElementById('feasibleContentArea');
+            if (rows.length === 0) { 
+                container.innerHTML = `<div style="color:var(--accent-pink); padding:20px; text-align:center;">Trống dữ liệu phân tích đài ${currentType.toUpperCase()}!</div>`; 
+                return; 
             }
 
-            // + Cân bằng Chẵn Lẻ: Ưu tiên Lẻ chiếm ưu thế tự nhiên, bám theo tính chất số đầu/cuối kỳ trước
-            let isOdd = i % 2 !== 0;
-            let firstNumVal = (lastRow && lastRow.main && lastRow.main.length > 0) ? parseInt(lastRow.main[0]) : 1;
-            let lastNumVal = (lastRow && lastRow.main && lastRow.main.length > 0) ? parseInt(lastRow.main[lastRow.main.length - 1]) : 1;
-            let anchorIsOdd = (firstNumVal % 2 !== 0 || lastNumVal % 2 !== 0);
+            // Khoanh vùng ranh giới kỳ quét
+            let maxIdx = parseInt(document.getElementById('feasibleMaxSelect').value) || 50;
+            let minFreqLimit = parseInt(document.getElementById('feasibleMinSelect').value) || 0;
 
-            if (anchorIsOdd && isOdd) data.score += 3;
-            else if (!anchorIsOdd && !isOdd) data.score += 2;
-            else if (isOdd) data.score += 1.5;
+            let targetRows = rows.slice(0, maxIdx);
+            if (targetRows.length === 0) targetRows = rows.slice(0, 50);
 
-            // + Cân bằng Mô hình Quy đổi nhóm chục
-            if (conversionMatchCount >= 3) {
-                data.score -= 2; // Cấu trúc đang lặp lại dày đặc -> Hãm lại
-            } else if (conversionMatchCount <= 1) {
-                data.score += 3; // Cấu trúc đang hiếm hoặc độc lập -> Ưu tiên cao
+            let maxNum = currentType === 'lotto' ? 35 : (currentType === 'mega' ? 45 : 55);
+            let mainScores = {}; let specScores = {}; 
+
+            for (let i = 1; i <= maxNum; i++) mainScores[String(i).padStart(2, '0')] = { freq: 0, score: 0 };
+            if (currentType === 'lotto') { 
+                for (let i = 1; i <= 12; i++) specScores[String(i).padStart(2, '0')] = { freq: 0, score: 0 }; 
             }
-        }
-    }
 
-    // C. Tính điểm suy xét bóng đặc biệt (Dành riêng Lotto 5/35)
-    if (currentType === 'lotto') {
-        for (let i = 1; i <= 12; i++) {
-            let nStr = String(i).padStart(2, '0');
-            let data = specScores[nStr];
-            
-            if (data.freq >= minFreqLimit) { 
-                data.score += 10;
+            // Đếm tần suất thực tế trong khoảng kỳ quét
+            targetRows.forEach(r => {
+                if (r.main) { 
+                    r.main.forEach(num => { 
+                        let formatted = String(parseInt(num)).padStart(2, '0'); 
+                        if (mainScores[formatted]) mainScores[formatted].freq++; 
+                    }); 
+                }
+                if (r.spec) {
+                    let formattedSpec = String(parseInt(r.spec)).padStart(2, '0');
+                    if (currentType === 'power' && mainScores[formattedSpec]) { mainScores[formattedSpec].freq++; } 
+                    else if (currentType === 'lotto' && specScores[formattedSpec]) { specScores[formattedSpec].freq++; }
+                }
+            });
+
+            let lastRow = rows[0];
+            let prevRow = rows[1];
+            let prev2Row = rows[2];
+
+            // Tần suất trùng lặp chuỗi
+            let getLastRowConversionStr = (rowObj) => {
+                if (!rowObj || !rowObj.main) return "";
+                let groups = rowObj.main.map(numStr => {
+                    let n = parseInt(numStr);
+                    if (isNaN(n)) return 0; if (n <= 9) return 0; if (n <= 19) return 1; if (n <= 29) return 2; if (n <= 39) return 3; if (n <= 49) return 4; return 5;
+                });
+                groups.sort((a, b) => a - b);
+                return groups.join(' ');
+            };
+
+            let lastRowConvStr = getLastRowConversionStr(lastRow);
+            let conversionMatchCount = 0;
+            targetRows.forEach(r => {
+                if (getLastRowConversionStr(r) === lastRowConvStr) {
+                    conversionMatchCount++;
+                }
+            });
+
+            // Trọng số AI
+            let weightRơi = currentType === 'lotto' ? 4 : (currentType === 'mega' ? 2 : 1);
+            let weightKe = currentType === 'lotto' ? 3 : (currentType === 'mega' ? 1.5 : 1);
+
+            for (let i = 1; i <= maxNum; i++) {
+                let nStr = String(i).padStart(2, '0');
+                let data = mainScores[nStr];
                 
-                // + Đà Tăng Giảm 2 kỳ liên tiếp
-                if (lastRow && prevRow && prev2Row && lastRow.spec && prevRow.spec && prev2Row.spec) {
-                    let s1 = parseInt(lastRow.spec); 
-                    let s2 = parseInt(prevRow.spec); 
-                    let s3 = parseInt(prev2Row.spec);
+                if (data.freq >= minFreqLimit) { 
+                    data.score += 10; 
                     
-                    let delta1 = s1 - s2; 
-                    let delta2 = s2 - s3; 
+                    if (lastRow && lastRow.main && lastRow.main.includes(nStr)) data.score += weightRơi;
+                    
+                    if (lastRow && lastRow.main) {
+                        let prevNum = String(i - 1).padStart(2, '0');
+                        let nextNum = String(i + 1).padStart(2, '0');
+                        if (lastRow.main.includes(prevNum) || lastRow.main.includes(nextNum)) data.score += weightKe;
+                    }
 
-                    if (delta1 > 0 && delta2 > 0) {
-                        if (i < s1 && (s1 - i) <= 5) data.score += 5; // Đang tăng tăng -> Bẻ lái giảm
-                    } else if (delta1 < 0 && delta2 < 0) {
-                        if (i > s1 && (i - s1) <= 5) data.score += 5; // Đang giảm giảm -> Bẻ lái tăng
-                    } else {
-                        if (Math.abs(delta1) >= 1 && Math.abs(delta1) <= 5) data.score += 3;
+                    let isOdd = i % 2 !== 0;
+                    let firstNumVal = (lastRow && lastRow.main && lastRow.main.length > 0) ? parseInt(lastRow.main[0]) : 1;
+                    let lastNumVal = (lastRow && lastRow.main && lastRow.main.length > 0) ? parseInt(lastRow.main[lastRow.main.length - 1]) : 1;
+                    let anchorIsOdd = (firstNumVal % 2 !== 0 || lastNumVal % 2 !== 0);
+
+                    if (anchorIsOdd && isOdd) data.score += 3;
+                    else if (!anchorIsOdd && !isOdd) data.score += 2;
+                    else if (isOdd) data.score += 1.5;
+
+                    if (conversionMatchCount >= 3) {
+                        data.score -= 2; 
+                    } else if (conversionMatchCount <= 1) {
+                        data.score += 3; 
                     }
                 }
-
-                // + Chu kỳ lặp 10 đến 15 kỳ (Bắt nhịp chưa lặp để phục hồi)
-                let hasRepeatedIn15 = false;
-                for (let k = 1; k <= 15; k++) {
-                    if (rows[k] && rows[k].spec === nStr) { hasRepeatedIn15 = true; break; }
-                }
-                if (!hasRepeatedIn15) data.score += 4;
-
-                let row10 = rows[10]; let row15 = rows[15];
-                if (row10 && row10.spec === nStr) data.score += 3;
-                if (row15 && row15.spec === nStr) data.score += 3;
             }
+
+            // Bóng đặc biệt (Lotto 5/35)
+            if (currentType === 'lotto') {
+                for (let i = 1; i <= 12; i++) {
+                    let nStr = String(i).padStart(2, '0');
+                    let data = specScores[nStr];
+                    
+                    if (data.freq >= minFreqLimit) { 
+                        data.score += 10;
+                        
+                        if (lastRow && prevRow && prev2Row && lastRow.spec && prevRow.spec && prev2Row.spec) {
+                            let s1 = parseInt(lastRow.spec); 
+                            let s2 = parseInt(prevRow.spec); 
+                            let s3 = parseInt(prev2Row.spec);
+                            let delta1 = s1 - s2; let delta2 = s2 - s3; 
+
+                            if (delta1 > 0 && delta2 > 0) {
+                                if (i < s1 && (s1 - i) <= 5) data.score += 5; 
+                            } else if (delta1 < 0 && delta2 < 0) {
+                                if (i > s1 && (i - s1) <= 5) data.score += 5; 
+                            } else {
+                                if (Math.abs(delta1) >= 1 && Math.abs(delta1) <= 5) data.score += 3;
+                            }
+                        }
+
+                        let hasRepeatedIn15 = false;
+                        for (let k = 1; k <= 15; k++) {
+                            if (rows[k] && rows[k].spec === nStr) { hasRepeatedIn15 = true; break; }
+                        }
+                        if (!hasRepeatedIn15) data.score += 4;
+
+                        let row10 = rows[10]; let row15 = rows[15];
+                        if (row10 && row10.spec === nStr) data.score += 3;
+                        if (row15 && row15.spec === nStr) data.score += 3;
+                    }
+                }
+            }
+
+            // Xuất kết quả
+            let matchedMain = [];
+            for (let num in mainScores) { if (mainScores[num].score > 0) matchedMain.push(num); }
+            matchedMain.sort((a, b) => mainScores[b].score - mainScores[a].score);
+            calculatedFeasibleMainNums = matchedMain;
+
+            let html = `<div style="margin-bottom:10px;">
+                <div style="font-size:0.7rem; color:var(--accent-green); font-weight:bold; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
+                    <span>Tập số chính khả thi (${matchedMain.length} số - Quét ${targetRows.length} kỳ mới nhất):</span>
+                    <button onclick="selectAllFeasibleMain(true)" style="background:none; border:none; color:var(--border-glow); font-size:0.6rem; cursor:pointer; font-weight:bold;">[Chọn tất cả]</button>
+                </div><div style="display:flex; flex-wrap:wrap; gap:2px;">`;
+            
+            if (matchedMain.length === 0) { html += `<span style="color:var(--text-muted); font-size:0.68rem;">Không tìm thấy số phù hợp trong khoảng kỳ này</span>`; } 
+            else { matchedMain.forEach(n => { html += `<span class="feasible-num-ball" onclick="toggleSelectFeasibleBall(this, '${n}', false)" title="Điểm AI: ${mainScores[n].score} | Trùng cấu trúc quy đổi: ${conversionMatchCount} lần">${n}</span>`; }); }
+            html += `</div></div>`;
+
+            if (currentType === 'lotto') {
+                let matchedSpec = [];
+                for (let num in specScores) { if (specScores[num].score > 0) matchedSpec.push(num); }
+                matchedSpec.sort((a, b) => specScores[b].score - specScores[a].score);
+                
+                html += `<div>
+                    <div style="font-size:0.7rem; color:var(--accent-orange); font-weight:bold; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
+                        <span>Tập số đặc biệt khả thi (${matchedSpec.length} số):</span>
+                        <button onclick="selectAllFeasibleSpec(true)" style="background:none; border:none; color:var(--accent-orange); font-size:0.6rem; cursor:pointer; font-weight:bold;">[Chọn tất cả]</button>
+                    </div><div style="display:flex; flex-wrap:wrap; gap:2px;">`;
+                if (matchedSpec.length === 0) { html += `<span style="color:var(--text-muted); font-size:0.68rem;">Không có số thỏa mãn</span>`; } 
+                else { matchedSpec.forEach(n => { html += `<span class="feasible-num-ball spec" onclick="toggleSelectFeasibleBall(this, '${n}', true)" title="Điểm AI ĐB: ${specScores[n].score}">${n}</span>`; }); }
+                html += `</div></div>`;
+            }
+            container.innerHTML = html;
         }
-    }
-
-    // Kết xuất và sắp xếp theo Điểm Tối Ưu AI
-    let matchedMain = [];
-    for (let num in mainScores) { if (mainScores[num].score > 0) matchedMain.push(num); }
-    matchedMain.sort((a, b) => mainScores[b].score - mainScores[a].score);
-    calculatedFeasibleMainNums = matchedMain;
-
-    // Cập nhật giao diện UI
-    let html = `<div style="margin-bottom:10px;">
-        <div style="font-size:0.7rem; color:var(--accent-green); font-weight:bold; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
-            <span>Tập số chính khả thi (${matchedMain.length} số - Quét ${targetRows.length} kỳ mới nhất):</span>
-            <button onclick="selectAllFeasibleMain(true)" style="background:none; border:none; color:var(--border-glow); font-size:0.6rem; cursor:pointer; font-weight:bold;">[Chọn tất cả]</button>
-        </div><div style="display:flex; flex-wrap:wrap; gap:2px;">`;
-    
-    if (matchedMain.length === 0) { html += `<span style="color:var(--text-muted); font-size:0.68rem;">Không tìm thấy số phù hợp trong khoảng kỳ này</span>`; } 
-    else { matchedMain.forEach(n => { html += `<span class="feasible-num-ball" onclick="toggleSelectFeasibleBall(this, '${n}', false)" title="Điểm AI: ${mainScores[n].score} | Trùng cấu trúc quy đổi: ${conversionMatchCount} lần">${n}</span>`; }); }
-    html += `</div></div>`;
-
-    if (currentType === 'lotto') {
-        let matchedSpec = [];
-        for (let num in specScores) { if (specScores[num].score > 0) matchedSpec.push(num); }
-        matchedSpec.sort((a, b) => specScores[b].score - specScores[a].score);
-        
-        html += `<div>
-            <div style="font-size:0.7rem; color:var(--accent-orange); font-weight:bold; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
-                <span>Tập số đặc biệt khả thi (${matchedSpec.length} số):</span>
-                <button onclick="selectAllFeasibleSpec(true)" style="background:none; border:none; color:var(--accent-orange); font-size:0.6rem; cursor:pointer; font-weight:bold;">[Chọn tất cả]</button>
-            </div><div style="display:flex; flex-wrap:wrap; gap:2px;">`;
-        if (matchedSpec.length === 0) { html += `<span style="color:var(--text-muted); font-size:0.68rem;">Không có số thỏa mãn</span>`; } 
-        else { matchedSpec.forEach(n => { html += `<span class="feasible-num-ball spec" onclick="toggleSelectFeasibleBall(this, '${n}', true)" title="Điểm AI ĐB: ${specScores[n].score}">${n}</span>`; }); }
-        html += `</div></div>`;
-    }
-    container.innerHTML = html;
-}
 
         function applySelectedFeasibleToLockControls() {
             if (selectedFeasibleMainNums.length === 0 && selectedFeasibleSpecNums.length === 0) { alert("Đại ca chưa chọn số nào từ tập số khả thi! Hãy bấm chọn các quả bóng số trước khi bấm NẠP."); return; }
@@ -2732,43 +2671,6 @@ topActionContainer.innerHTML = `
             if (isNaN(n)) return 0; if (n <= 9) return 0; if (n <= 19) return 1; if (n <= 29) return 2; if (n <= 39) return 3; if (n <= 49) return 4; return 5;
         }
 
-        function openConversionModal() {
-            let rows = globalOnlineData[currentType] || [];
-            if (rows.length === 0) { alert("Dữ liệu đài hiện tại chưa được tải về hoặc đang trống!"); return; }
-            let bounds = getValidatedMatrixBounds();
-            let startIndex = bounds.top - 1; let endIndex = bounds.bottom;
-            let targetRows = rows.slice(startIndex, endIndex);
-            let mainSize = currentType === 'lotto' ? 5 : 6;
-
-            document.getElementById('conversionModalTypeTitle').innerText = currentType === 'lotto' ? 'Lotto 5/35' : (currentType === 'mega' ? 'Mega 6/45' : 'Power 6/55');
-            document.getElementById('conversionModalTopText').innerText = String(bounds.top).padStart(2, '0');
-            document.getElementById('conversionModalBottomText').innerText = String(bounds.bottom).padStart(2, '0');
-
-            let convertedRecords = targetRows.map(r => {
-                let convertedMain = r.main.map(num => convertNumberToGroup(num));
-                convertedMain.sort((a, b) => a - b);
-                let fullResultStr = r.spec ? `${r.main.join(' ')} | ${r.spec}` : r.main.join(' ');
-                return { date: r.date, resultStr: fullResultStr, convertedStr: convertedMain.join(' '), convertedArr: convertedMain };
-            });
-
-            let interactiveInputsHTML = `<div style="display: flex; gap: 6px; align-items: center; margin: 8px 0; background: #141420; padding: 6px; border-radius: 6px; border: 1px solid #28283d;"><span style="font-size:0.68rem; color:var(--border-glow); font-weight:bold;">Tra cứu dãy:</span>`;
-            for (let i = 0; i < mainSize; i++) { interactiveInputsHTML += `<input type="text" maxlength="1" class="conv-custom-input" id="convInput_${i}" value="0" style="width:24px; height:24px; background:#0a0a0f; color:#fff; border:1px solid #36364d; text-align:center; font-weight:bold; font-size:0.75rem; border-radius:4px;" onfocus="this.select()" oninput="recalculateCustomConversionSearch(${mainSize})">`; }
-            interactiveInputsHTML += `<span style="font-size:0.75rem; color:#8a8a9e; font-weight:bold; margin-left:4px;">➔ Tần suất:</span><input type="text" id="convResultFreqOutput" readonly value="0" style="width:35px; height:24px; background:#08151a; color:var(--accent-green); border:1px solid var(--accent-green); text-align:center; font-weight:900; font-size:0.8rem; border-radius:4px;"></div>`;
-
-            let html = interactiveInputsHTML + `<table class="conversion-table"><tr><th style="width: 22%;">Ngày / Kỳ</th><th style="width: 35%;">Kết quả xổ</th><th style="width: 23%;">Dãy quy đổi</th><th style="width: 20%;">Số lần trùng (Biên ${String(bounds.top).padStart(2, '0')}-${String(bounds.bottom).padStart(2, '0')})</th></tr>`;
-            
-            convertedRecords.forEach((rec) => {
-                let matchCount = convertedRecords.filter(item => item.convertedStr === rec.convertedStr).length;
-                html += `<tr><td style="color:#ffcc00; font-weight:bold; font-size:0.68rem; white-space:nowrap;">${rec.date}</td><td style="color:#ffffff; font-family:monospace; font-weight:bold; font-size:0.72rem; white-space:nowrap;">${rec.resultStr}</td><td style="color:var(--border-glow); font-family:monospace; font-weight:bold; font-size:0.75rem; white-space:nowrap;">[ ${rec.convertedStr} ]</td><td style="color:var(--accent-green); font-weight:bold; font-size:0.8rem;">${matchCount}</td></tr>`;
-            });
-            html += `</table>`;
-            
-            document.getElementById('conversionTableContainer').innerHTML = html;
-            let overlay = document.getElementById('conversionModalOverlay'); overlay.style.display = 'flex';
-            let box = document.getElementById('conversionModalBox'); box.style.left = '50%'; box.style.top = '50%'; box.style.transform = 'translate(-50%, -50%)';
-            window._currentConversionRecords = convertedRecords; recalculateCustomConversionSearch(mainSize);
-        }
-
         function recalculateCustomConversionSearch(mainSize) {
             let customArr = [];
             for (let i = 0; i < mainSize; i++) {
@@ -2783,7 +2685,9 @@ topActionContainer.innerHTML = `
             if (outputEl) { outputEl.value = matchFreq; }
         }
 
-        function closeConversionModal() { document.getElementById('conversionModalOverlay').style.display = 'none'; }
+        function closeFilterModal() { 
+            document.getElementById('filterModalOverlay').style.display = 'none'; 
+        }
 
         function openExtractorModal() {
             let overlay = document.getElementById('extractorModalOverlay');
@@ -2845,7 +2749,7 @@ topActionContainer.innerHTML = `
         function clearExtractorModal() { document.getElementById("extractorRawInput").value = ""; document.getElementById("extractorOutputResult").innerText = "Chưa có dữ liệu..."; }
         function closeExtractorModal() { let overlay = document.getElementById('extractorModalOverlay'); if (overlay) { overlay.style.display = 'none'; } }
 
-        // --- 10. NHẬP XUẤT & XỬ LÝ DỮ LIỆU ĐÁM MÂY CHUNG ---
+        // --- 10. NHẬP/XUẤT DỮ LIỆU & ĐỒNG BỘ ĐÁM MÂY ---
         function handleMultiFileSelect(e) {
             let files = e.target.files;
             if (files.length === 0) return;
@@ -2963,7 +2867,7 @@ topActionContainer.innerHTML = `
             });
         }
 
-        // --- KHỞI TẠO HỆ THỐNG ---
+        // --- 11. KHỞI TẠO HỆ THỐNG VÀ XUẤT HIỆN ---
         window.onload = function() { 
             updateThemeColors();
             initLoginVisualEffects();
