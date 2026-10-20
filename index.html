@@ -689,8 +689,14 @@
                             </select>
                             <span style="font-size:0.68rem; color:#8a8a9e; font-weight:bold;">đến</span>
                             <select id="feasibleMaxSelect" style="background:#0a0a0f; color:var(--border-glow); border:1px solid #36364d; font-size:0.75rem; font-weight:bold; border-radius:4px; padding:2px 4px; outline:none;">
-                                <option value="5">5 kỳ</option><option value="10">10 kỳ</option><option value="20">20 kỳ</option><option value="30">30 kỳ</option><option value="40">40 kỳ</option><option value="100" selected>100 kỳ</option>
-                            </select>
+							<option value="5">5 kỳ</option>
+							<option value="10">10 kỳ</option>
+							<option value="20">20 kỳ</option>
+							<option value="30">30 kỳ</option>
+							<option value="40">40 kỳ</option>
+							<option value="100" selected>100 kỳ</option>
+							<option value="350">350 kỳ</option>
+							</select>
                         </div>
                         <div style="display:flex; gap:3px;">
                             <button class="btn-clear-premium" onclick="calcFeasibleNumbersDirect()" style="height:22px; padding:0 6px; font-size:0.6rem; background:#140d12; color:var(--accent-pink); border-color:var(--accent-pink);" title="Lọc danh sách số khả thi theo tần suất">⚡ LỌC</button>
@@ -833,12 +839,35 @@
                 btn.onclick = () => selectBoundValue(i);
                 grid.appendChild(btn);
             }
+
+            // --- ĐOẠN CODE THÊM MỚI: Ô nhập số tùy chỉnh ---
+            let customArea = document.createElement('div');
+            customArea.style = "grid-column: 1 / -1; display: flex; gap: 5px; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #00f2fe;";
+            customArea.innerHTML = `
+                <input type="number" id="customBoundInput" min="1" max="350" placeholder="Số khác..." style="flex:1; background:#0f0f17; color:#00f2fe; border:1px solid #00f2fe; border-radius:4px; padding:4px; text-align:center; font-weight:bold; outline:none; font-family:inherit;">
+                <button onclick="applyCustomBound()" style="background:var(--accent-pink); color:#fff; border:none; border-radius:4px; font-weight:bold; cursor:pointer; padding:0 10px; font-size:0.7rem;">NẠP</button>
+            `;
+            grid.appendChild(customArea);
+            // -----------------------------------------------
             
             let rect = event.target.getBoundingClientRect();
             modal.style.left = Math.min(rect.left, window.innerWidth - 245) + 'px';
             modal.style.top = (rect.bottom + 6) + 'px';
             modal.style.display = 'block';
             event.stopPropagation();
+            
+            // Tự động focus vào ô nhập khi mở bảng
+            setTimeout(() => { document.getElementById('customBoundInput').focus(); }, 50);
+        }
+
+        // --- HÀM THÊM MỚI: Xử lý nút NẠP ---
+        function applyCustomBound() {
+            let val = parseInt(document.getElementById('customBoundInput').value);
+            if (isNaN(val) || val < 1 || val > 350) {
+                alert("Đại ca vui lòng nhập số kỳ từ 1 đến 350!");
+                return;
+            }
+            selectBoundValue(val);
         }
 
         function selectBoundValue(val) {
@@ -1515,8 +1544,8 @@
             let top = parseInt(topInput.value) || 1;
             let bottom = parseInt(bottomInput.value) || 10;
 
-            if (top < 1) top = 1; if (top > 100) top = 100;
-            if (bottom < 1) bottom = 1; if (bottom > 100) bottom = 100;
+            if (top < 1) top = 1; if (top > 350) top = 350;
+            if (bottom < 1) bottom = 1; if (bottom > 350) bottom = 350;
             if (top > bottom) { let temp = top; top = bottom; bottom = temp; }
 
             topInput.value = String(top).padStart(2, '0');
@@ -2775,7 +2804,7 @@
                                 parsedRows.push({ date: dateStr, main: mainNums, spec: specNum });
                             }
                         });
-                        let limitedRows = parsedRows.slice(0, 100);
+                        let limitedRows = parsedRows.slice(0, 350);
                         if (limitedRows.length > 0) {
                             db.ref('vietlott_matrix_data/' + targetType).set(limitedRows);
                             loadedTypes.push(targetType.toUpperCase());
@@ -2859,7 +2888,7 @@
             });
 
             for (let i = uniqueNewRows.length - 1; i >= 0; i--) { mergedRows.unshift(uniqueNewRows[i]); addedCount++; }
-            let finalDataset = mergedRows.slice(0, 100);
+            let finalDataset = mergedRows.slice(0, 350);
 
             db.ref('vietlott_matrix_data/' + autoDetectedType).set(finalDataset).then(() => {
                 document.getElementById('boardRawInput').value = ''; 
