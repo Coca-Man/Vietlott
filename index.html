@@ -678,6 +678,7 @@
             </div>
             
             <div style="overflow-y: auto; flex: 1; padding-right: 5px;" id="filterModalScrollArea">
+                
                 <!-- PHẦN 1: SỐ KHẢ THI -->
                 <div style="margin-bottom: 12px; border-bottom: 1px dashed #3b3b54; padding-bottom: 12px;">
                     <div style="font-size:0.75rem; color:var(--border-glow); font-weight:bold; margin-bottom: 6px; text-transform: uppercase;">1. Phân tích Số khả thi</div>
@@ -689,14 +690,14 @@
                             </select>
                             <span style="font-size:0.68rem; color:#8a8a9e; font-weight:bold;">đến</span>
                             <select id="feasibleMaxSelect" style="background:#0a0a0f; color:var(--border-glow); border:1px solid #36364d; font-size:0.75rem; font-weight:bold; border-radius:4px; padding:2px 4px; outline:none;">
-							<option value="5">5 kỳ</option>
-							<option value="10">10 kỳ</option>
-							<option value="20">20 kỳ</option>
-							<option value="30">30 kỳ</option>
-							<option value="40">40 kỳ</option>
-							<option value="100" selected>100 kỳ</option>
-							<option value="350">350 kỳ</option>
-							</select>
+                                <option value="5">5 kỳ</option>
+                                <option value="10">10 kỳ</option>
+                                <option value="20">20 kỳ</option>
+                                <option value="30">30 kỳ</option>
+                                <option value="40">40 kỳ</option>
+                                <option value="100" selected>100 kỳ</option>
+                                <option value="351">351 kỳ</option>
+                            </select>
                         </div>
                         <div style="display:flex; gap:3px;">
                             <button class="btn-clear-premium" onclick="calcFeasibleNumbersDirect()" style="height:22px; padding:0 6px; font-size:0.6rem; background:#140d12; color:var(--accent-pink); border-color:var(--accent-pink);" title="Lọc danh sách số khả thi theo tần suất">⚡ LỌC</button>
@@ -714,7 +715,33 @@
                     </div>
                     <div id="conversionTableContainer"></div>
                 </div>
-            </div>
+
+                <!-- PHẦN 3: 5 DÃY SỐ KHẢ THI PHÂN TẦNG CÓ NÚT NẠP & RESET -->
+<div style="margin-top: 14px; border-top: 1px dashed #3b3b54; padding-top: 12px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+        <div style="font-size:0.75rem; color:var(--accent-pink); font-weight:bold; text-transform: uppercase;">
+            3. 5 Dãy Số Khả Thi Phân Tầng Chiến Thuật (AI Ensemble)
+        </div>
+        <div style="display:flex; gap:4px;">
+            <button class="btn-clear-premium" onclick="generate5FeasibleTickets()" style="height:22px; padding:0 6px; font-size:0.6rem; background:#0d151a; color:var(--border-glow); border-color:var(--border-glow);" title="Tạo 5 dãy số dựa trên tập số khả thi">
+                ⚡ TẠO 5 DÃY
+            </button>
+            <button class="btn-clear-premium" onclick="resetFeasibleTickets()" style="height:22px; padding:0 6px; font-size:0.6rem; background:#1c1017; color:var(--accent-pink); border-color:var(--accent-pink);" title="Xóa toàn bộ danh sách dãy cũ">
+                🔄 RESET
+            </button>
+            <button class="btn-export-premium" onclick="loadAll5FeasibleTickets()" style="height:22px; padding:0 6px; font-size:0.6rem; background:linear-gradient(135deg, #00ff66 0%, #009933 100%); color:#000; font-weight:900; border:none;" title="Đẩy toàn bộ 5 dãy sang Bảng Dự Đoán">
+                📥 NẠP TOÀN BỘ
+            </button>
+        </div>
+    </div>
+    <div id="feasibleTicketsListArea" style="display:flex; flex-direction:column; gap:4px; max-height:220px; overflow-y:auto; padding-right:3px;">
+        <div style="color:var(--text-muted); font-size:0.68rem; text-align:center; padding:10px;">
+            Bấm "⚡ TẠO 5 DÃY" để khởi tạo dàn số phân tầng chiến thuật...
+        </div>
+    </div>
+</div>	
+
+            </div> <!-- TỐC ĐỘ SỬA: Thẻ đóng của #filterModalScrollArea phải đặt ở ĐÂY -->
         </div>
     </div>
 
@@ -844,7 +871,7 @@
             let customArea = document.createElement('div');
             customArea.style = "grid-column: 1 / -1; display: flex; gap: 5px; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #00f2fe;";
             customArea.innerHTML = `
-                <input type="number" id="customBoundInput" min="1" max="350" placeholder="Số khác..." style="flex:1; background:#0f0f17; color:#00f2fe; border:1px solid #00f2fe; border-radius:4px; padding:4px; text-align:center; font-weight:bold; outline:none; font-family:inherit;">
+                <input type="number" id="customBoundInput" min="1" max="351" placeholder="Số khác..." style="flex:1; background:#0f0f17; color:#00f2fe; border:1px solid #00f2fe; border-radius:4px; padding:4px; text-align:center; font-weight:bold; outline:none; font-family:inherit;">
                 <button onclick="applyCustomBound()" style="background:var(--accent-pink); color:#fff; border:none; border-radius:4px; font-weight:bold; cursor:pointer; padding:0 10px; font-size:0.7rem;">NẠP</button>
             `;
             grid.appendChild(customArea);
@@ -863,8 +890,8 @@
         // --- HÀM THÊM MỚI: Xử lý nút NẠP ---
         function applyCustomBound() {
             let val = parseInt(document.getElementById('customBoundInput').value);
-            if (isNaN(val) || val < 1 || val > 350) {
-                alert("Đại ca vui lòng nhập số kỳ từ 1 đến 350!");
+            if (isNaN(val) || val < 1 || val > 351) {
+                alert("Đại ca vui lòng nhập số kỳ từ 1 đến 351!");
                 return;
             }
             selectBoundValue(val);
@@ -1544,8 +1571,8 @@
             let top = parseInt(topInput.value) || 1;
             let bottom = parseInt(bottomInput.value) || 10;
 
-            if (top < 1) top = 1; if (top > 350) top = 350;
-            if (bottom < 1) bottom = 1; if (bottom > 350) bottom = 350;
+            if (top < 1) top = 1; if (top > 351) top = 351;
+            if (bottom < 1) bottom = 1; if (bottom > 351) bottom = 351;
             if (top > bottom) { let temp = top; top = bottom; bottom = temp; }
 
             topInput.value = String(top).padStart(2, '0');
@@ -2529,15 +2556,16 @@
             let targetRows = rows.slice(0, maxIdx);
             if (targetRows.length === 0) targetRows = rows.slice(0, 50);
 
+            let totalScanned = targetRows.length; // Tổng số kỳ quét thực tế (VD: 30 hoặc 351)
             let maxNum = currentType === 'lotto' ? 35 : (currentType === 'mega' ? 45 : 55);
             let mainScores = {}; let specScores = {}; 
 
-            for (let i = 1; i <= maxNum; i++) mainScores[String(i).padStart(2, '0')] = { freq: 0, score: 0 };
+            for (let i = 1; i <= maxNum; i++) mainScores[String(i).padStart(2, '0')] = { freq: 0, score: 0, gap: 0 };
             if (currentType === 'lotto') { 
-                for (let i = 1; i <= 12; i++) specScores[String(i).padStart(2, '0')] = { freq: 0, score: 0 }; 
+                for (let i = 1; i <= 12; i++) specScores[String(i).padStart(2, '0')] = { freq: 0, score: 0, gap: 0 };				
             }
 
-            // Đếm tần suất thực tế trong khoảng kỳ quét
+            // 1. Đếm tần suất thực tế trong khoảng kỳ quét
             targetRows.forEach(r => {
                 if (r.main) { 
                     r.main.forEach(num => { 
@@ -2552,11 +2580,22 @@
                 }
             });
 
+            // 2. Tính số kỳ vắng (Gap/Spike) của từng con số
+            for (let i = 1; i <= maxNum; i++) {
+                let nStr = String(i).padStart(2, '0');
+                let gapCount = 0;
+                for (let rIdx = 0; rIdx < rows.length; rIdx++) {
+                    if (rows[rIdx].main && rows[rIdx].main.includes(nStr)) break;
+                    gapCount++;
+                }
+                mainScores[nStr].gap = gapCount;
+            }
+
             let lastRow = rows[0];
             let prevRow = rows[1];
             let prev2Row = rows[2];
 
-            // Tần suất trùng lặp chuỗi
+            // Tần suất trùng lặp chuỗi nhóm chục
             let getLastRowConversionStr = (rowObj) => {
                 if (!rowObj || !rowObj.main) return "";
                 let groups = rowObj.main.map(numStr => {
@@ -2570,44 +2609,56 @@
             let lastRowConvStr = getLastRowConversionStr(lastRow);
             let conversionMatchCount = 0;
             targetRows.forEach(r => {
-                if (getLastRowConversionStr(r) === lastRowConvStr) {
-                    conversionMatchCount++;
-                }
+                if (getLastRowConversionStr(r) === lastRowConvStr) conversionMatchCount++;
             });
 
-            // Trọng số AI
-            let weightRơi = currentType === 'lotto' ? 4 : (currentType === 'mega' ? 2 : 1);
-            let weightKe = currentType === 'lotto' ? 3 : (currentType === 'mega' ? 1.5 : 1);
+            // 3. CHẤM ĐIỂM AI CÂN BẰNG TỶ LỆ TẦN SUẤT ĐỘNG
+            let weightRoi = 1.0; 
+            let weightKe = 0.8;  
 
             for (let i = 1; i <= maxNum; i++) {
                 let nStr = String(i).padStart(2, '0');
                 let data = mainScores[nStr];
+                let isOdd = (i % 2 !== 0);
                 
                 if (data.freq >= minFreqLimit) { 
-                    data.score += 10; 
+                    // 🌟 CẢI TIẾN CỐT LÕI: TÍNH ĐIỂM TẦN SUẤT THEO MẬT ĐỘ PHẠM VI QUÉT (Tối đa 18 điểm)
+                    let freqRatioScore = (data.freq / totalScanned) * 18.0;
+                    data.score += freqRatioScore;
+
+                    // ➕ ƯU TIÊN 1: Thưởng điểm cho số nằm trong "VÙNG CHÍN" (Vắng từ 3 đến 8 kỳ)
+                    if (data.gap >= 3 && data.gap <= 8) {
+                        data.score += 4.5; 
+                    } else if (data.gap >= 9 && data.gap <= 15) {
+                        data.score += 2.5; 
+                    } else if (data.gap > 20) {
+                        data.score -= 2.0; 
+                    }
                     
-                    if (lastRow && lastRow.main && lastRow.main.includes(nStr)) data.score += weightRơi;
+                    // ➕ ƯU TIÊN 2: Cộng điểm thưởng trực tiếp cho SỐ LẺ (+1.5)
+                    if (isOdd) data.score += 1.5;
+
+                    // ➕ ƯU TIÊN 3: Nhịp rơi t-1
+                    if (lastRow && lastRow.main && lastRow.main.includes(nStr)) data.score += weightRoi;
                     
+                    // ➕ ƯU TIÊN 4: Nhịp kề
                     if (lastRow && lastRow.main) {
                         let prevNum = String(i - 1).padStart(2, '0');
                         let nextNum = String(i + 1).padStart(2, '0');
                         if (lastRow.main.includes(prevNum) || lastRow.main.includes(nextNum)) data.score += weightKe;
                     }
 
-                    let isOdd = i % 2 !== 0;
+                    // Cân bằng Chẵn / Lẻ
                     let firstNumVal = (lastRow && lastRow.main && lastRow.main.length > 0) ? parseInt(lastRow.main[0]) : 1;
                     let lastNumVal = (lastRow && lastRow.main && lastRow.main.length > 0) ? parseInt(lastRow.main[lastRow.main.length - 1]) : 1;
                     let anchorIsOdd = (firstNumVal % 2 !== 0 || lastNumVal % 2 !== 0);
 
-                    if (anchorIsOdd && isOdd) data.score += 3;
-                    else if (!anchorIsOdd && !isOdd) data.score += 2;
-                    else if (isOdd) data.score += 1.5;
+                    if (anchorIsOdd && isOdd) data.score += 2.0;
+                    else if (!anchorIsOdd && !isOdd) data.score += 1.0;
 
-                    if (conversionMatchCount >= 3) {
-                        data.score -= 2; 
-                    } else if (conversionMatchCount <= 1) {
-                        data.score += 3; 
-                    }
+                    // Nắn chuỗi quy đổi chục
+                    if (conversionMatchCount >= 3) data.score -= 2.0; 
+                    else if (conversionMatchCount <= 1) data.score += 2.5; 
                 }
             }
 
@@ -2616,10 +2667,14 @@
                 for (let i = 1; i <= 12; i++) {
                     let nStr = String(i).padStart(2, '0');
                     let data = specScores[nStr];
+                    let isOddSpec = (i % 2 !== 0);
                     
                     if (data.freq >= minFreqLimit) { 
-                        data.score += 10;
+                        let freqRatioSpecScore = (data.freq / totalScanned) * 18.0;
+                        data.score += freqRatioSpecScore;
                         
+                        if (isOddSpec) data.score += 1.5;
+
                         if (lastRow && prevRow && prev2Row && lastRow.spec && prevRow.spec && prev2Row.spec) {
                             let s1 = parseInt(lastRow.spec); 
                             let s2 = parseInt(prevRow.spec); 
@@ -2627,11 +2682,9 @@
                             let delta1 = s1 - s2; let delta2 = s2 - s3; 
 
                             if (delta1 > 0 && delta2 > 0) {
-                                if (i < s1 && (s1 - i) <= 5) data.score += 5; 
+                                if (i < s1 && (s1 - i) <= 5) data.score += 4; 
                             } else if (delta1 < 0 && delta2 < 0) {
-                                if (i > s1 && (i - s1) <= 5) data.score += 5; 
-                            } else {
-                                if (Math.abs(delta1) >= 1 && Math.abs(delta1) <= 5) data.score += 3;
+                                if (i > s1 && (i - s1) <= 5) data.score += 4; 
                             }
                         }
 
@@ -2639,16 +2692,12 @@
                         for (let k = 1; k <= 15; k++) {
                             if (rows[k] && rows[k].spec === nStr) { hasRepeatedIn15 = true; break; }
                         }
-                        if (!hasRepeatedIn15) data.score += 4;
-
-                        let row10 = rows[10]; let row15 = rows[15];
-                        if (row10 && row10.spec === nStr) data.score += 3;
-                        if (row15 && row15.spec === nStr) data.score += 3;
+                        if (!hasRepeatedIn15) data.score += 3;
                     }
                 }
             }
 
-            // Xuất kết quả
+            // Xuất kết quả đã sắp xếp điểm từ Cao xuống Thấp
             let matchedMain = [];
             for (let num in mainScores) { if (mainScores[num].score > 0) matchedMain.push(num); }
             matchedMain.sort((a, b) => mainScores[b].score - mainScores[a].score);
@@ -2656,26 +2705,39 @@
 
             let html = `<div style="margin-bottom:10px;">
                 <div style="font-size:0.7rem; color:var(--accent-green); font-weight:bold; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
-                    <span>Tập số chính khả thi (${matchedMain.length} số - Quét ${targetRows.length} kỳ mới nhất):</span>
+                    <span>Tập số chính khả thi (${matchedMain.length} số - Quét ${totalScanned} kỳ):</span>
                     <button onclick="selectAllFeasibleMain(true)" style="background:none; border:none; color:var(--border-glow); font-size:0.6rem; cursor:pointer; font-weight:bold;">[Chọn tất cả]</button>
                 </div><div style="display:flex; flex-wrap:wrap; gap:2px;">`;
             
-            if (matchedMain.length === 0) { html += `<span style="color:var(--text-muted); font-size:0.68rem;">Không tìm thấy số phù hợp trong khoảng kỳ này</span>`; } 
-            else { matchedMain.forEach(n => { html += `<span class="feasible-num-ball" onclick="toggleSelectFeasibleBall(this, '${n}', false)" title="Điểm AI: ${mainScores[n].score} | Trùng cấu trúc quy đổi: ${conversionMatchCount} lần">${n}</span>`; }); }
+            if (matchedMain.length === 0) { 
+                html += `<span style="color:var(--text-muted); font-size:0.68rem;">Không tìm thấy số phù hợp trong khoảng kỳ này</span>`; 
+            } else { 
+                matchedMain.forEach(n => { 
+                    let formattedScore = mainScores[n].score.toFixed(1);
+                    html += `<span class="feasible-num-ball" onclick="toggleSelectFeasibleBall(this, '${n}', false)" title="Điểm AI: ${formattedScore} | Lần nổ: ${mainScores[n].freq}/${totalScanned} kỳ | Vắng: ${mainScores[n].gap} kỳ">${n}</span>`; 
+                }); 
+            }
             html += `</div></div>`;
 
             if (currentType === 'lotto') {
                 let matchedSpec = [];
                 for (let num in specScores) { if (specScores[num].score > 0) matchedSpec.push(num); }
                 matchedSpec.sort((a, b) => specScores[b].score - specScores[a].score);
+				window.calculatedFeasibleSpecNums = matchedSpec;
                 
                 html += `<div>
                     <div style="font-size:0.7rem; color:var(--accent-orange); font-weight:bold; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
                         <span>Tập số đặc biệt khả thi (${matchedSpec.length} số):</span>
                         <button onclick="selectAllFeasibleSpec(true)" style="background:none; border:none; color:var(--accent-orange); font-size:0.6rem; cursor:pointer; font-weight:bold;">[Chọn tất cả]</button>
                     </div><div style="display:flex; flex-wrap:wrap; gap:2px;">`;
-                if (matchedSpec.length === 0) { html += `<span style="color:var(--text-muted); font-size:0.68rem;">Không có số thỏa mãn</span>`; } 
-                else { matchedSpec.forEach(n => { html += `<span class="feasible-num-ball spec" onclick="toggleSelectFeasibleBall(this, '${n}', true)" title="Điểm AI ĐB: ${specScores[n].score}">${n}</span>`; }); }
+                if (matchedSpec.length === 0) { 
+                    html += `<span style="color:var(--text-muted); font-size:0.68rem;">Không có số thỏa mãn</span>`; 
+                } else { 
+                    matchedSpec.forEach(n => { 
+                        let formattedScoreSpec = specScores[n].score.toFixed(1);
+                        html += `<span class="feasible-num-ball spec" onclick="toggleSelectFeasibleBall(this, '${n}', true)" title="Điểm AI ĐB: ${formattedScoreSpec} | Lần nổ: ${specScores[n].freq}/${totalScanned} kỳ">${n}</span>`; 
+                    }); 
+                }
                 html += `</div></div>`;
             }
             container.innerHTML = html;
@@ -2804,7 +2866,7 @@
                                 parsedRows.push({ date: dateStr, main: mainNums, spec: specNum });
                             }
                         });
-                        let limitedRows = parsedRows.slice(0, 350);
+                        let limitedRows = parsedRows.slice(0, 351);
                         if (limitedRows.length > 0) {
                             db.ref('vietlott_matrix_data/' + targetType).set(limitedRows);
                             loadedTypes.push(targetType.toUpperCase());
@@ -2888,15 +2950,186 @@
             });
 
             for (let i = uniqueNewRows.length - 1; i >= 0; i--) { mergedRows.unshift(uniqueNewRows[i]); addedCount++; }
-            let finalDataset = mergedRows.slice(0, 350);
+            let finalDataset = mergedRows.slice(0, 351);
 
             db.ref('vietlott_matrix_data/' + autoDetectedType).set(finalDataset).then(() => {
                 document.getElementById('boardRawInput').value = ''; 
                 alert(`CẬP NHẬT THÀNH CÔNG!\n- Đài: ${autoDetectedType.toUpperCase()}\n- Đã thêm mới các kỳ không trùng lên trên: ${addedCount} kỳ\n- Tổng lưu trữ hệ thống: ${finalDataset.length} kỳ`);
             });
         }
+// ==============================================================================
+// 11. KHU VỰC TẠO & NẠP 5 DÃY SỐ KHẢ THI (CÓ NÚT RESET)
+// ==============================================================================
+window._cached5FeasibleTickets = [];
 
-        // --- 11. KHỞI TẠO HỆ THỐNG VÀ XUẤT HIỆN ---
+function generate5FeasibleTickets() {
+    calcFeasibleNumbersDirect(); 
+    let mainSize = currentType === 'lotto' ? 5 : 6;
+    let pool = [...calculatedFeasibleMainNums];
+
+    if (pool.length < mainSize) {
+        alert("Chưa đủ tập số khả thi để khởi tạo 5 dãy số! Đại ca hãy mở rộng tần suất lọc.");
+        return;
+    }
+
+    let labels = [
+        "Top Hard AI", "Bảo thủ 1", "Bảo thủ 2", 
+        "Cân bằng", "Săn Hũ"
+    ];
+    let tickets = [];
+
+    for (let i = 0; i < 5; i++) {
+        let ticketMains = [];
+        if (i === 0) {
+            ticketMains = pool.slice(0, mainSize);
+        } else {
+            let offset = (i * 2) % Math.max(1, pool.length - mainSize);
+            let subPool = pool.slice(offset, offset + mainSize + 4);
+            if (subPool.length < mainSize) subPool = [...pool];
+            subPool.sort(() => Math.random() - 0.5);
+            ticketMains = subPool.slice(0, mainSize);
+        }
+        ticketMains.sort((a, b) => parseInt(a) - parseInt(b));
+
+        let specNum = "";
+        if (currentType === 'lotto') {
+            if (selectedFeasibleSpecNums.length > 0) {
+                specNum = selectedFeasibleSpecNums[i % selectedFeasibleSpecNums.length];
+            } else if (window.calculatedFeasibleSpecNums && window.calculatedFeasibleSpecNums.length > 0) {
+                if (i === 0) {
+                    specNum = window.calculatedFeasibleSpecNums[0];
+                } else {
+                    let topSpecPool = window.calculatedFeasibleSpecNums.slice(0, 5);
+                    specNum = topSpecPool[i % topSpecPool.length];
+                }
+            } else {
+                specNum = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
+            }
+        }
+
+        tickets.push({ tag: labels[i], main: ticketMains, spec: specNum });
+    }
+
+    window._cached5FeasibleTickets = tickets;
+    render5FeasibleTicketsUI(tickets);
+}
+
+function render5FeasibleTicketsUI(tickets) {
+    let container = document.getElementById('feasibleTicketsListArea');
+    if (!container) return;
+
+    let html = "";
+    tickets.forEach((t, idx) => {
+        let ballsMainHtml = t.main.map(num => 
+            `<span class="feasible-num-ball" style="width:20px; height:20px; font-size:0.6rem;">${num}</span>`
+        ).join('');
+        
+        let ballSpecHtml = t.spec 
+            ? `<span style="color:#3a3a52; font-weight:bold; margin:0 2px;">|</span><span class="feasible-num-ball spec" style="width:20px; height:20px; font-size:0.6rem;">${t.spec}</span>` 
+            : '';
+
+        html += `
+            <div style="display:flex; align-items:center; justify-content:space-between; background:#12121a; padding:4px 8px; border-radius:6px; border:1px solid #1f1f33;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-size:0.62rem; font-weight:900; color:var(--border-glow); width:50px;">Dãy ${String(idx+1).padStart(2, '0')}</span>
+                    <span style="font-size:0.58rem; color:var(--text-muted); width:68px;">(${t.tag})</span>
+                    <div style="display:flex; gap:2px; align-items:center;">${ballsMainHtml} ${ballSpecHtml}</div>
+                </div>
+                <button class="btn-export-premium" style="height:22px; padding:0 6px; font-size:0.58rem; border-color:var(--accent-green); color:var(--accent-green);" onclick="loadSingleFeasibleTicketToPredict(${idx})">
+                    📥 NẠP
+                </button>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+// HÀM MỚI: XÓA DÃY CŨ
+function resetFeasibleTickets() {
+    window._cached5FeasibleTickets = [];
+    let container = document.getElementById('feasibleTicketsListArea');
+    if (container) {
+        container.innerHTML = `
+            <div style="color:var(--text-muted); font-size:0.68rem; text-align:center; padding:10px;">
+                Bấm "⚡ TẠO 5 DÃY" để khởi tạo dàn số phân tầng chiến thuật...
+            </div>
+        `;
+    }
+}
+
+function loadSingleFeasibleTicketToPredict(ticketIdx) {
+    let tickets = window._cached5FeasibleTickets || [];
+    let t = tickets[ticketIdx];
+    if (!t) return;
+
+    activePredictions.push({ main: [...t.main], spec: t.spec || null });
+    
+    refreshPredictionBoxFromActiveState();
+    saveCurrentTabState();
+    
+    let targetTicketNum = Math.ceil(activePredictions.length / 6);
+    let targetRowLabel = String.fromCharCode(65 + ((activePredictions.length - 1) % 6));
+    alert(`Đã NẠP Dãy ${ticketIdx + 1} vào [Vé ${targetTicketNum} - Hàng ${targetRowLabel}] thưa Đại ca!`);
+}
+
+function loadAll5FeasibleTickets() {
+    let tickets = window._cached5FeasibleTickets || [];
+    if (tickets.length === 0) {
+        generate5FeasibleTickets();
+        tickets = window._cached5FeasibleTickets || [];
+    }
+    if (tickets.length === 0) return;
+
+    activePredictions = tickets.map(t => ({ main: [...t.main], spec: t.spec || null }));
+    
+    refreshPredictionBoxFromActiveState();
+    saveCurrentTabState();
+    alert(`Đã NẠP TOÀN BỘ 5 Dãy vào Bảng Dự Đoán (Vé 1: Tuyến A-E)!`);
+}
+
+function refreshPredictionBoxFromActiveState() {
+    let container = document.getElementById('predictContainer');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    let labels = ['A', 'B', 'C', 'D', 'E', 'F'];
+    let totalLines = activePredictions.length;
+    let ticketsCount = Math.ceil(totalLines / 6) || 1;
+
+    // Tự động cập nhật ô Chọn số vé trên Sidebar
+    let selectEl = document.getElementById('predictSizeSelect');
+    if (selectEl) {
+        selectEl.value = String(ticketsCount);
+    }
+
+    for (let t = 0; t < ticketsCount; t++) {
+        let ticketGroupDiv = document.createElement('div');
+        ticketGroupDiv.className = 'predict-ticket-group';
+        ticketGroupDiv.innerHTML = `<div class="predict-ticket-title">🎟️ Vé số ${t + 1}</div>`;
+        
+        // Gắn vé vào Container trước để tạo phần tử DOM thực tế
+        container.appendChild(ticketGroupDiv);
+
+        for (let l = 0; l < 6; l++) {
+            let globalIdx = t * 6 + l;
+            if (globalIdx < totalLines) {
+                let pred = activePredictions[globalIdx];
+                if (pred) {
+                    let rowDiv = document.createElement('div');
+                    rowDiv.className = 'predict-row';
+                    rowDiv.id = `predictRow_${globalIdx}`;
+                    ticketGroupDiv.appendChild(rowDiv);
+                    
+                    // Vẽ chi tiết từng quả bóng số
+                    refreshSingleRowDom(globalIdx, labels[l]);
+                }
+            }
+        }
+    }
+}
+
+        // --- 12. KHỞI TẠO HỆ THỐNG VÀ XUẤT HIỆN ---
         window.onload = function() { 
             updateThemeColors();
             initLoginVisualEffects();
