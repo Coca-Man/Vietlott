@@ -696,7 +696,7 @@
                                 <option value="30">30 kỳ</option>
                                 <option value="40">40 kỳ</option>
                                 <option value="100" selected>100 kỳ</option>
-                                <option value="351">351 kỳ</option>
+                                <option value="350">350 kỳ</option>
                             </select>
                         </div>
                         <div style="display:flex; gap:3px;">
@@ -871,7 +871,7 @@
             let customArea = document.createElement('div');
             customArea.style = "grid-column: 1 / -1; display: flex; gap: 5px; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #00f2fe;";
             customArea.innerHTML = `
-                <input type="number" id="customBoundInput" min="1" max="351" placeholder="Số khác..." style="flex:1; background:#0f0f17; color:#00f2fe; border:1px solid #00f2fe; border-radius:4px; padding:4px; text-align:center; font-weight:bold; outline:none; font-family:inherit;">
+                <input type="number" id="customBoundInput" min="1" max="350" placeholder="Số khác..." style="flex:1; background:#0f0f17; color:#00f2fe; border:1px solid #00f2fe; border-radius:4px; padding:4px; text-align:center; font-weight:bold; outline:none; font-family:inherit;">
                 <button onclick="applyCustomBound()" style="background:var(--accent-pink); color:#fff; border:none; border-radius:4px; font-weight:bold; cursor:pointer; padding:0 10px; font-size:0.7rem;">NẠP</button>
             `;
             grid.appendChild(customArea);
@@ -890,8 +890,8 @@
         // --- HÀM THÊM MỚI: Xử lý nút NẠP ---
         function applyCustomBound() {
             let val = parseInt(document.getElementById('customBoundInput').value);
-            if (isNaN(val) || val < 1 || val > 351) {
-                alert("Đại ca vui lòng nhập số kỳ từ 1 đến 351!");
+            if (isNaN(val) || val < 1 || val > 350) {
+                alert("Đại ca vui lòng nhập số kỳ từ 1 đến 350!");
                 return;
             }
             selectBoundValue(val);
@@ -1571,8 +1571,8 @@
             let top = parseInt(topInput.value) || 1;
             let bottom = parseInt(bottomInput.value) || 10;
 
-            if (top < 1) top = 1; if (top > 351) top = 351;
-            if (bottom < 1) bottom = 1; if (bottom > 351) bottom = 351;
+            if (top < 1) top = 1; if (top > 350) top = 350;
+            if (bottom < 1) bottom = 1; if (bottom > 350) bottom = 350;
             if (top > bottom) { let temp = top; top = bottom; bottom = temp; }
 
             topInput.value = String(top).padStart(2, '0');
@@ -1994,17 +1994,64 @@
             rowDiv.innerHTML = rowInner;
         }
 
+                        // Hàm phụ trợ: Chọn ngẫu nhiên có trọng số (Roulette Wheel Selection)
+        function pickWeightedRandom(pool, scores) {
+            let totalWeight = 0;
+            for (let n of pool) totalWeight += scores[n];
+            if (totalWeight === 0) return pool[Math.floor(Math.random() * pool.length)];
+            
+            let rand = Math.random() * totalWeight;
+            for (let n of pool) {
+                rand -= scores[n];
+                if (rand <= 0) return n;
+            }
+            return pool[pool.length - 1];
+        }
+
         function computeResultSet(maxRange, mainSize, chosenAlgo, locked, rangeConstraints, boundConstraints, index, rows) {
-            let resultSet = [];
             let recent5Rows = rows.slice(0, 5);
+            let numScores = {};
+            for (let i = 1; i <= maxRange; i++) numScores[String(i).padStart(2, '0')] = 1.0;
+
+            if (chosenAlgo === 'algo1') {
+                let freq10 = {}, freqAll = {}, gap = {};
+                for(let i = 1; i <= maxRange; i++) { 
+                    let s = String(i).padStart(2, '0');
+                    freq10[s] = 0; freqAll[s] = 0; gap[s] = 100; 
+                }
+                rows.forEach((r, rIdx) => {
+                    if(r.main) {
+                        r.main.forEach(num => {
+                            let n = String(parseInt(num)).padStart(2, '0');
+                            if (freqAll[n] !== undefined) {
+                                freqAll[n]++;
+                                if (rIdx < 10) freq10[n]++; 
+                                if (gap[n] === 100) gap[n] = rIdx; 
+                            }
+                        });
+                    }
+                });
+
+                for(let i = 1; i <= maxRange; i++) {
+                    let n = String(i).padStart(2, '0');
+                    let score = 1.0; 
+                    if (gap[n] >= 3 && gap[n] <= 8) score += 4.0;
+                    else if (gap[n] > 15) score += 1.5;
+                    else if (gap[n] === 0) score += 2.0;
+                    score += (freq10[n] * 0.8);
+                    score += (freqAll[n] * 0.1);
+                    if (rows.length > 0 && rows[0].main) {
+                        let lastMain = rows[0].main.map(x => parseInt(x));
+                        if (lastMain.includes(i - 1) || lastMain.includes(i + 1)) score += 2.5; 
+                    }
+                    numScores[n] = Math.max(0.1, score);
+                }
+            }
+
             let freq5Map = {};
             for (let j = 1; j <= maxRange; j++) {
-                let s = String(j).padStart(2, '0');
-                let count = 0;
-                recent5Rows.forEach(r => {
-                    if (r.main && r.main.includes(s)) count++;
-                    if (currentType === 'power' && r.spec === s) count++;
-                });
+                let s = String(j).padStart(2, '0'); let count = 0;
+                recent5Rows.forEach(r => { if (r.main && r.main.includes(s)) count++; if (typeof currentType !== 'undefined' && currentType === 'power' && r.spec === s) count++; });
                 freq5Map[s] = count;
             }
 
@@ -2013,64 +2060,74 @@
             let activeLocks = locked.filter(l => l !== null && l !== '');
 
             let attempts = 0;
-            while (attempts < 12000) {
+            while (attempts < 5000) { 
                 attempts++;
-                let poolCopy = [...basePool].filter(x => !activeLocks.includes(x));
-                poolCopy.sort(() => Math.random() - 0.5);
                 let candidate = [...activeLocks];
+                let poolCopy = basePool.filter(x => !activeLocks.includes(x));
+                
+                let currentRangeCounts = [...rangeConstraints];
+                while (currentRangeCounts.length < 6) currentRangeCounts.push(0);
+                let hasRangeConstraints = currentRangeCounts.some(val => val > 0);
+                let sumConstraints = currentRangeCounts.reduce((a, b) => a + b, 0);
+                
+                // [SỬA LỖI] Nếu tổng nhập vào < mainSize, các ô 0 là "tự do"
+                let isStrictRange = (sumConstraints === mainSize);
 
-                if (chosenAlgo === 'algo1') {
-                    let currentRangeCounts = [...rangeConstraints];
-                    while (currentRangeCounts.length < 6) currentRangeCounts.push(0);
-                    let chosenRangePool = [];
-                    let hasRangeConstraints = currentRangeCounts.some(val => val > 0);
+                if (hasRangeConstraints) {
+                    let lockedCounts = [0, 0, 0, 0, 0, 0];
+                    activeLocks.forEach(numStr => { let n = parseInt(numStr); let gIdx = Math.min(Math.floor(n / 10), 5); lockedCounts[gIdx]++; });
 
-                    if (hasRangeConstraints) {
-                        let lockedCounts = [0, 0, 0, 0, 0, 0];
-                        activeLocks.forEach(numStr => {
-                            let n = parseInt(numStr);
-                            let gIdx = Math.min(Math.floor(n / 10), 5);
-                            lockedCounts[gIdx]++;
-                        });
-
-                        for (let groupIdx = 0; groupIdx < currentRangeCounts.length; groupIdx++) {
-                            let qtyNeeded = (currentRangeCounts[groupIdx] || 0) - lockedCounts[groupIdx];
-                            if (qtyNeeded > 0) {
-                                let minV = groupIdx * 10; let maxV = (groupIdx === 5) ? maxRange : (groupIdx * 10 + 9);
-                                let subPool = poolCopy.filter(numStr => { let n = parseInt(numStr); return n >= minV && n <= maxV; });
-                                subPool.sort(() => Math.random() - 0.5);
-                                for (let k = 0; k < qtyNeeded; k++) {
-                                    if (subPool.length > 0) {
-                                        let chosen = subPool.shift();
-                                        chosenRangePool.push(chosen);
-                                        poolCopy = poolCopy.filter(x => x !== chosen);
-                                    }
+                    for (let groupIdx = 0; groupIdx < 6; groupIdx++) {
+                        let required = currentRangeCounts[groupIdx] || 0;
+                        if (required === 0 && !isStrictRange) continue; 
+                        
+                        let qtyNeeded = required - lockedCounts[groupIdx];
+                        if (qtyNeeded > 0) {
+                            let minV = groupIdx * 10; let maxV = (groupIdx === 5) ? maxRange : (groupIdx * 10 + 9);
+                            let subPool = poolCopy.filter(numStr => { let n = parseInt(numStr); return n >= minV && n <= maxV; });
+                            
+                            for (let k = 0; k < qtyNeeded; k++) {
+                                if (subPool.length > 0) {
+                                    let chosen = (chosenAlgo === 'algo1') ? pickWeightedRandom(subPool, numScores) : subPool[Math.floor(Math.random() * subPool.length)];
+                                    candidate.push(chosen);
+                                    subPool = subPool.filter(x => x !== chosen);
+                                    poolCopy = poolCopy.filter(x => x !== chosen);
                                 }
                             }
                         }
-                        poolCopy = [...chosenRangePool, ...poolCopy];
                     }
-
-                    while (candidate.length < mainSize && poolCopy.length > 0) { candidate.push(poolCopy.shift()); }
-                } else {
-                    while (candidate.length < mainSize && poolCopy.length > 0) { candidate.push(poolCopy.shift()); }
+                    
+                    if (isStrictRange) {
+                         poolCopy = poolCopy.filter(numStr => {
+                             let n = parseInt(numStr); let gIdx = Math.min(Math.floor(n / 10), 5);
+                             let currentCount = candidate.filter(c => Math.min(Math.floor(parseInt(c)/10), 5) === gIdx).length;
+                             return currentCount < currentRangeCounts[gIdx];
+                         });
+                    }
                 }
 
-                if (candidate.length < mainSize || candidate.includes(null)) continue;
+                while (candidate.length < mainSize && poolCopy.length > 0) {
+                    if (chosenAlgo === 'algo1') {
+                        let chosen = pickWeightedRandom(poolCopy, numScores);
+                        candidate.push(chosen);
+                        poolCopy = poolCopy.filter(x => x !== chosen);
+                    } else {
+                        candidate.push(poolCopy.shift());
+                    }
+                }
+
+                if (candidate.length < mainSize) continue;
                 candidate.sort((a, b) => parseInt(a) - parseInt(b));
 
                 let counts = [0, 0, 0, 0, 0, 0];
                 candidate.forEach(numStr => { let n = parseInt(numStr); let gIdx = Math.min(Math.floor(n / 10), 5); counts[gIdx]++; });
-
-                let currentRangeCounts = [...rangeConstraints];
-                while (currentRangeCounts.length < 6) currentRangeCounts.push(0);
-                let hasRangeConstraints = currentRangeCounts.some(val => val > 0);
                 
                 let isRangeValid = true;
                 if (hasRangeConstraints) {
-                    for (let i = 0; i < rangeConstraints.length; i++) {
-                        let requiredQty = rangeConstraints[i] || 0;
-                        if (counts[i] !== requiredQty) { isRangeValid = false; break; }
+                    for (let i = 0; i < 6; i++) {
+                        let req = currentRangeCounts[i] || 0;
+                        if (isStrictRange) { if (counts[i] !== req) { isRangeValid = false; break; } }
+                        else { if (req > 0 && counts[i] !== req) { isRangeValid = false; break; } }
                     }
                 }
                 if (!isRangeValid) continue;
@@ -2079,35 +2136,30 @@
                 for (let pos = 0; pos < mainSize; pos++) {
                     let targetBound = boundConstraints[pos];
                     if (targetBound !== undefined && targetBound !== null && targetBound !== '' && !isNaN(targetBound)) {
-                        let requiredFreq = parseInt(targetBound);
-                        let numStr = candidate[pos];
-                        if (freq5Map[numStr] !== requiredFreq) { isBoundValid = false; break; }
+                        if (freq5Map[candidate[pos]] !== parseInt(targetBound)) { isBoundValid = false; break; }
                     }
                 }
                 if (!isBoundValid) continue;
 
-                let isLockValid = true;
-                if (activeLocks.length > 0) {
-                    let hasAllLocks = activeLocks.every(lockNum => candidate.includes(lockNum));
-                    if (!hasAllLocks) { isLockValid = false; }
+                if (chosenAlgo === 'algo1') {
+                    let sum = candidate.reduce((a, b) => a + parseInt(b), 0);
+                    let avg = (maxRange / 2) * mainSize;
+                    if (sum < avg * 0.65 || sum > avg * 1.35) continue;
                 }
-                if (!isLockValid) continue;
 
                 let isDuplicate = activePredictions.some((p, pIdx) => {
                     if (pIdx !== index && p && p.main) { return p.main.join(',') === candidate.join(','); }
                     return false;
                 });
 
-                if (!isDuplicate || attempts > 10000) { resultSet = candidate; break; }
+                if (!isDuplicate || attempts > 4000) { return candidate; }
             }
 
-            if (resultSet.length === 0 || resultSet.includes(null)) {
-                let fallbackPool = [...basePool].filter(x => !activeLocks.includes(x));
-                fallbackPool.sort(() => Math.random() - 0.5);
-                resultSet = [...activeLocks];
-                while (resultSet.length < mainSize && fallbackPool.length > 0) { resultSet.push(fallbackPool.shift()); }
-                resultSet.sort((a, b) => parseInt(a) - parseInt(b));
-            }
+            let fallbackPool = [...basePool].filter(x => !activeLocks.includes(x));
+            fallbackPool.sort(() => Math.random() - 0.5);
+            let resultSet = [...activeLocks];
+            while (resultSet.length < mainSize && fallbackPool.length > 0) { resultSet.push(fallbackPool.shift()); }
+            resultSet.sort((a, b) => parseInt(a) - parseInt(b));
             return resultSet;
         }
 
@@ -2549,14 +2601,13 @@
                 return; 
             }
 
-            // Khoanh vùng ranh giới kỳ quét
             let maxIdx = parseInt(document.getElementById('feasibleMaxSelect').value) || 50;
             let minFreqLimit = parseInt(document.getElementById('feasibleMinSelect').value) || 0;
 
             let targetRows = rows.slice(0, maxIdx);
             if (targetRows.length === 0) targetRows = rows.slice(0, 50);
 
-            let totalScanned = targetRows.length; // Tổng số kỳ quét thực tế (VD: 30 hoặc 351)
+            let totalScanned = targetRows.length;
             let maxNum = currentType === 'lotto' ? 35 : (currentType === 'mega' ? 45 : 55);
             let mainScores = {}; let specScores = {}; 
 
@@ -2565,7 +2616,35 @@
                 for (let i = 1; i <= 12; i++) specScores[String(i).padStart(2, '0')] = { freq: 0, score: 0, gap: 0 };				
             }
 
-            // 1. Đếm tần suất thực tế trong khoảng kỳ quét
+            // [TỐI ƯU] Tính Gap 1 lần duy nhất O(N) thay vì O(N*M)
+            let gapTrackerMain = {}; let gapTrackerSpec = {};
+            for(let i = 1; i <= maxNum; i++) gapTrackerMain[String(i).padStart(2, '0')] = 999;
+            for(let i = 1; i <= 12; i++) gapTrackerSpec[String(i).padStart(2, '0')] = 999;
+
+            for(let rIdx = 0; rIdx < rows.length; rIdx++) {
+                let r = rows[rIdx];
+                if (r.main) {
+                    r.main.forEach(num => {
+                        let n = String(parseInt(num)).padStart(2, '0');
+                        if (gapTrackerMain[n] === 999) gapTrackerMain[n] = rIdx;
+                    });
+                }
+                if (r.spec && currentType === 'lotto') {
+                    let s = String(parseInt(r.spec)).padStart(2, '0');
+                    if (gapTrackerSpec[s] === 999) gapTrackerSpec[s] = rIdx;
+                }
+            }
+            
+            for (let i = 1; i <= maxNum; i++) {
+                mainScores[String(i).padStart(2, '0')].gap = (gapTrackerMain[String(i).padStart(2, '0')] === 999) ? rows.length : gapTrackerMain[String(i).padStart(2, '0')];
+            }
+            if (currentType === 'lotto') {
+                for (let i = 1; i <= 12; i++) {
+                    specScores[String(i).padStart(2, '0')].gap = (gapTrackerSpec[String(i).padStart(2, '0')] === 999) ? rows.length : gapTrackerSpec[String(i).padStart(2, '0')];
+                }
+            }
+
+            // Đếm tần suất
             targetRows.forEach(r => {
                 if (r.main) { 
                     r.main.forEach(num => { 
@@ -2580,22 +2659,7 @@
                 }
             });
 
-            // 2. Tính số kỳ vắng (Gap/Spike) của từng con số
-            for (let i = 1; i <= maxNum; i++) {
-                let nStr = String(i).padStart(2, '0');
-                let gapCount = 0;
-                for (let rIdx = 0; rIdx < rows.length; rIdx++) {
-                    if (rows[rIdx].main && rows[rIdx].main.includes(nStr)) break;
-                    gapCount++;
-                }
-                mainScores[nStr].gap = gapCount;
-            }
-
-            let lastRow = rows[0];
-            let prevRow = rows[1];
-            let prev2Row = rows[2];
-
-            // Tần suất trùng lặp chuỗi nhóm chục
+            let lastRow = rows[0]; let prevRow = rows[1]; let prev2Row = rows[2];
             let getLastRowConversionStr = (rowObj) => {
                 if (!rowObj || !rowObj.main) return "";
                 let groups = rowObj.main.map(numStr => {
@@ -2608,47 +2672,25 @@
 
             let lastRowConvStr = getLastRowConversionStr(lastRow);
             let conversionMatchCount = 0;
-            targetRows.forEach(r => {
-                if (getLastRowConversionStr(r) === lastRowConvStr) conversionMatchCount++;
-            });
+            targetRows.forEach(r => { if (getLastRowConversionStr(r) === lastRowConvStr) conversionMatchCount++; });
 
-            // 3. CHẤM ĐIỂM AI CÂN BẰNG TỶ LỆ TẦN SUẤT ĐỘNG
-            let weightRoi = 1.0; 
-            let weightKe = 0.8;  
+            let weightRoi = 1.0; let weightKe = 0.8;  
 
             for (let i = 1; i <= maxNum; i++) {
-                let nStr = String(i).padStart(2, '0');
-                let data = mainScores[nStr];
-                let isOdd = (i % 2 !== 0);
+                let nStr = String(i).padStart(2, '0'); let data = mainScores[nStr]; let isOdd = (i % 2 !== 0);
                 
                 if (data.freq >= minFreqLimit) { 
-                    // 🌟 CẢI TIẾN CỐT LÕI: TÍNH ĐIỂM TẦN SUẤT THEO MẬT ĐỘ PHẠM VI QUÉT (Tối đa 18 điểm)
-                    let freqRatioScore = (data.freq / totalScanned) * 18.0;
-                    data.score += freqRatioScore;
-
-                    // ➕ ƯU TIÊN 1: Thưởng điểm cho số nằm trong "VÙNG CHÍN" (Vắng từ 3 đến 8 kỳ)
-                    if (data.gap >= 3 && data.gap <= 8) {
-                        data.score += 4.5; 
-                    } else if (data.gap >= 9 && data.gap <= 15) {
-                        data.score += 2.5; 
-                    } else if (data.gap > 20) {
-                        data.score -= 2.0; 
-                    }
+                    data.score += (data.freq / totalScanned) * 18.0;
+                    if (data.gap >= 3 && data.gap <= 8) data.score += 4.5; 
+                    else if (data.gap >= 9 && data.gap <= 15) data.score += 2.5; 
+                    else if (data.gap > 20) data.score -= 2.0; 
                     
-                    // ➕ ƯU TIÊN 2: Cộng điểm thưởng trực tiếp cho SỐ LẺ (+1.5)
                     if (isOdd) data.score += 1.5;
-
-                    // ➕ ƯU TIÊN 3: Nhịp rơi t-1
                     if (lastRow && lastRow.main && lastRow.main.includes(nStr)) data.score += weightRoi;
-                    
-                    // ➕ ƯU TIÊN 4: Nhịp kề
                     if (lastRow && lastRow.main) {
-                        let prevNum = String(i - 1).padStart(2, '0');
-                        let nextNum = String(i + 1).padStart(2, '0');
+                        let prevNum = String(i - 1).padStart(2, '0'); let nextNum = String(i + 1).padStart(2, '0');
                         if (lastRow.main.includes(prevNum) || lastRow.main.includes(nextNum)) data.score += weightKe;
                     }
-
-                    // Cân bằng Chẵn / Lẻ
                     let firstNumVal = (lastRow && lastRow.main && lastRow.main.length > 0) ? parseInt(lastRow.main[0]) : 1;
                     let lastNumVal = (lastRow && lastRow.main && lastRow.main.length > 0) ? parseInt(lastRow.main[lastRow.main.length - 1]) : 1;
                     let anchorIsOdd = (firstNumVal % 2 !== 0 || lastNumVal % 2 !== 0);
@@ -2656,48 +2698,30 @@
                     if (anchorIsOdd && isOdd) data.score += 2.0;
                     else if (!anchorIsOdd && !isOdd) data.score += 1.0;
 
-                    // Nắn chuỗi quy đổi chục
                     if (conversionMatchCount >= 3) data.score -= 2.0; 
                     else if (conversionMatchCount <= 1) data.score += 2.5; 
                 }
             }
 
-            // Bóng đặc biệt (Lotto 5/35)
             if (currentType === 'lotto') {
                 for (let i = 1; i <= 12; i++) {
-                    let nStr = String(i).padStart(2, '0');
-                    let data = specScores[nStr];
-                    let isOddSpec = (i % 2 !== 0);
-                    
+                    let nStr = String(i).padStart(2, '0'); let data = specScores[nStr]; let isOddSpec = (i % 2 !== 0);
                     if (data.freq >= minFreqLimit) { 
-                        let freqRatioSpecScore = (data.freq / totalScanned) * 18.0;
-                        data.score += freqRatioSpecScore;
-                        
+                        data.score += (data.freq / totalScanned) * 18.0;
                         if (isOddSpec) data.score += 1.5;
-
                         if (lastRow && prevRow && prev2Row && lastRow.spec && prevRow.spec && prev2Row.spec) {
-                            let s1 = parseInt(lastRow.spec); 
-                            let s2 = parseInt(prevRow.spec); 
-                            let s3 = parseInt(prev2Row.spec);
+                            let s1 = parseInt(lastRow.spec); let s2 = parseInt(prevRow.spec); let s3 = parseInt(prev2Row.spec);
                             let delta1 = s1 - s2; let delta2 = s2 - s3; 
-
-                            if (delta1 > 0 && delta2 > 0) {
-                                if (i < s1 && (s1 - i) <= 5) data.score += 4; 
-                            } else if (delta1 < 0 && delta2 < 0) {
-                                if (i > s1 && (i - s1) <= 5) data.score += 4; 
-                            }
+                            if (delta1 > 0 && delta2 > 0 && i < s1 && (s1 - i) <= 5) data.score += 4; 
+                            else if (delta1 < 0 && delta2 < 0 && i > s1 && (i - s1) <= 5) data.score += 4; 
                         }
-
                         let hasRepeatedIn15 = false;
-                        for (let k = 1; k <= 15; k++) {
-                            if (rows[k] && rows[k].spec === nStr) { hasRepeatedIn15 = true; break; }
-                        }
+                        for (let k = 1; k <= 15; k++) { if (rows[k] && rows[k].spec === nStr) { hasRepeatedIn15 = true; break; } }
                         if (!hasRepeatedIn15) data.score += 3;
                     }
                 }
             }
 
-            // Xuất kết quả đã sắp xếp điểm từ Cao xuống Thấp
             let matchedMain = [];
             for (let num in mainScores) { if (mainScores[num].score > 0) matchedMain.push(num); }
             matchedMain.sort((a, b) => mainScores[b].score - mainScores[a].score);
@@ -2710,11 +2734,10 @@
                 </div><div style="display:flex; flex-wrap:wrap; gap:2px;">`;
             
             if (matchedMain.length === 0) { 
-                html += `<span style="color:var(--text-muted); font-size:0.68rem;">Không tìm thấy số phù hợp trong khoảng kỳ này</span>`; 
+                html += `<span style="color:var(--text-muted); font-size:0.68rem;">Không tìm thấy số phù hợp</span>`; 
             } else { 
                 matchedMain.forEach(n => { 
-                    let formattedScore = mainScores[n].score.toFixed(1);
-                    html += `<span class="feasible-num-ball" onclick="toggleSelectFeasibleBall(this, '${n}', false)" title="Điểm AI: ${formattedScore} | Lần nổ: ${mainScores[n].freq}/${totalScanned} kỳ | Vắng: ${mainScores[n].gap} kỳ">${n}</span>`; 
+                    html += `<span class="feasible-num-ball" onclick="toggleSelectFeasibleBall(this, '${n}', false)" title="Điểm: ${mainScores[n].score.toFixed(1)} | Nổ: ${mainScores[n].freq} | Vắng: ${mainScores[n].gap}">${n}</span>`; 
                 }); 
             }
             html += `</div></div>`;
@@ -2731,11 +2754,10 @@
                         <button onclick="selectAllFeasibleSpec(true)" style="background:none; border:none; color:var(--accent-orange); font-size:0.6rem; cursor:pointer; font-weight:bold;">[Chọn tất cả]</button>
                     </div><div style="display:flex; flex-wrap:wrap; gap:2px;">`;
                 if (matchedSpec.length === 0) { 
-                    html += `<span style="color:var(--text-muted); font-size:0.68rem;">Không có số thỏa mãn</span>`; 
+                    html += `<span style="color:var(--text-muted); font-size:0.68rem;">Không có số</span>`; 
                 } else { 
                     matchedSpec.forEach(n => { 
-                        let formattedScoreSpec = specScores[n].score.toFixed(1);
-                        html += `<span class="feasible-num-ball spec" onclick="toggleSelectFeasibleBall(this, '${n}', true)" title="Điểm AI ĐB: ${formattedScoreSpec} | Lần nổ: ${specScores[n].freq}/${totalScanned} kỳ">${n}</span>`; 
+                        html += `<span class="feasible-num-ball spec" onclick="toggleSelectFeasibleBall(this, '${n}', true)" title="Điểm ĐB: ${specScores[n].score.toFixed(1)} | Nổ: ${specScores[n].freq}">${n}</span>`; 
                     }); 
                 }
                 html += `</div></div>`;
@@ -2866,7 +2888,7 @@
                                 parsedRows.push({ date: dateStr, main: mainNums, spec: specNum });
                             }
                         });
-                        let limitedRows = parsedRows.slice(0, 351);
+                        let limitedRows = parsedRows.slice(0, 350);
                         if (limitedRows.length > 0) {
                             db.ref('vietlott_matrix_data/' + targetType).set(limitedRows);
                             loadedTypes.push(targetType.toUpperCase());
@@ -2950,7 +2972,7 @@
             });
 
             for (let i = uniqueNewRows.length - 1; i >= 0; i--) { mergedRows.unshift(uniqueNewRows[i]); addedCount++; }
-            let finalDataset = mergedRows.slice(0, 351);
+            let finalDataset = mergedRows.slice(0, 350);
 
             db.ref('vietlott_matrix_data/' + autoDetectedType).set(finalDataset).then(() => {
                 document.getElementById('boardRawInput').value = ''; 
@@ -2963,56 +2985,74 @@
 window._cached5FeasibleTickets = [];
 
 function generate5FeasibleTickets() {
-    calcFeasibleNumbersDirect(); 
-    let mainSize = currentType === 'lotto' ? 5 : 6;
-    let pool = [...calculatedFeasibleMainNums];
+            calcFeasibleNumbersDirect(); 
+            let mainSize = currentType === 'lotto' ? 5 : 6;
+            let pool = [...calculatedFeasibleMainNums];
 
-    if (pool.length < mainSize) {
-        alert("Chưa đủ tập số khả thi để khởi tạo 5 dãy số! Đại ca hãy mở rộng tần suất lọc.");
-        return;
-    }
-
-    let labels = [
-        "Top Hard AI", "Bảo thủ 1", "Bảo thủ 2", 
-        "Cân bằng", "Săn Hũ"
-    ];
-    let tickets = [];
-
-    for (let i = 0; i < 5; i++) {
-        let ticketMains = [];
-        if (i === 0) {
-            ticketMains = pool.slice(0, mainSize);
-        } else {
-            let offset = (i * 2) % Math.max(1, pool.length - mainSize);
-            let subPool = pool.slice(offset, offset + mainSize + 4);
-            if (subPool.length < mainSize) subPool = [...pool];
-            subPool.sort(() => Math.random() - 0.5);
-            ticketMains = subPool.slice(0, mainSize);
-        }
-        ticketMains.sort((a, b) => parseInt(a) - parseInt(b));
-
-        let specNum = "";
-        if (currentType === 'lotto') {
-            if (selectedFeasibleSpecNums.length > 0) {
-                specNum = selectedFeasibleSpecNums[i % selectedFeasibleSpecNums.length];
-            } else if (window.calculatedFeasibleSpecNums && window.calculatedFeasibleSpecNums.length > 0) {
-                if (i === 0) {
-                    specNum = window.calculatedFeasibleSpecNums[0];
-                } else {
-                    let topSpecPool = window.calculatedFeasibleSpecNums.slice(0, 5);
-                    specNum = topSpecPool[i % topSpecPool.length];
-                }
-            } else {
-                specNum = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
+            if (pool.length < mainSize) {
+                alert("Chưa đủ tập số khả thi để khởi tạo 5 dãy số! Đại ca hãy mở rộng tần suất lọc.");
+                return;
             }
+
+            let labels = [
+                "Top Hard AI", "Bảo thủ 1", "Bảo thủ 2", 
+                "Cân bằng", "Săn Hũ"
+            ];
+            let tickets = [];
+
+            for (let i = 0; i < 5; i++) {
+                let ticketMains = [];
+                if (i === 0) {
+                    ticketMains = pool.slice(0, mainSize);
+                } else if (i === 1) {
+                    let top3 = pool.slice(0, 3);
+                    let midPool = pool.slice(3, 15);
+                    midPool.sort(() => Math.random() - 0.5);
+                    ticketMains = [...top3, ...midPool.slice(0, mainSize - 3)];
+                } else if (i === 2) {
+                    let top1 = pool.slice(0, 1);
+                    let midPool = pool.slice(1, 20);
+                    midPool.sort(() => Math.random() - 0.5);
+                    ticketMains = [...top1, ...midPool.slice(0, mainSize - 1)];
+                } else if (i === 3) {
+                    let top2 = pool.slice(0, 2);
+                    let lowerPool = pool.slice(5, 25);
+                    lowerPool.sort(() => Math.random() - 0.5);
+                    ticketMains = [...top2, ...lowerPool.slice(0, mainSize - 2)];
+                } else {
+                    let randomPool = [...pool];
+                    randomPool.sort(() => Math.random() - 0.5);
+                    ticketMains = randomPool.slice(0, mainSize);
+                }
+                
+                ticketMains = [...new Set(ticketMains)];
+                while (ticketMains.length < mainSize && pool.length > 0) {
+                    let rand = pool[Math.floor(Math.random() * pool.length)];
+                    if (!ticketMains.includes(rand)) ticketMains.push(rand);
+                }
+                ticketMains.sort((a, b) => parseInt(a) - parseInt(b));
+
+                let specNum = "";
+                if (currentType === 'lotto') {
+                    if (selectedFeasibleSpecNums.length > 0) {
+                        specNum = selectedFeasibleSpecNums[i % selectedFeasibleSpecNums.length];
+                    } else if (window.calculatedFeasibleSpecNums && window.calculatedFeasibleSpecNums.length > 0) {
+                        if (i === 0) specNum = window.calculatedFeasibleSpecNums[0];
+                        else {
+                            let topSpecPool = window.calculatedFeasibleSpecNums.slice(0, 5);
+                            specNum = topSpecPool[i % topSpecPool.length];
+                        }
+                    } else {
+                        specNum = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
+                    }
+                }
+
+                tickets.push({ tag: labels[i], main: ticketMains, spec: specNum });
+            }
+
+            window._cached5FeasibleTickets = tickets;
+            render5FeasibleTicketsUI(tickets);
         }
-
-        tickets.push({ tag: labels[i], main: ticketMains, spec: specNum });
-    }
-
-    window._cached5FeasibleTickets = tickets;
-    render5FeasibleTicketsUI(tickets);
-}
 
 function render5FeasibleTicketsUI(tickets) {
     let container = document.getElementById('feasibleTicketsListArea');
