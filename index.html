@@ -1327,7 +1327,7 @@ function renderMatrix(){
   }
   parts.push('</tr>');
 
-  parts.push(`<tr class="count-row"><td class="cell-idx">📊</td><td class="cell-date" style="text-align:left;padding-left:4px;font-weight:700;white-space:nowrap;color:var(--green);background:#13241a">TẦN SUẤT</td>`);
+  parts.push(`<tr class="count-row"><td class="cell-idx">📊</td><td class="cell-date" style="text-align:left;padding-left:4px;font-weight:700;white-space:nowrap;color:var(--green);background:#13241a">TẦN SUẤT 5K</td>`);
   for(let i=1;i<=cfg.max;i++) parts.push(`<td>${freqMain[i]>0?freqMain[i]:''}</td>`);
   if(cfg.specSeparate){
     parts.push(`<td style="background:var(--custom-bg-matrix)"></td>`);
