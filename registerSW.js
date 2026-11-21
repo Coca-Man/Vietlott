@@ -1,0 +1,1 @@
+if('serviceWorker'in navigator&&!document.getElementById('vite-plugin-pwa:register-dev-sw')){const r=()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{});if(document.readyState==='complete')r();else window.addEventListener('load',r,{once:true});}
